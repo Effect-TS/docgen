@@ -2,22 +2,22 @@
  * @since 0.9.0
  */
 
-import * as Option from "@effect/data/Option";
-import * as String from "@effect/data/String";
-import * as order from "@effect/data/typeclass/Order";
+import type * as Option from "@effect/data/Option"
+import * as String from "@effect/data/String"
+import * as order from "@effect/data/typeclass/Order"
 
 /**
  * @category model
  * @since 0.9.0
  */
 export interface Module extends Documentable {
-  readonly path: ReadonlyArray<string>;
-  readonly classes: ReadonlyArray<Class>;
-  readonly interfaces: ReadonlyArray<Interface>;
-  readonly functions: ReadonlyArray<Function>;
-  readonly typeAliases: ReadonlyArray<TypeAlias>;
-  readonly constants: ReadonlyArray<Constant>;
-  readonly exports: ReadonlyArray<Export>;
+  readonly path: ReadonlyArray<string>
+  readonly classes: ReadonlyArray<Class>
+  readonly interfaces: ReadonlyArray<Interface>
+  readonly functions: ReadonlyArray<Function>
+  readonly typeAliases: ReadonlyArray<TypeAlias>
+  readonly constants: ReadonlyArray<Constant>
+  readonly exports: ReadonlyArray<Export>
 }
 
 /**
@@ -25,12 +25,12 @@ export interface Module extends Documentable {
  * @since 0.9.0
  */
 export interface Documentable {
-  readonly name: string;
-  readonly description: Option.Option<string>;
-  readonly since: Option.Option<string>;
-  readonly deprecated: boolean;
-  readonly examples: ReadonlyArray<Example>;
-  readonly category: Option.Option<string>;
+  readonly name: string
+  readonly description: Option.Option<string>
+  readonly since: Option.Option<string>
+  readonly deprecated: boolean
+  readonly examples: ReadonlyArray<Example>
+  readonly category: Option.Option<string>
 }
 
 /**
@@ -38,11 +38,11 @@ export interface Documentable {
  * @since 0.9.0
  */
 export interface Class extends Documentable {
-  readonly _tag: "Class";
-  readonly signature: string;
-  readonly methods: ReadonlyArray<Method>;
-  readonly staticMethods: ReadonlyArray<Method>;
-  readonly properties: ReadonlyArray<Property>;
+  readonly _tag: "Class"
+  readonly signature: string
+  readonly methods: ReadonlyArray<Method>
+  readonly staticMethods: ReadonlyArray<Method>
+  readonly properties: ReadonlyArray<Property>
 }
 
 /**
@@ -50,7 +50,7 @@ export interface Class extends Documentable {
  * @since 0.9.0
  */
 export interface Method extends Documentable {
-  readonly signatures: ReadonlyArray<string>;
+  readonly signatures: ReadonlyArray<string>
 }
 
 /**
@@ -58,7 +58,7 @@ export interface Method extends Documentable {
  * @since 0.9.0
  */
 export interface Property extends Documentable {
-  readonly signature: string;
+  readonly signature: string
 }
 
 /**
@@ -66,8 +66,8 @@ export interface Property extends Documentable {
  * @since 0.9.0
  */
 export interface Interface extends Documentable {
-  readonly _tag: "Interface";
-  readonly signature: string;
+  readonly _tag: "Interface"
+  readonly signature: string
 }
 
 /**
@@ -75,8 +75,8 @@ export interface Interface extends Documentable {
  * @since 0.9.0
  */
 export interface Function extends Documentable {
-  readonly _tag: "Function";
-  readonly signatures: ReadonlyArray<string>;
+  readonly _tag: "Function"
+  readonly signatures: ReadonlyArray<string>
 }
 
 /**
@@ -84,8 +84,8 @@ export interface Function extends Documentable {
  * @since 0.9.0
  */
 export interface TypeAlias extends Documentable {
-  readonly _tag: "TypeAlias";
-  readonly signature: string;
+  readonly _tag: "TypeAlias"
+  readonly signature: string
 }
 
 /**
@@ -93,8 +93,8 @@ export interface TypeAlias extends Documentable {
  * @since 0.9.0
  */
 export interface Constant extends Documentable {
-  readonly _tag: "Constant";
-  readonly signature: string;
+  readonly _tag: "Constant"
+  readonly signature: string
 }
 
 /**
@@ -102,15 +102,15 @@ export interface Constant extends Documentable {
  * @since 0.9.0
  */
 export interface Export extends Documentable {
-  readonly _tag: "Export";
-  readonly signature: string;
+  readonly _tag: "Export"
+  readonly signature: string
 }
 
 /**
  * @category model
  * @since 0.9.0
  */
-export type Example = string;
+export type Example = string
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -133,8 +133,8 @@ export const createDocumentable = (
   since,
   deprecated,
   examples,
-  category,
-});
+  category
+})
 
 /**
  * @category constructors
@@ -157,8 +157,8 @@ export const createModule = (
   functions,
   typeAliases,
   constants,
-  exports,
-});
+  exports
+})
 
 /**
  * @category constructors
@@ -176,8 +176,8 @@ export const createClass = (
   signature,
   methods,
   staticMethods,
-  properties,
-});
+  properties
+})
 
 /**
  * @category constructors
@@ -189,8 +189,8 @@ export const createConstant = (
 ): Constant => ({
   _tag: "Constant",
   ...documentable,
-  signature,
-});
+  signature
+})
 
 /**
  * @category constructors
@@ -201,8 +201,8 @@ export const createMethod = (
   signatures: ReadonlyArray<string>
 ): Method => ({
   ...documentable,
-  signatures,
-});
+  signatures
+})
 
 /**
  * @category constructors
@@ -213,8 +213,8 @@ export const createProperty = (
   signature: string
 ): Property => ({
   ...documentable,
-  signature,
-});
+  signature
+})
 
 /**
  * @category constructors
@@ -226,8 +226,8 @@ export const createInterface = (
 ): Interface => ({
   _tag: "Interface",
   ...documentable,
-  signature,
-});
+  signature
+})
 
 /**
  * @category constructors
@@ -239,8 +239,8 @@ export const createFunction = (
 ): Function => ({
   _tag: "Function",
   ...documentable,
-  signatures,
-});
+  signatures
+})
 
 /**
  * @category constructors
@@ -252,8 +252,8 @@ export const createTypeAlias = (
 ): TypeAlias => ({
   _tag: "TypeAlias",
   ...documentable,
-  signature,
-});
+  signature
+})
 
 /**
  * @category constructors
@@ -265,8 +265,8 @@ export const createExport = (
 ): Export => ({
   _tag: "Export",
   ...documentable,
-  signature,
-});
+  signature
+})
 
 /**
  * @category instances
@@ -275,4 +275,4 @@ export const createExport = (
 export const Order: order.Order<Module> = order.contramap(
   String.Order,
   (module: Module) => module.path.join("/").toLowerCase()
-);
+)

@@ -1,18 +1,17 @@
 /**
  * @since 0.9.0
  */
-import { pipe } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
-import * as ReadonlyArray from "@effect/data/ReadonlyArray";
-import * as ReadonlyRecord from "@effect/data/ReadonlyRecord";
-import * as String from "@effect/data/String";
-import * as Order from "@effect/data/typeclass/Order";
-import * as Prettier from "prettier";
-
-import * as Domain from "./Domain";
+import { pipe } from "@effect/data/Function"
+import * as Option from "@effect/data/Option"
+import * as ReadonlyArray from "@effect/data/ReadonlyArray"
+import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
+import * as String from "@effect/data/String"
+import * as Order from "@effect/data/typeclass/Order"
+import * as Prettier from "prettier"
+import type * as Domain from "./Domain"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const toc = require("markdown-toc");
+const toc = require("markdown-toc")
 
 type Printable =
   | Domain.Class
@@ -20,57 +19,55 @@ type Printable =
   | Domain.Export
   | Domain.Function
   | Domain.Interface
-  | Domain.TypeAlias;
+  | Domain.TypeAlias
 
-const bold = (s: string) => `**${s}**`;
+const bold = (s: string) => `**${s}**`
 
 const fence = (language: string, content: string) =>
-  "```" + language + "\n" + content + "\n" + "```\n\n";
+  "```" + language + "\n" + content + "\n" + "```\n\n"
 
-const paragraph = (...content: ReadonlyArray<string>) =>
-  "\n" + content.join("") + "\n\n";
+const paragraph = (...content: ReadonlyArray<string>) => "\n" + content.join("") + "\n\n"
 
-const strikethrough = (content: string) => `~~${content}~~`;
+const strikethrough = (content: string) => `~~${content}~~`
 
-const createHeader = (level: number) => (content: string): string =>
-  "#".repeat(level) + " " + content + "\n\n";
+const createHeader = (level: number) =>
+  (content: string): string => "#".repeat(level) + " " + content + "\n\n"
 
-const h1 = createHeader(1);
+const h1 = createHeader(1)
 
-const h2 = createHeader(2);
+const h2 = createHeader(2)
 
-const h3 = createHeader(3);
+const h3 = createHeader(3)
 
 const getSince: (v: Option.Option<string>) => string = Option.match(
   () => "",
   (v) => paragraph(`Added in v${v}`)
-);
+)
 
 const getTitle = (s: string, deprecated: boolean, type?: string): string => {
-  const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s;
-  const title = deprecated ? strikethrough(name) : name;
+  const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
+  const title = deprecated ? strikethrough(name) : name
   return pipe(
     Option.fromNullable(type),
     Option.match(
       () => title,
       (t) => title + ` ${t}`
     )
-  );
-};
+  )
+}
 
 const getDescription = (d: Option.Option<string>): string =>
-  paragraph(Option.getOrElse(d, () => ""));
+  paragraph(Option.getOrElse(d, () => ""))
 
-const getSignature = (s: string): string =>
-  paragraph(bold("Signature")) + paragraph(fence("ts", s));
+const getSignature = (s: string): string => paragraph(bold("Signature")) + paragraph(fence("ts", s))
 
 const getSignatures = (ss: ReadonlyArray<string>): string =>
-  paragraph(bold("Signature")) + paragraph(fence("ts", ss.join("\n")));
+  paragraph(bold("Signature")) + paragraph(fence("ts", ss.join("\n")))
 
 const getExamples = (es: ReadonlyArray<string>): string =>
   es
     .map((code) => paragraph(bold("Example")) + paragraph(fence("ts", code)))
-    .join("\n\n");
+    .join("\n\n")
 
 const getStaticMethod = (m: Domain.Method): string =>
   paragraph(
@@ -79,7 +76,7 @@ const getStaticMethod = (m: Domain.Method): string =>
     getSignatures(m.signatures),
     getExamples(m.examples),
     getSince(m.since)
-  );
+  )
 
 const getMethod = (m: Domain.Method): string =>
   paragraph(
@@ -88,7 +85,7 @@ const getMethod = (m: Domain.Method): string =>
     getSignatures(m.signatures),
     getExamples(m.examples),
     getSince(m.since)
-  );
+  )
 
 const getProperty = (p: Domain.Property): string =>
   paragraph(
@@ -97,21 +94,21 @@ const getProperty = (p: Domain.Property): string =>
     getSignature(p.signature),
     getExamples(p.examples),
     getSince(p.since)
-  );
+  )
 
 const getStaticMethods = (methods: ReadonlyArray<Domain.Method>): string =>
   ReadonlyArray.map(methods, (method) => getStaticMethod(method) + "\n\n").join(
     ""
-  );
+  )
 
 const getMethods = (methods: ReadonlyArray<Domain.Method>): string =>
-  ReadonlyArray.map(methods, (method) => getMethod(method) + "\n\n").join("");
+  ReadonlyArray.map(methods, (method) => getMethod(method) + "\n\n").join("")
 
 const getProperties = (properties: ReadonlyArray<Domain.Property>): string =>
   ReadonlyArray.map(
     properties,
     (property) => getProperty(property) + "\n\n"
-  ).join("");
+  ).join("")
 
 const getModuleDescription = (module: Domain.Module): string =>
   paragraph(
@@ -119,7 +116,7 @@ const getModuleDescription = (module: Domain.Module): string =>
     getDescription(module.description),
     getExamples(module.examples),
     getSince(module.since)
-  );
+  )
 
 const getMeta = (title: string, order: number): string =>
   paragraph(
@@ -132,7 +129,7 @@ const getMeta = (title: string, order: number): string =>
     `parent: Modules`,
     `\n`,
     "---"
-  );
+  )
 
 const fromClass = (c: Domain.Class): string =>
   paragraph(
@@ -146,7 +143,7 @@ const fromClass = (c: Domain.Class): string =>
     getStaticMethods(c.staticMethods),
     getMethods(c.methods),
     getProperties(c.properties)
-  );
+  )
 
 const fromConstant = (c: Domain.Constant): string =>
   paragraph(
@@ -155,7 +152,7 @@ const fromConstant = (c: Domain.Constant): string =>
     getSignature(c.signature),
     getExamples(c.examples),
     getSince(c.since)
-  );
+  )
 
 const fromExport = (e: Domain.Export): string =>
   paragraph(
@@ -164,7 +161,7 @@ const fromExport = (e: Domain.Export): string =>
     getSignature(e.signature),
     getExamples(e.examples),
     getSince(e.since)
-  );
+  )
 
 const fromFunction = (f: Domain.Function): string =>
   paragraph(
@@ -173,7 +170,7 @@ const fromFunction = (f: Domain.Function): string =>
     getSignatures(f.signatures),
     getExamples(f.examples),
     getSince(f.since)
-  );
+  )
 
 const fromInterface = (i: Domain.Interface): string =>
   paragraph(
@@ -182,7 +179,7 @@ const fromInterface = (i: Domain.Interface): string =>
     getSignature(i.signature),
     getExamples(i.examples),
     getSince(i.since)
-  );
+  )
 
 const fromTypeAlias = (ta: Domain.TypeAlias): string =>
   paragraph(
@@ -191,25 +188,25 @@ const fromTypeAlias = (ta: Domain.TypeAlias): string =>
     getSignature(ta.signature),
     getExamples(ta.examples),
     getSince(ta.since)
-  );
+  )
 
 /** @internal */
 export const fromPrintable = (p: Printable): string => {
   switch (p._tag) {
     case "Class":
-      return fromClass(p);
+      return fromClass(p)
     case "Constant":
-      return fromConstant(p);
+      return fromConstant(p)
     case "Export":
-      return fromExport(p);
+      return fromExport(p)
     case "Function":
-      return fromFunction(p);
+      return fromFunction(p)
     case "Interface":
-      return fromInterface(p);
+      return fromInterface(p)
     case "TypeAlias":
-      return fromTypeAlias(p);
+      return fromTypeAlias(p)
   }
-};
+}
 
 const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
   ReadonlyArray.getMonoid<Printable>().combineAll([
@@ -218,19 +215,19 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
     module.exports,
     module.functions,
     module.interfaces,
-    module.typeAliases,
-  ]);
+    module.typeAliases
+  ])
 
 /**
  * @category printers
  * @since 0.9.0
  */
 export const printModule = (module: Domain.Module, order: number): string => {
-  const DEFAULT_CATEGORY = "utils";
+  const DEFAULT_CATEGORY = "utils"
 
-  const header = getMeta(module.path.slice(1).join("/"), order);
+  const header = getMeta(module.path.slice(1).join("/"), order)
 
-  const description = paragraph(getModuleDescription(module));
+  const description = paragraph(getModuleDescription(module))
 
   const content = pipe(
     getPrintables(module),
@@ -256,15 +253,15 @@ export const printModule = (module: Domain.Module, order: number): string => {
             )
           ),
           ReadonlyArray.map(fromPrintable)
-        ),
+        )
       ].join("\n")
     )
-  ).join("\n");
+  ).join("\n")
 
   const tableOfContents = (content: string) =>
-    '<h2 class="text-delta">Table of contents</h2>\n\n' +
-    toc(content).content +
-    "\n\n";
+    "<h2 class=\"text-delta\">Table of contents</h2>\n\n"
+    + toc(content).content
+    + "\n\n"
 
   return prettify(
     [
@@ -273,18 +270,17 @@ export const printModule = (module: Domain.Module, order: number): string => {
       "---\n",
       tableOfContents(content),
       "---\n",
-      content,
+      content
     ].join("\n")
-  );
-};
+  )
+}
 
 const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",
   semi: false,
   singleQuote: true,
-  printWidth: 120,
-};
+  printWidth: 120
+}
 
 /** @internal */
-export const prettify = (s: string): string =>
-  Prettier.format(s, defaultPrettierOptions);
+export const prettify = (s: string): string => Prettier.format(s, defaultPrettierOptions)

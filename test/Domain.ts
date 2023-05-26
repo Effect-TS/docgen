@@ -1,9 +1,8 @@
-import { pipe } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
-import * as ReadonlyArray from "@effect/data/ReadonlyArray";
-import * as assert from "assert";
-
-import * as Domain from "../src/Domain";
+import { pipe } from "@effect/data/Function"
+import * as Option from "@effect/data/Option"
+import * as ReadonlyArray from "@effect/data/ReadonlyArray"
+import * as assert from "assert"
+import * as Domain from "../src/Domain"
 
 const documentable = (name: string) =>
   Domain.createDocumentable(
@@ -13,7 +12,7 @@ const documentable = (name: string) =>
     false,
     [],
     Option.none()
-  );
+  )
 
 describe.concurrent("Domain", () => {
   describe.concurrent("constructors", () => {
@@ -24,9 +23,9 @@ describe.concurrent("Domain", () => {
         since: Option.some("1.0.0"),
         deprecated: false,
         examples: [],
-        category: Option.none(),
-      });
-    });
+        category: Option.none()
+      })
+    })
 
     it("Module", () => {
       const m = Domain.createModule(
@@ -38,7 +37,7 @@ describe.concurrent("Domain", () => {
         [],
         [],
         []
-      );
+      )
 
       assert.deepStrictEqual(m, {
         ...documentable("test"),
@@ -48,9 +47,9 @@ describe.concurrent("Domain", () => {
         functions: [],
         typeAliases: [],
         constants: [],
-        exports: [],
-      });
-    });
+        exports: []
+      })
+    })
 
     it("Class", () => {
       const c = Domain.createClass(
@@ -59,7 +58,7 @@ describe.concurrent("Domain", () => {
         [],
         [],
         []
-      );
+      )
 
       assert.deepStrictEqual(c, {
         _tag: "Class",
@@ -67,86 +66,86 @@ describe.concurrent("Domain", () => {
         signature: "declare class A { constructor() }",
         methods: [],
         staticMethods: [],
-        properties: [],
-      });
-    });
+        properties: []
+      })
+    })
 
     it("Constant", () => {
       const c = Domain.createConstant(
         documentable("foo"),
         "declare const foo: string"
-      );
+      )
 
       assert.deepStrictEqual(c, {
         _tag: "Constant",
         ...documentable("foo"),
-        signature: "declare const foo: string",
-      });
-    });
+        signature: "declare const foo: string"
+      })
+    })
 
     it("Method", () => {
-      const m = Domain.createMethod(documentable("foo"), ["foo(): string"]);
+      const m = Domain.createMethod(documentable("foo"), ["foo(): string"])
 
       assert.deepStrictEqual(m, {
         ...documentable("foo"),
-        signatures: ["foo(): string"],
-      });
-    });
+        signatures: ["foo(): string"]
+      })
+    })
 
     it("Property", () => {
-      const p = Domain.createProperty(documentable("foo"), "foo: string");
+      const p = Domain.createProperty(documentable("foo"), "foo: string")
 
       assert.deepStrictEqual(p, {
         ...documentable("foo"),
-        signature: "foo: string",
-      });
-    });
+        signature: "foo: string"
+      })
+    })
 
     it("Interface", () => {
-      const i = Domain.createInterface(documentable("A"), "interface A {}");
+      const i = Domain.createInterface(documentable("A"), "interface A {}")
 
       assert.deepStrictEqual(i, {
         _tag: "Interface",
         ...documentable("A"),
-        signature: "interface A {}",
-      });
-    });
+        signature: "interface A {}"
+      })
+    })
 
     it("Function", () => {
       const f = Domain.createFunction(documentable("func"), [
-        "declare function func(): string",
-      ]);
+        "declare function func(): string"
+      ])
 
       assert.deepStrictEqual(f, {
         _tag: "Function",
         ...documentable("func"),
-        signatures: ["declare function func(): string"],
-      });
-    });
+        signatures: ["declare function func(): string"]
+      })
+    })
 
     it("TypeAlias", () => {
-      const ta = Domain.createTypeAlias(documentable("A"), "type A = string");
+      const ta = Domain.createTypeAlias(documentable("A"), "type A = string")
 
       assert.deepStrictEqual(ta, {
         _tag: "TypeAlias",
         ...documentable("A"),
-        signature: "type A = string",
-      });
-    });
+        signature: "type A = string"
+      })
+    })
 
     it("Export", () => {
       const e = Domain.createExport(
         documentable("foo"),
         "export declare const foo: string"
-      );
+      )
 
       assert.deepStrictEqual(e, {
         _tag: "Export",
         ...documentable("foo"),
-        signature: "export declare const foo: string",
-      });
-    });
-  });
+        signature: "export declare const foo: string"
+      })
+    })
+  })
 
   describe.concurrent("instances", () => {
     it("ordModule", () => {
@@ -159,7 +158,7 @@ describe.concurrent("Domain", () => {
         [],
         [],
         []
-      );
+      )
 
       const m2 = Domain.createModule(
         documentable("test1"),
@@ -170,11 +169,11 @@ describe.concurrent("Domain", () => {
         [],
         [],
         []
-      );
+      )
 
-      const sorted = pipe([m2, m1], ReadonlyArray.sort(Domain.Order));
+      const sorted = pipe([m2, m1], ReadonlyArray.sort(Domain.Order))
 
-      assert.deepStrictEqual(sorted, [m1, m2]);
-    });
-  });
-});
+      assert.deepStrictEqual(sorted, [m1, m2])
+    })
+  })
+})

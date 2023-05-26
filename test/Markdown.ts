@@ -1,6 +1,7 @@
-import { flow } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
-import * as assert from "assert";
+import { flow } from "@effect/data/Function"
+import * as Option from "@effect/data/Option"
+import * as assert from "assert"
+import * as _ from "../src/Markdown"
 
 import {
   createClass,
@@ -12,9 +13,8 @@ import {
   createMethod,
   createModule,
   createProperty,
-  createTypeAlias,
-} from "../src/Domain";
-import * as _ from "../src/Markdown";
+  createTypeAlias
+} from "../src/Domain"
 
 const testCases = {
   class: createClass(
@@ -38,7 +38,7 @@ const testCases = {
           Option.none()
         ),
         ["hasOwnProperty(): boolean"]
-      ),
+      )
     ],
     [
       createMethod(
@@ -51,7 +51,7 @@ const testCases = {
           Option.none()
         ),
         ["static testStatic(): string;"]
-      ),
+      )
     ],
     [
       createProperty(
@@ -64,7 +64,7 @@ const testCases = {
           Option.none()
         ),
         "foo: string"
-      ),
+      )
     ]
   ),
   constant: createConstant(
@@ -121,11 +121,11 @@ const testCases = {
       Option.none()
     ),
     "export type A = number"
-  ),
-};
+  )
+}
 
 describe.concurrent("Markdown", () => {
-  const print = flow(_.fromPrintable, _.prettify);
+  const print = flow(_.fromPrintable, _.prettify)
 
   it("fromClass", () => {
     assert.strictEqual(
@@ -180,8 +180,8 @@ foo: string
 
 Added in v1.0.0
 `
-    );
-  });
+    )
+  })
 
   it("printConstant", () => {
     assert.strictEqual(
@@ -198,8 +198,8 @@ declare const test: string
 
 Added in v1.0.0
 `
-    );
-  });
+    )
+  })
 
   it("printExport", () => {
     assert.strictEqual(
@@ -214,8 +214,8 @@ export declare const test: typeof test
 
 Added in v1.0.0
 `
-    );
-  });
+    )
+  })
 
   it("printFunction", () => {
     assert.strictEqual(
@@ -238,8 +238,8 @@ example 1
 
 Added in v1.0.0
 `
-    );
-  });
+    )
+  })
 
   it("printInterface", () => {
     assert.strictEqual(
@@ -254,8 +254,8 @@ export interface A extends Record<string, unknown> {}
 
 Added in v1.0.0
 `
-    );
-  });
+    )
+  })
 
   it("printTypeAlias", () => {
     assert.strictEqual(
@@ -270,7 +270,7 @@ export type A = number
 
 Added in v1.0.0
 `
-    );
+    )
 
     assert.strictEqual(
       print({ ...testCases.typeAlias, since: Option.none() }),
@@ -282,8 +282,8 @@ Added in v1.0.0
 export type A = number
 \`\`\`
 `
-    );
-  });
+    )
+  })
 
   it("printModule", () => {
     const documentation = createDocumentable(
@@ -293,7 +293,7 @@ export type A = number
       false,
       [],
       Option.none()
-    );
+    )
     assert.strictEqual(
       _.printModule(
         createModule(
@@ -453,7 +453,7 @@ export declare const test: typeof test
 
 Added in v1.0.0
 `
-    );
+    )
 
     const empty = createModule(
       documentation,
@@ -464,7 +464,7 @@ Added in v1.0.0
       [],
       [],
       []
-    );
+    )
 
     assert.strictEqual(
       _.printModule(empty, 1),
@@ -484,6 +484,6 @@ Added in v1.0.0
 
 ---
 `
-    );
-  });
-});
+    )
+  })
+})

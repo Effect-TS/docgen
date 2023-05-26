@@ -1,10 +1,9 @@
 /**
  * @since 0.9.0
  */
-import * as NodeChildProcess from "node:child_process";
-
-import * as Either from "@effect/data/Either";
-import { flow } from "@effect/data/Function";
+import * as Either from "@effect/data/Either"
+import { flow } from "@effect/data/Function"
+import * as NodeChildProcess from "node:child_process"
 
 /**
  * Executes a command like:
@@ -25,11 +24,11 @@ export const spawn: (
     (command: string, executable: string) =>
       NodeChildProcess.spawnSync(command, [executable], {
         stdio: "pipe",
-        encoding: "utf8",
+        encoding: "utf8"
       }),
     (e) => (e instanceof Error ? e : new Error(String(e)))
   ),
   Either.flatMap(({ status, stderr }) =>
     status === 0 ? Either.right(undefined) : Either.left(new Error(stderr))
   )
-);
+)

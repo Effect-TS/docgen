@@ -1,8 +1,7 @@
-import * as Either from "@effect/data/Either";
-import * as Effect from "@effect/io/Effect";
-import * as assert from "assert";
-
-import * as FileSystem from "../src/FileSystem";
+import * as Either from "@effect/data/Either"
+import * as Effect from "@effect/io/Effect"
+import * as assert from "assert"
+import * as FileSystem from "../src/FileSystem"
 
 describe.concurrent("FileSystem", () => {
   describe.concurrent("readFile", () => {
@@ -13,7 +12,7 @@ describe.concurrent("FileSystem", () => {
           (e) => e.message
         ),
         Either.left("ENOENT: no such file or directory, open ''")
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})

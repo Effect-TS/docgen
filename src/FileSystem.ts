@@ -1,10 +1,10 @@
 /**
  * @since 0.9.0
  */
-import * as Effect from "@effect/io/Effect";
-import * as fs from "fs-extra";
-import * as Glob from "glob";
-import * as rimraf from "rimraf";
+import * as Effect from "@effect/io/Effect"
+import * as fs from "fs-extra"
+import * as Glob from "glob"
+import * as rimraf from "rimraf"
 
 /**
  * Represents a file which can be optionally overwriteable.
@@ -13,9 +13,9 @@ import * as rimraf from "rimraf";
  * @since 0.9.0
  */
 export interface File {
-  readonly path: string;
-  readonly content: string;
-  readonly overwrite: boolean;
+  readonly path: string
+  readonly content: string
+  readonly overwrite: boolean
 }
 
 /**
@@ -31,20 +31,20 @@ export const createFile = (
 ): File => ({
   path,
   content,
-  overwrite,
-});
+  overwrite
+})
 
 /** @internal */
 export const readFile = (path: string): Effect.Effect<never, Error, string> =>
   Effect.async((resume) =>
     fs.readFile(path, "utf8", (error, data) => {
       if (error) {
-        resume(Effect.fail(error));
+        resume(Effect.fail(error))
       } else {
-        resume(Effect.succeed(data));
+        resume(Effect.succeed(data))
       }
     })
-  );
+  )
 
 /** @internal */
 export const writeFile = (
@@ -54,24 +54,24 @@ export const writeFile = (
   Effect.async((resume) =>
     fs.outputFile(path, content, { encoding: "utf8" }, (error) => {
       if (error) {
-        resume(Effect.fail(error));
+        resume(Effect.fail(error))
       } else {
-        resume(Effect.succeed(undefined));
+        resume(Effect.succeed(undefined))
       }
     })
-  );
+  )
 
 /** @internal */
 export const remove = (path: string): Effect.Effect<never, Error, void> =>
   Effect.async((resume) =>
     rimraf(path, {}, (error) => {
       if (error) {
-        resume(Effect.fail(error));
+        resume(Effect.fail(error))
       } else {
-        resume(Effect.succeed(undefined));
+        resume(Effect.succeed(undefined))
       }
     })
-  );
+  )
 
 /** @internal */
 export const glob = (
@@ -81,21 +81,21 @@ export const glob = (
   Effect.async((resume) =>
     Glob(pattern, { ignore: exclude }, (error, data) => {
       if (error) {
-        resume(Effect.fail(error));
+        resume(Effect.fail(error))
       } else {
-        resume(Effect.succeed(data));
+        resume(Effect.succeed(data))
       }
     })
-  );
+  )
 
 /** @internal */
 export const exists = (path: string): Effect.Effect<never, Error, boolean> =>
   Effect.async((resume) =>
     fs.pathExists(path, (error, data) => {
       if (error) {
-        resume(Effect.fail(error));
+        resume(Effect.fail(error))
       } else {
-        resume(Effect.succeed(data));
+        resume(Effect.succeed(data))
       }
     })
-  );
+  )

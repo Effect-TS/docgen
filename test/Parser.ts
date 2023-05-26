@@ -1,21 +1,20 @@
-import * as Either from "@effect/data/Either";
-import { pipe } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
-import * as Effect from "@effect/io/Effect";
-import * as assert from "assert";
-import * as ast from "ts-morph";
+import * as Either from "@effect/data/Either"
+import { pipe } from "@effect/data/Function"
+import * as Option from "@effect/data/Option"
+import * as Effect from "@effect/io/Effect"
+import * as assert from "assert"
+import * as ast from "ts-morph"
+import type * as _ from "../src/Config"
+import * as FileSystem from "../src/FileSystem"
+import * as Parser from "../src/Parser"
+import * as Service from "../src/Service"
 
-import * as _ from "../src/Config";
-import * as FileSystem from "../src/FileSystem";
-import * as Parser from "../src/Parser";
-import * as Service from "../src/Service";
-
-let testCounter = 0;
+let testCounter = 0
 
 const project = new ast.Project({
   compilerOptions: { strict: true },
-  useInMemoryFileSystem: true,
-});
+  useInMemoryFileSystem: true
+})
 
 const defaultConfig: _.Config = {
   projectName: "docs-ts",
@@ -29,13 +28,13 @@ const defaultConfig: _.Config = {
   enforceVersion: true,
   exclude: [],
   parseCompilerOptions: {},
-  examplesCompilerOptions: {},
-};
+  examplesCompilerOptions: {}
+}
 
 const getParser = (sourceText: string): Service.Source => ({
   path: ["test"],
-  sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText),
-});
+  sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
+})
 
 const expectLeft = <E, A>(
   sourceText: string,
@@ -48,12 +47,12 @@ const expectLeft = <E, A>(
       eff,
       Effect.provideService(Service.Source, getParser(sourceText)),
       Effect.provideService(Service.Config, {
-        config: { ...defaultConfig, ...config },
+        config: { ...defaultConfig, ...config }
       }),
       Effect.runSyncEither
     )
-  ).toEqual(Either.left(left));
-};
+  ).toEqual(Either.left(left))
+}
 
 const expectRight = <E, A>(
   sourceText: string,
@@ -66,23 +65,23 @@ const expectRight = <E, A>(
       eff,
       Effect.provideService(Service.Source, getParser(sourceText)),
       Effect.provideService(Service.Config, {
-        config: { ...defaultConfig, ...config },
+        config: { ...defaultConfig, ...config }
       }),
       Effect.runSyncEither
     )
-  ).toEqual(Either.right(a));
-};
+  ).toEqual(Either.right(a))
+}
 
 describe.concurrent("Parser", () => {
   describe.concurrent("parsers", () => {
     describe.concurrent("parseInterfaces", () => {
       it("should return no `Interface`s if the file is empty", () => {
-        expectRight("", Parser.parseInterfaces, []);
-      });
+        expectRight("", Parser.parseInterfaces, [])
+      })
 
       it("should return no `Interface`s if there are no exported interfaces", () => {
-        expectRight("interface A {}", Parser.parseInterfaces, []);
-      });
+        expectRight("interface A {}", Parser.parseInterfaces, [])
+      })
 
       it("should return an `Interface`", () => {
         expectRight(
@@ -102,11 +101,11 @@ describe.concurrent("Parser", () => {
               signature: "export interface A {}",
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none(),
-            },
+              category: Option.none()
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should return interfaces sorted by name", () => {
         expectRight(
@@ -130,7 +129,7 @@ describe.concurrent("Parser", () => {
               deprecated: false,
               category: Option.none(),
               examples: [],
-              signature: "export interface A {}",
+              signature: "export interface A {}"
             },
             {
               _tag: "Interface",
@@ -140,12 +139,12 @@ describe.concurrent("Parser", () => {
               deprecated: false,
               category: Option.none(),
               examples: [],
-              signature: "export interface B {}",
-            },
+              signature: "export interface B {}"
+            }
           ]
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseFunctions", () => {
       it("should raise an error if the function is anonymous", () => {
@@ -153,16 +152,16 @@ describe.concurrent("Parser", () => {
           `export function(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           ["Missing function name in module test"]
-        );
-      });
+        )
+      })
 
       it("should not return private function declarations", () => {
         expectRight(
           `function sum(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           []
-        );
-      });
+        )
+      })
 
       it("should not return ignored function declarations", () => {
         expectRight(
@@ -172,8 +171,8 @@ describe.concurrent("Parser", () => {
         export function sum(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           []
-        );
-      });
+        )
+      })
 
       it("should not return ignored function declarations with overloads", () => {
         expectRight(
@@ -184,8 +183,8 @@ describe.concurrent("Parser", () => {
             export function sum(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           []
-        );
-      });
+        )
+      })
 
       it("should not return internal function declarations", () => {
         expectRight(
@@ -195,8 +194,8 @@ describe.concurrent("Parser", () => {
             export function sum(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           []
-        );
-      });
+        )
+      })
 
       it("should not return internal function declarations even with overloads", () => {
         expectRight(
@@ -207,16 +206,16 @@ describe.concurrent("Parser", () => {
             export function sum(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           []
-        );
-      });
+        )
+      })
 
       it("should not return private const function declarations", () => {
         expectRight(
           `const sum = (a: number, b: number): number => a + b `,
           Parser.parseFunctions,
           []
-        );
-      });
+        )
+      })
 
       it("should not return internal const function declarations", () => {
         expectRight(
@@ -226,8 +225,8 @@ describe.concurrent("Parser", () => {
             export const sum = (a: number, b: number): number => a + b `,
           Parser.parseFunctions,
           []
-        );
-      });
+        )
+      })
 
       it("should account for nullable polymorphic return types", () => {
         expectRight(
@@ -243,15 +242,15 @@ describe.concurrent("Parser", () => {
               description: Option.none(),
               name: "toNullable",
               signatures: [
-                "export declare const toNullable: <A>(ma: A | null) => A | null",
+                "export declare const toNullable: <A>(ma: A | null) => A | null"
               ],
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none(),
-            },
+              category: Option.none()
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should return a const function declaration", () => {
         expectRight(
@@ -273,18 +272,18 @@ describe.concurrent("Parser", () => {
               description: Option.some("a description..."),
               name: "f",
               signatures: [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }",
+                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
               ],
               since: Option.some("1.0.0"),
               examples: [
                 "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })",
+                "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })"
               ],
-              category: Option.none(),
-            },
+              category: Option.none()
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should return a function declaration", () => {
         expectRight(
@@ -300,15 +299,15 @@ describe.concurrent("Parser", () => {
               description: Option.none(),
               name: "f",
               signatures: [
-                "export declare function f(a: number, b: number): { [key: string]: number }",
+                "export declare function f(a: number, b: number): { [key: string]: number }"
               ],
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none(),
-            },
+              category: Option.none()
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should return a function with comments", () => {
         expectRight(
@@ -326,15 +325,15 @@ describe.concurrent("Parser", () => {
               description: Option.some("a description..."),
               name: "f",
               signatures: [
-                "export declare function f(a: number, b: number): { [key: string]: number }",
+                "export declare function f(a: number, b: number): { [key: string]: number }"
               ],
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none(),
-            },
+              category: Option.none()
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should handle overloadings", () => {
         expectRight(
@@ -358,13 +357,13 @@ describe.concurrent("Parser", () => {
               examples: [],
               signatures: [
                 "export declare function f(a: Int, b: Int): { [key: string]: number }",
-                "export declare function f(a: number, b: number): { [key: string]: number }",
-              ],
-            },
+                "export declare function f(a: number, b: number): { [key: string]: number }"
+              ]
+            }
           ]
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseTypeAlias", () => {
       it("should return a `TypeAlias`", () => {
@@ -385,12 +384,12 @@ describe.concurrent("Parser", () => {
               deprecated: true,
               category: Option.none(),
               signature: "export type Option<A> = None<A> | Some<A>",
-              examples: [],
-            },
+              examples: []
+            }
           ]
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseConstants", () => {
       it("should handle a constant value", () => {
@@ -411,11 +410,11 @@ describe.concurrent("Parser", () => {
               deprecated: true,
               category: Option.none(),
               signature: "export declare const s: string",
-              examples: [],
-            },
+              examples: []
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should support constants with default type parameters", () => {
         expectRight(
@@ -432,13 +431,12 @@ describe.concurrent("Parser", () => {
               since: Option.some("1.0.0"),
               deprecated: false,
               category: Option.none(),
-              signature:
-                "export declare const left: <E = never, A = never>(l: E) => string",
-              examples: [],
-            },
+              signature: "export declare const left: <E = never, A = never>(l: E) => string",
+              examples: []
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should support untyped constants", () => {
         expectRight(
@@ -458,11 +456,11 @@ describe.concurrent("Parser", () => {
               deprecated: false,
               category: Option.none(),
               signature: "export declare const empty: A",
-              examples: [],
-            },
+              examples: []
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should handle constants with typeof annotations", () => {
         expectRight(
@@ -486,11 +484,11 @@ describe.concurrent("Parser", () => {
               signature: "export declare const taskSeq: { a: number; }",
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none(),
-            },
+              category: Option.none()
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should not include variables declared in for loops", () => {
         expectRight(
@@ -501,22 +499,22 @@ describe.concurrent("Parser", () => {
         }`,
           Parser.parseConstants,
           []
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseClasses", () => {
       it("should raise an error if the class is anonymous", () => {
         expectLeft(`export class {}`, Parser.parseClasses, [
-          "Missing class name in module test",
-        ]);
-      });
+          "Missing class name in module test"
+        ])
+      })
 
       it("should raise an error if an `@since` tag is missing in a module", () => {
         expectLeft(`export class MyClass {}`, Parser.parseClasses, [
-          "Missing @since tag in test#MyClass documentation",
-        ]);
-      });
+          "Missing @since tag in test#MyClass documentation"
+        ])
+      })
 
       it("should raise an error if `@since` is missing in a property", () => {
         expectLeft(
@@ -528,8 +526,8 @@ describe.concurrent("Parser", () => {
             }`,
           Parser.parseClasses,
           ["Missing @since tag in test#MyClass#_A documentation"]
-        );
-      });
+        )
+      })
 
       it("should skip ignored properties", () => {
         expectRight(
@@ -555,11 +553,11 @@ describe.concurrent("Parser", () => {
               signature: "export declare class MyClass<A>",
               methods: [],
               staticMethods: [],
-              properties: [],
-            },
+              properties: []
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should skip the constructor body", () => {
         expectRight(
@@ -581,11 +579,11 @@ describe.concurrent("Parser", () => {
               signature: "export declare class C { constructor() }",
               methods: [],
               staticMethods: [],
-              properties: [],
-            },
+              properties: []
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should get a constructor declaration signature", () => {
         const sourceFile = project.createSourceFile(
@@ -598,17 +596,17 @@ describe.concurrent("Parser", () => {
           constructor()
         }
       `
-        );
+        )
 
         const constructorDeclaration = sourceFile
           .getClass("A")!
-          .getConstructors()[0];
+          .getConstructors()[0]
 
         assert.deepStrictEqual(
           Parser.getConstructorDeclarationSignature(constructorDeclaration),
           "constructor()"
-        );
-      });
+        )
+      })
 
       it("should handle non-readonly properties", () => {
         expectRight(
@@ -643,13 +641,13 @@ describe.concurrent("Parser", () => {
                   deprecated: false,
                   category: Option.none(),
                   examples: [],
-                  signature: "a: string",
-                },
-              ],
-            },
+                  signature: "a: string"
+                }
+              ]
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should return a `Class`", () => {
         expectRight(
@@ -692,8 +690,7 @@ describe.concurrent("Parser", () => {
               deprecated: true,
               category: Option.none(),
               examples: [],
-              signature:
-                "export declare class Test { constructor(readonly value: string) }",
+              signature: "export declare class Test { constructor(readonly value: string) }",
               methods: [
                 {
                   name: "g",
@@ -703,9 +700,9 @@ describe.concurrent("Parser", () => {
                   category: Option.none(),
                   examples: [],
                   signatures: [
-                    "g(a: number, b: number): { [key: string]: number }",
-                  ],
-                },
+                    "g(a: number, b: number): { [key: string]: number }"
+                  ]
+                }
               ],
               staticMethods: [
                 {
@@ -715,8 +712,8 @@ describe.concurrent("Parser", () => {
                   deprecated: true,
                   category: Option.none(),
                   examples: [],
-                  signatures: ["static f(): void"],
-                },
+                  signatures: ["static f(): void"]
+                }
               ],
               properties: [
                 {
@@ -726,13 +723,13 @@ describe.concurrent("Parser", () => {
                   deprecated: true,
                   category: Option.none(),
                   signature: "readonly a: string",
-                  examples: [],
-                },
-              ],
-            },
+                  examples: []
+                }
+              ]
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should handle method overloadings", () => {
         expectRight(
@@ -772,8 +769,7 @@ describe.concurrent("Parser", () => {
               deprecated: true,
               category: Option.none(),
               examples: [],
-              signature:
-                "export declare class Test<A> { constructor(readonly value: A) }",
+              signature: "export declare class Test<A> { constructor(readonly value: A) }",
               methods: [
                 {
                   name: "map",
@@ -784,9 +780,9 @@ describe.concurrent("Parser", () => {
                   examples: [],
                   signatures: [
                     "map(f: (a: number) => number): Test",
-                    "map(f: (a: string) => string): Test",
-                  ],
-                },
+                    "map(f: (a: string) => string): Test"
+                  ]
+                }
               ],
               staticMethods: [
                 {
@@ -798,15 +794,15 @@ describe.concurrent("Parser", () => {
                   examples: [],
                   signatures: [
                     "static f(x: number): number",
-                    "static f(x: string): string",
-                  ],
-                },
+                    "static f(x: string): string"
+                  ]
+                }
               ],
-              properties: [],
-            },
+              properties: []
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should ignore internal/ignored methods (#42)", () => {
         expectRight(
@@ -839,12 +835,12 @@ describe.concurrent("Parser", () => {
               signature: "export declare class Test<A>",
               methods: [],
               staticMethods: [],
-              properties: [],
-            },
+              properties: []
+            }
           ]
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseModuleDocumentation", () => {
       it("should return a description field and a deprecated field", () => {
@@ -867,18 +863,18 @@ describe.concurrent("Parser", () => {
             since: Option.some("1.0.0"),
             deprecated: true,
             category: Option.none(),
-            examples: [],
+            examples: []
           }
-        );
-      });
+        )
+      })
 
       it("should return an error when documentation is enforced but no documentation is provided", () => {
         expectLeft(
           "export const a: number = 1",
           Parser.parseModuleDocumentation,
           "Missing documentation in test module"
-        );
-      });
+        )
+      })
 
       it("should support absence of module documentation when no documentation is enforced", () => {
         expectRight(
@@ -890,17 +886,17 @@ describe.concurrent("Parser", () => {
             since: Option.none(),
             deprecated: false,
             category: Option.none(),
-            examples: [],
+            examples: []
           },
           { enforceVersion: false }
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseExports", () => {
       it("should return no `Export`s if the file is empty", () => {
-        expectRight("", Parser.parseExports, []);
-      });
+        expectRight("", Parser.parseExports, [])
+      })
 
       it("should handle renamimg", () => {
         expectRight(
@@ -921,11 +917,11 @@ describe.concurrent("Parser", () => {
               since: Option.some("1.0.0"),
               category: Option.none(),
               examples: [],
-              signature: "export declare const b: 1",
-            },
+              signature: "export declare const b: 1"
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should return an `Export`", () => {
         expectRight(
@@ -951,7 +947,7 @@ describe.concurrent("Parser", () => {
               deprecated: false,
               category: Option.none(),
               signature: "export declare const a: any",
-              examples: [],
+              examples: []
             },
             {
               _tag: "Export",
@@ -961,20 +957,20 @@ describe.concurrent("Parser", () => {
               deprecated: false,
               category: Option.none(),
               signature: "export declare const b: any",
-              examples: [],
-            },
+              examples: []
+            }
           ]
-        );
-      });
+        )
+      })
 
       it("should raise an error if `@since` tag is missing in export", () => {
         expectLeft("export { a }", Parser.parseExports, [
-          "Missing a documentation in test",
-        ]);
-      });
+          "Missing a documentation in test"
+        ])
+      })
 
       it("should retrieve an export signature", () => {
-        project.createSourceFile("a.ts", `export const a = 1`);
+        project.createSourceFile("a.ts", `export const a = 1`)
         const sourceFile = project.createSourceFile(
           "b.ts",
           `import { a } from './a'
@@ -985,16 +981,16 @@ describe.concurrent("Parser", () => {
               */
             b
           }`
-        );
+        )
         const actual = pipe(
           Parser.parseExports,
           Effect.provideService(Service.Source, {
             path: ["test"],
-            sourceFile,
+            sourceFile
           }),
           Effect.provideService(Service.Config, { config: defaultConfig }),
           Effect.runSyncEither
-        );
+        )
         expect(actual).toEqual(
           Either.right([
             {
@@ -1005,19 +1001,19 @@ describe.concurrent("Parser", () => {
               deprecated: false,
               signature: "export declare const b: 1",
               category: Option.none(),
-              examples: [],
-            },
+              examples: []
+            }
           ])
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseModule", () => {
       it("should raise an error if `@since` tag is missing", async () => {
         expectLeft(`import * as assert from 'assert'`, Parser.parseModule, [
-          "Missing documentation in test module",
-        ]);
-      });
+          "Missing documentation in test module"
+        ])
+      })
 
       it("should not require an example for modules when `enforceExamples` is set to true (#38)", () => {
         expectRight(
@@ -1062,20 +1058,20 @@ export const foo = 'foo'`,
                 deprecated: false,
                 examples: [`import { foo } from 'test'\n\nconsole.log(foo)`],
                 category: Option.some("foo"),
-                signature: 'export declare const foo: "foo"',
-              },
+                signature: "export declare const foo: \"foo\""
+              }
             ],
-            exports: [],
+            exports: []
           },
           { enforceExamples: true }
-        );
-      });
-    });
+        )
+      })
+    })
 
     describe.concurrent("parseFile", () => {
       it("should not parse a non-existent file", async () => {
-        const file = FileSystem.createFile("non-existent.ts", "");
-        const project = new ast.Project({ useInMemoryFileSystem: true });
+        const file = FileSystem.createFile("non-existent.ts", "")
+        const project = new ast.Project({ useInMemoryFileSystem: true })
 
         assert.deepStrictEqual(
           pipe(
@@ -1084,10 +1080,10 @@ export const foo = 'foo'`,
             Effect.runSyncEither
           ),
           Either.left(["Unable to locate file: non-existent.ts"])
-        );
-      });
-    });
-  });
+        )
+      })
+    })
+  })
 
   describe.concurrent("utils", () => {
     describe.concurrent("getCommentInfo", () => {
@@ -1096,61 +1092,61 @@ export const foo = 'foo'`,
 * description
 * @category instances
 * @since 1.0.0
-*/`;
+*/`
         expectRight("", Parser.getCommentInfo("name")(text), {
           description: Option.some("description"),
           since: Option.some("1.0.0"),
           category: Option.some("instances"),
           deprecated: false,
-          examples: [],
-        });
-      });
+          examples: []
+        })
+      })
 
       it("should fail if an empty comment tag is provided", () => {
         const text = `/**
 * @category
 * @since 1.0.0
-*/`;
+*/`
 
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
           "Missing @category tag in test#name documentation"
-        );
-      });
+        )
+      })
 
       it("should require a description if `enforceDescriptions` is set to true", () => {
         const text = `/**
 * @category instances
 * @since 1.0.0
-*/`;
+*/`
 
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
           "Missing description in test#name documentation",
           {
-            enforceDescriptions: true,
+            enforceDescriptions: true
           }
-        );
-      });
+        )
+      })
 
       it("should require at least one example if `enforceExamples` is set to true", () => {
         const text = `/**
 * description
 * @category instances
 * @since 1.0.0
-*/`;
+*/`
 
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
           "Missing @example tag in test#name documentation",
           {
-            enforceExamples: true,
+            enforceExamples: true
           }
-        );
-      });
+        )
+      })
 
       it("should require at least one non-empty example if `enforceExamples` is set to true", () => {
         const text = `/**
@@ -1158,23 +1154,23 @@ export const foo = 'foo'`,
 * @example
 * @category instances
 * @since 1.0.0
-*/`;
+*/`
 
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
           "Missing @example tag in test#name documentation",
           {
-            enforceExamples: true,
+            enforceExamples: true
           }
-        );
-      });
+        )
+      })
 
       it("should allow no since tag if `enforceVersion` is set to false", () => {
         const text = `/**
 * description
 * @category instances
-*/`;
+*/`
 
         expectRight(
           "",
@@ -1184,68 +1180,68 @@ export const foo = 'foo'`,
             since: Option.none(),
             category: Option.some("instances"),
             deprecated: false,
-            examples: [],
+            examples: []
           },
           { enforceVersion: false }
-        );
-      });
-    });
+        )
+      })
+    })
 
     it("parseComment", () => {
       assert.deepStrictEqual(Parser.parseComment(""), {
         description: Option.none(),
-        tags: {},
-      });
+        tags: {}
+      })
 
       assert.deepStrictEqual(Parser.parseComment("/** description */"), {
         description: Option.some("description"),
-        tags: {},
-      });
+        tags: {}
+      })
 
       assert.deepStrictEqual(
         Parser.parseComment("/** description\n * @since 1.0.0\n */"),
         {
           description: Option.some("description"),
           tags: {
-            since: [Option.some("1.0.0")],
-          },
+            since: [Option.some("1.0.0")]
+          }
         }
-      );
+      )
 
       assert.deepStrictEqual(
         Parser.parseComment("/** description\n * @deprecated\n */"),
         {
           description: Option.some("description"),
           tags: {
-            deprecated: [Option.none()],
-          },
+            deprecated: [Option.none()]
+          }
         }
-      );
+      )
 
       assert.deepStrictEqual(
         Parser.parseComment("/** description\n * @category instance\n */"),
         {
           description: Option.some("description"),
           tags: {
-            category: [Option.some("instance")],
-          },
+            category: [Option.some("instance")]
+          }
         }
-      );
-    });
+      )
+    })
 
     it("stripImportTypes", () => {
       assert.deepStrictEqual(
         Parser.stripImportTypes(
-          '{ <E, A, B>(refinement: import("/Users/giulio/Documents/Projects/github/fp-ts/src/function").Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }'
+          "{ <E, A, B>(refinement: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/function\").Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
         ),
         "{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
-      );
+      )
       assert.deepStrictEqual(
         Parser.stripImportTypes(
-          '{ <A, B>(refinementWithIndex: import("/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex").RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: import("/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex").PredicateWithIndex<number, A>): (fa: A[]) => A[]; }'
+          "{ <A, B>(refinementWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
         ),
         "{ <A, B>(refinementWithIndex: RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})
