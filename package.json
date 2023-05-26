@@ -50,6 +50,8 @@
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.4.8",
+    "@changesets/cli": "^2.26.1",
     "@types/doctrine": "0.0.3",
     "@types/fs-extra": "^5.0.5",
     "@types/glob": "^7.1.3",
