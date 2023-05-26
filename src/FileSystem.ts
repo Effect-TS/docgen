@@ -1,6 +1,8 @@
 /**
  * @since 0.9.0
  */
+import * as Either from "@effect/data/Either"
+import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as fs from "fs-extra"
 import Glob from "glob"
@@ -44,6 +46,19 @@ export const readFile = (path: string): Effect.Effect<never, Error, string> =>
         resume(Effect.succeed(data))
       }
     })
+  )
+
+/**
+ * read a JSON file and parse the content
+ *
+ * @internal
+ */
+export const readJsonFile = (path: string): Effect.Effect<never, Error, unknown> =>
+  pipe(
+    readFile(path),
+    Effect.flatMap(
+      Either.liftThrowable(JSON.parse, (e) => e instanceof Error ? e : new Error(String(e)))
+    )
   )
 
 /** @internal */

@@ -14,21 +14,12 @@ import * as Logger from "./Logger"
 import * as Process from "./Process"
 import type * as Service from "./Service"
 
-/** read a JSON file and parse the content */
-const readJsonFile = (path: string): Effect.Effect<never, Error, unknown> =>
-  pipe(
-    FileSystem.readFile(path),
-    Effect.flatMap(
-      Either.liftThrowable(JSON.parse, (e) => e instanceof Error ? e : new Error(String(e)))
-    )
-  )
-
 const parseJsonFile = <I, A>(
   path: string,
   schema: Schema.Schema<I, A>
 ): Effect.Effect<never, Error, A> =>
   pipe(
-    readJsonFile(path),
+    FileSystem.readJsonFile(path),
     Effect.flatMap((input) =>
       pipe(
         Schema.parseEither(schema)(input),

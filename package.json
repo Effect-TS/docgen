@@ -12,7 +12,8 @@
     "coverage": "vitest run --coverage",
     "test": "pnpm coverage && pnpm run docs",
     "clean": "rimraf rm -rf dist/*",
-    "build": "tsup",
+    "build": "tsup && pnpm fix-package-json",
+    "fix-package-json": "ts-node scripts/fix-package-json.ts",
     "docs": "pnpm build && node -e \"require('./dist/bin')\""
   },
   "repository": {
