@@ -1,13 +1,7 @@
 {
   "name": "@effect/docgen",
   "version": "0.0.0",
-  "description": "Documentation tool for TypeScript packages",
-  "files": [
-    "lib"
-  ],
-  "main": "lib/index.js",
-  "bin": "lib/bin.js",
-  "typings": "lib/index.d.ts",
+  "description": "An opinionated documentation generator for Effect projects",
   "engines": {
     "node": ">=16.17.1"
   },
@@ -16,12 +10,10 @@
     "autofix": "pnpm lint --fix",
     "vitest": "vitest",
     "coverage": "vitest run --coverage",
-    "test": "npm run coverage && npm run docs",
+    "test": "pnpm coverage && pnpm run docs",
     "clean": "rimraf rm -rf dist/*",
-    "build": "npm run clean && tsc -p tsconfig.build.json",
-    "prepublish": "npm run build",
-    "mocha": "mocha -r ts-node/register test/*.ts",
-    "docs": "ts-node -e \"import './src/bin'\""
+    "build": "tsup",
+    "docs": "pnpm build && node -e \"require('./dist/bin')\""
   },
   "repository": {
     "type": "git",
@@ -67,6 +59,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-sort-destructure-keys": "^1.5.0",
+    "tsup": "^6.7.0",
     "typescript": "^5.0.4",
     "vite": "^4.3.5",
     "vitest": "^0.31.0"

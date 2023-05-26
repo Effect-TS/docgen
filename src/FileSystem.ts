@@ -3,8 +3,8 @@
  */
 import * as Effect from "@effect/io/Effect"
 import * as fs from "fs-extra"
-import * as Glob from "glob"
-import * as rimraf from "rimraf"
+import Glob from "glob"
+import rimraf from "rimraf"
 
 /**
  * Represents a file which can be optionally overwriteable.

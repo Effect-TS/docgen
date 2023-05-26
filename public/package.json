@@ -1,0 +1,36 @@
+{
+  "name": "@effect/docgen",
+  "version": "0.0.1",
+  "description": "Documentation tool for TypeScript packages",
+  "main": "bin.js",
+  "bin": "bin.js",
+  "engines": {
+    "node": ">=16.17.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/effect-ts/docgen.git"
+  },
+  "author": "Giulio Canti <giulio.canti@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/effect-ts/docgen/issues"
+  },
+  "homepage": "https://github.com/effect-ts/docgen",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "doctrine": "^3.0.0",
+    "fs-extra": "^7.0.1",
+    "glob": "^7.1.6",
+    "markdown-toc": "^1.2.0",
+    "prettier": "^2.8.8",
+    "rimraf": "^2.7.1",
+    "ts-morph": "^18.0.0",
+    "ts-node": "^10.9.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.x"
+  },
+  "tags": [],
+  "keywords": []
+}
