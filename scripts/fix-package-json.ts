@@ -1,15 +1,20 @@
 import { pipe } from "@effect/data/Function"
+import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
 import * as Effect from "@effect/io/Effect"
 import * as path from "node:path"
 import * as FileSystem from "../src/FileSystem"
+
+const excludeEffectPackages = (deps: Record<string, string>): Record<string, string> => {
+  return ReadonlyRecord.filter(deps, (_, k) => !k.startsWith("@effect"))
+}
 
 const patch = pipe(
   FileSystem.readJsonFile("package.json"),
   Effect.map((json: any) => ({
     version: json.version,
     description: json.description,
-    dependencies: json.dependencies,
-    peerDependencies: json.peerDependencies,
+    dependencies: excludeEffectPackages(json.dependencies),
+    peerDependencies: excludeEffectPackages(json.peerDependencies),
     tags: json.tags,
     keywords: json.keywords
   }))
