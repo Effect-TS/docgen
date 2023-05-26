@@ -1,5 +1,5 @@
 ---
-"@effect/docgen": minor
+"@effect/docgen": patch
 ---
 
 add initial code

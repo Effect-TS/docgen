@@ -1,4 +1,5 @@
 {
+  "ignorePatterns": ["build", "dist", "dtslint", "*.mjs", "docs", "*.md"],
   "parserOptions": {
     "project": "./tsconfig.eslint.json"
   },
