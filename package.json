@@ -1,6 +1,10 @@
 {
   "name": "@effect/docgen",
   "version": "0.0.0",
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
   "description": "An opinionated documentation generator for Effect projects",
   "engines": {
     "node": ">=16.17.1"

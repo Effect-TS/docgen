@@ -1,5 +1,9 @@
 {
   "name": "@effect/docgen",
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
   "main": "bin.js",
   "bin": "bin.js",
   "engines": {
