@@ -10,6 +10,8 @@
     "node": ">=16.17.1"
   },
   "scripts": {
+    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
+    "release": "pnpm run build && changeset publish",
     "lint": "eslint . --ext .ts,.tsx",
     "autofix": "pnpm lint --fix",
     "vitest": "vitest",
