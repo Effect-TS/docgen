@@ -1,0 +1,77 @@
+{
+  "name": "@effect/docgen",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "description": "An opinionated documentation generator for Effect projects",
+  "engines": {
+    "node": ">=16.17.1"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "autofix": "pnpm lint --fix",
+    "vitest": "vitest",
+    "coverage": "vitest run --coverage",
+    "test": "pnpm coverage && pnpm run docs",
+    "clean": "rimraf rm -rf dist/*",
+    "build": "tsup && pnpm copy-package-json",
+    "copy-package-json": "ts-node scripts/copy-package-json.ts",
+    "docs": "pnpm build && node -e \"require('./dist/bin')\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/effect-ts/docgen.git"
+  },
+  "author": "Giulio Canti <giulio.canti@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/effect-ts/docgen/issues"
+  },
+  "homepage": "https://github.com/effect-ts/docgen",
+  "dependencies": {
+    "@effect/data": "^0.12.2",
+    "@effect/io": "^0.25.9",
+    "@effect/schema": "^0.19.0",
+    "chalk": "^2.4.2",
+    "doctrine": "^3.0.0",
+    "fs-extra": "^7.0.1",
+    "glob": "^7.1.6",
+    "markdown-toc": "^1.2.0",
+    "prettier": "^2.8.8",
+    "rimraf": "^2.7.1",
+    "ts-morph": "^18.0.0",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.4.8",
+    "@changesets/cli": "^2.26.1",
+    "@repo-tooling/eslint-plugin-dprint": "^0.0.4",
+    "@types/doctrine": "0.0.3",
+    "@types/fs-extra": "^5.0.5",
+    "@types/glob": "^7.1.3",
+    "@types/node": "^18.16.6",
+    "@types/prettier": "^2.7.2",
+    "@types/rimraf": "^2.0.4",
+    "@typescript-eslint/eslint-plugin": "^5.59.5",
+    "@typescript-eslint/parser": "^5.59.5",
+    "@vitest/coverage-c8": "^0.31.0",
+    "eslint": "^8.40.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-codegen": "^0.17.0",
+    "eslint-plugin-deprecation": "^1.4.1",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-sort-destructure-keys": "^1.5.0",
+    "tsup": "^6.7.0",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.5",
+    "vitest": "^0.31.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.x"
+  },
+  "tags": [],
+  "keywords": []
+}

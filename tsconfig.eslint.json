@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "noEmit": true,
+    "allowJs": true,
+    "baseUrl": "."
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.ts",
+    "./vitest.config.ts",
+    "./tsup.config.ts",
+    "./scripts/**/*.ts"
+  ]
+}
