@@ -909,7 +909,14 @@ export const parseClasses = pipe(
   Effect.map((Source) =>
     pipe(
       Source.sourceFile.getClasses(),
-      ReadonlyArray.filter((c) => c.isExported())
+      ReadonlyArray.filter(every<ast.ClassDeclaration>([
+        (id) => id.isExported(),
+        (id) =>
+          pipe(
+            id.getJsDocs(),
+            not(flow(getJSDocText, parseComment, shouldIgnore))
+          )
+      ]))
     )
   ),
   Effect.flatMap((classDeclarations) =>

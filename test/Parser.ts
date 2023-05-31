@@ -516,6 +516,14 @@ describe.concurrent("Parser", () => {
         ])
       })
 
+      it("should ignore internal classes", () => {
+        expectRight(`/** @internal */export class MyClass {}`, Parser.parseClasses, [])
+      })
+
+      it("should ignore `@ignore`d classes", () => {
+        expectRight(`/** @ignore */export class MyClass {}`, Parser.parseClasses, [])
+      })
+
       it("should raise an error if `@since` is missing in a property", () => {
         expectLeft(
           `/**
