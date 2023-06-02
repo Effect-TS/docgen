@@ -9,7 +9,8 @@ const excludeEffectPackages = (deps: Record<string, string>): Record<string, str
 }
 
 const read = pipe(
-  FileSystem.readJsonFile("package.json"),
+  FileSystem.FileSystem,
+  Effect.flatMap((fileSystem) => fileSystem.readJsonFile("package.json")),
   Effect.map((json: any) => ({
     name: json.name,
     version: json.version,
@@ -31,12 +32,17 @@ const read = pipe(
 
 const pathTo = path.join("dist", "package.json")
 
-const write = (pkg: object) => FileSystem.writeFile(pathTo, JSON.stringify(pkg, null, 2))
+const write = (pkg: object) =>
+  pipe(
+    FileSystem.FileSystem,
+    Effect.flatMap((fileSystem) => fileSystem.writeFile(pathTo, JSON.stringify(pkg, null, 2)))
+  )
 
 const program = pipe(
   Effect.sync(() => console.log(`copying package.json to ${pathTo}...`)),
   Effect.flatMap(() => read),
-  Effect.flatMap(write)
+  Effect.flatMap(write),
+  Effect.provideLayer(FileSystem.FileSystemLive)
 )
 
 Effect.runPromise(program)

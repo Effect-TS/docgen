@@ -1,12 +1,12 @@
 ---
 title: index.ts
-nav_order: 6
+nav_order: 7
 parent: Modules
 ---
 
 ## index overview
 
-Added in v0.9.0
+Added in v1.0.0
 
 ---
 
@@ -24,7 +24,7 @@ Added in v0.9.0
 **Signature**
 
 ```ts
-export declare const main: Effect.Effect<never, never, never>
+export declare const main: Effect.Effect<unknown, unknown, void>
 ```
 
-Added in v0.9.0
+Added in v1.0.0

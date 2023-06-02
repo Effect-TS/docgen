@@ -1,41 +1,30 @@
 ---
 title: Logger.ts
-nav_order: 7
+nav_order: 8
 parent: Modules
 ---
 
 ## Logger overview
 
-Added in v0.9.0
+Added in v1.0.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
-  - [debug](#debug)
-  - [info](#info)
+- [logging](#logging)
+  - [SimpleLogger](#simplelogger)
 
 ---
 
-# utils
+# logging
 
-## debug
-
-**Signature**
-
-```ts
-export declare const debug: (message: string) => Effect.Effect<never, never, void>
-```
-
-Added in v0.9.0
-
-## info
+## SimpleLogger
 
 **Signature**
 
 ```ts
-export declare const info: (message: string) => Effect.Effect<never, never, void>
+export declare const SimpleLogger: Logger.Logger<unknown, void>
 ```
 
-Added in v0.9.0
+Added in v1.0.0

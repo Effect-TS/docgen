@@ -1,5 +1,5 @@
 /**
- * @since 0.9.0
+ * @since 1.0.0
  */
 
 import type * as Option from "@effect/data/Option"
@@ -8,7 +8,7 @@ import * as order from "@effect/data/typeclass/Order"
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Module extends Documentable {
   readonly path: ReadonlyArray<string>
@@ -22,7 +22,7 @@ export interface Module extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Documentable {
   readonly name: string
@@ -35,7 +35,7 @@ export interface Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Class extends Documentable {
   readonly _tag: "Class"
@@ -47,7 +47,7 @@ export interface Class extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Method extends Documentable {
   readonly signatures: ReadonlyArray<string>
@@ -55,7 +55,7 @@ export interface Method extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Property extends Documentable {
   readonly signature: string
@@ -63,7 +63,7 @@ export interface Property extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Interface extends Documentable {
   readonly _tag: "Interface"
@@ -72,7 +72,7 @@ export interface Interface extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Function extends Documentable {
   readonly _tag: "Function"
@@ -81,7 +81,7 @@ export interface Function extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface TypeAlias extends Documentable {
   readonly _tag: "TypeAlias"
@@ -90,7 +90,7 @@ export interface TypeAlias extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Constant extends Documentable {
   readonly _tag: "Constant"
@@ -99,7 +99,7 @@ export interface Constant extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export interface Export extends Documentable {
   readonly _tag: "Export"
@@ -108,7 +108,7 @@ export interface Export extends Documentable {
 
 /**
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
 export type Example = string
 
@@ -118,7 +118,7 @@ export type Example = string
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createDocumentable = (
   name: string,
@@ -138,7 +138,7 @@ export const createDocumentable = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createModule = (
   documentable: Documentable,
@@ -162,7 +162,7 @@ export const createModule = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createClass = (
   documentable: Documentable,
@@ -181,7 +181,7 @@ export const createClass = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createConstant = (
   documentable: Documentable,
@@ -194,7 +194,7 @@ export const createConstant = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createMethod = (
   documentable: Documentable,
@@ -206,7 +206,7 @@ export const createMethod = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createProperty = (
   documentable: Documentable,
@@ -218,7 +218,7 @@ export const createProperty = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createInterface = (
   documentable: Documentable,
@@ -231,7 +231,7 @@ export const createInterface = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createFunction = (
   documentable: Documentable,
@@ -244,7 +244,7 @@ export const createFunction = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createTypeAlias = (
   documentable: Documentable,
@@ -257,7 +257,7 @@ export const createTypeAlias = (
 
 /**
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const createExport = (
   documentable: Documentable,
@@ -270,7 +270,7 @@ export const createExport = (
 
 /**
  * @category instances
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const Order: order.Order<Module> = order.contramap(
   String.Order,
