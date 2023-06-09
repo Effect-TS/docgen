@@ -24,7 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const main: Effect.Effect<unknown, unknown, void>
+export declare const main: unknown
 ```
 
 Added in v1.0.0

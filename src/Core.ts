@@ -488,7 +488,20 @@ export const main = pipe(
   Effect.zipLeft(Effect.logInfo("writing markdown files...")),
   Effect.flatMap(writeMarkdown),
   Effect.zipLeft(Effect.logInfo(chalk.bold.green("Docs generation succeeded!"))),
+  Logger.withMinimumLogLevel(LogLevel.Debug),
+  Effect.provideLayer(MainLayer),
   Effect.catchTags({
+    // Configuration errors
+    ConfigError: ({ message }) => Effect.dieMessage(message),
+    // File system errors
+    ReadFileError: ({ path }) => Effect.dieMessage(`Unable to read file from: '${path}'`),
+    WriteFileError: ({ path }) => Effect.dieMessage(`Unable to write file to: '${path}'`),
+    RemoveFileError: ({ path }) => Effect.dieMessage(`Unable to remove file from: '${path}'`),
+    GlobError: ({ exclude, pattern }) =>
+      Effect.dieMessage(
+        `Unable to execute glob pattern '${pattern}' excluding files matching '${exclude}'`
+      ),
+    // Child process errors
     ExecutionError: ({ command, stderr }) =>
       Effect.dieMessage(
         `During execution of '${command}', the following error occurred:\n${stderr}`
@@ -497,11 +510,11 @@ export const main = pipe(
       Effect.dieMessage(
         `Unable to spawn child process for command: '${command} ${args.join(" ")}'\n${error}`
       ),
+    // Parsing errors
+    ParseJsonError: ({ content }) => Effect.dieMessage(`Unable to parse JSON: ${content}`),
     ParseError: ({ message }) =>
       Effect.dieMessage(
         `The following error(s) occurred while parsing the TypeScript source files:\n${message}`
       )
-  }),
-  Logger.withMinimumLogLevel(LogLevel.Debug),
-  Effect.provideLayer(MainLayer)
+  })
 )
