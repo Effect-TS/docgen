@@ -1,12 +1,12 @@
 ---
 title: Markdown.ts
-nav_order: 8
+nav_order: 9
 parent: Modules
 ---
 
 ## Markdown overview
 
-Added in v0.9.0
+Added in v1.0.0
 
 ---
 
@@ -27,4 +27,4 @@ Added in v0.9.0
 export declare const printModule: (module: Domain.Module, order: number) => string
 ```
 
-Added in v0.9.0
+Added in v1.0.0

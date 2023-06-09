@@ -6,25 +6,55 @@ parent: Modules
 
 ## Process overview
 
-Added in v0.9.0
+Added in v1.0.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
-  - [cwd](#cwd)
+- [model](#model)
+  - [Process (interface)](#process-interface)
+- [service](#service)
+  - [Process](#process)
+  - [ProcessLive](#processlive)
 
 ---
 
-# utils
+# model
 
-## cwd
+## Process (interface)
+
+Represents a handle to the currently executing process.
 
 **Signature**
 
 ```ts
-export declare const cwd: Effect.Effect<never, never, string>
+export interface Process {
+  readonly cwd: Effect.Effect<never, never, string>
+  readonly platform: Effect.Effect<never, never, string>
+}
 ```
 
-Added in v0.9.0
+Added in v1.0.0
+
+# service
+
+## Process
+
+**Signature**
+
+```ts
+export declare const Process: Context.Tag<Process, Process>
+```
+
+Added in v1.0.0
+
+## ProcessLive
+
+**Signature**
+
+```ts
+export declare const ProcessLive: Layer.Layer<never, never, Process>
+```
+
+Added in v1.0.0

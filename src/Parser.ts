@@ -1,7 +1,8 @@
 /**
- * @since 0.9.0
+ * @since 1.0.0
  */
 import * as Boolean from "@effect/data/Boolean"
+import * as Context from "@effect/data/Context"
 import * as Either from "@effect/data/Either"
 import { flow, pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
@@ -16,9 +17,18 @@ import chalk from "chalk"
 import * as doctrine from "doctrine"
 import * as NodePath from "node:path"
 import * as ast from "ts-morph"
+import * as Config from "./Config"
 import * as Domain from "./Domain"
 import type * as FileSystem from "./FileSystem"
-import * as Service from "./Service"
+
+/** @internal */
+export interface Source {
+  readonly path: ReadonlyArray.NonEmptyReadonlyArray<string>
+  readonly sourceFile: ast.SourceFile
+}
+
+/** @internal */
+export const Source = Context.Tag<Source>()
 
 interface Comment {
   readonly description: Option.Option<string>
@@ -119,16 +129,16 @@ const getMissingTagError = (
 
 const getSinceTag = (name: string, comment: Comment) =>
   pipe(
-    Effect.all(Service.Config, Service.Source),
-    Effect.flatMap(([Config, Source]) =>
+    Effect.all(Config.Config, Source),
+    Effect.flatMap(([config, source]) =>
       pipe(
         comment.tags,
         ReadonlyRecord.get("since"),
         Option.flatMap(ReadonlyArray.headNonEmpty),
         Option.match(
           () =>
-            Config.config.enforceVersion
-              ? Either.left(getMissingTagError("@since", Source.path, name))
+            config.enforceVersion
+              ? Either.left(getMissingTagError("@since", source.path, name))
               : Either.right(Option.none()),
           (since) => Either.right(Option.some(since))
         )
@@ -137,36 +147,32 @@ const getSinceTag = (name: string, comment: Comment) =>
   )
 
 const getCategoryTag = (name: string, comment: Comment) =>
-  pipe(
-    Service.Source,
-    Effect.flatMap((Source) =>
-      pipe(
-        comment.tags,
-        ReadonlyRecord.get("category"),
-        Option.flatMap(ReadonlyArray.headNonEmpty),
-        Either.liftPredicate(
-          not(
-            every([
-              Option.isNone,
-              () => ReadonlyRecord.has(comment.tags, "category")
-            ])
-          ),
-          () => getMissingTagError("@category", Source.path, name)
-        )
+  Effect.flatMap(Source, (source) =>
+    pipe(
+      comment.tags,
+      ReadonlyRecord.get("category"),
+      Option.flatMap(ReadonlyArray.headNonEmpty),
+      Either.liftPredicate(
+        not(
+          every([
+            Option.isNone,
+            () => ReadonlyRecord.has(comment.tags, "category")
+          ])
+        ),
+        () => getMissingTagError("@category", source.path, name)
       )
-    )
-  )
+    ))
 
 const getDescription = (name: string, comment: Comment) =>
   pipe(
-    Effect.all(Service.Config, Service.Source),
-    Effect.flatMap(([Config, Source]) =>
+    Effect.all(Config.Config, Source),
+    Effect.flatMap(([config, source]) =>
       pipe(
         comment.description,
         Option.match(
           () =>
-            Config.config.enforceDescriptions
-              ? Either.left(getMissingError("description", Source.path, name))
+            config.enforceDescriptions
+              ? Either.left(getMissingError("description", source.path, name))
               : Either.right(Option.none()),
           (description) => Either.right(Option.some(description))
         )
@@ -176,8 +182,8 @@ const getDescription = (name: string, comment: Comment) =>
 
 const getExamples = (name: string, comment: Comment, isModule: boolean) =>
   pipe(
-    Effect.all(Service.Config, Service.Source),
-    Effect.flatMap(([Config, Source]) =>
+    Effect.all(Config.Config, Source),
+    Effect.flatMap(([config, source]) =>
       pipe(
         comment.tags,
         ReadonlyRecord.get("example"),
@@ -185,18 +191,18 @@ const getExamples = (name: string, comment: Comment, isModule: boolean) =>
         Option.match(
           () =>
             Boolean.MonoidEvery.combineAll([
-                Config.config.enforceExamples,
+                config.enforceExamples,
                 !isModule
               ])
-              ? Either.left(getMissingTagError("@example", Source.path, name))
+              ? Either.left(getMissingTagError("@example", source.path, name))
               : Either.right([]),
           (examples) =>
             Boolean.MonoidEvery.combineAll([
-                Config.config.enforceExamples,
+                config.enforceExamples,
                 ReadonlyArray.isEmptyArray(examples),
                 !isModule
               ])
-              ? Either.left(getMissingTagError("@example", Source.path, name))
+              ? Either.left(getMissingTagError("@example", source.path, name))
               : Either.right(examples.slice())
         )
       )
@@ -281,13 +287,12 @@ const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseInterfaces = pipe(
-  Service.Source,
-  Effect.map((Source) =>
+  Effect.map(Source, (source) =>
     pipe(
-      Source.sourceFile.getInterfaces(),
+      source.sourceFile.getInterfaces(),
       ReadonlyArray.filter(
         every<ast.InterfaceDeclaration>([
           (id) => id.isExported(),
@@ -298,8 +303,7 @@ export const parseInterfaces = pipe(
             )
         ])
       )
-    )
-  ),
+    )),
   Effect.flatMap((interfaceDeclarations) =>
     pipe(
       interfaceDeclarations,
@@ -344,16 +348,14 @@ const getFunctionDeclarationJSDocs = (
 
 const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
   pipe(
-    Service.Source,
-    Effect.flatMap((Source) =>
+    Effect.flatMap(Source, (source) =>
       pipe(
         Option.fromNullable(fd.getName()),
         Option.flatMap(Option.liftPredicate((name) => name.length > 0)),
         Option.toEither(
-          () => `Missing function name in module ${Source.path.join("/")}`
+          () => `Missing function name in module ${source.path.join("/")}`
         )
-      )
-    ),
+      )),
     Effect.flatMap((name) =>
       pipe(
         getJSDocText(getFunctionDeclarationJSDocs(fd)),
@@ -414,10 +416,9 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) => {
 }
 
 const getFunctionDeclarations = pipe(
-  Service.Source,
-  Effect.map((Source) => ({
+  Effect.map(Source, (source) => ({
     functions: pipe(
-      Source.sourceFile.getFunctions(),
+      source.sourceFile.getFunctions(),
       ReadonlyArray.filter(
         every<ast.FunctionDeclaration>([
           (fd) => fd.isExported(),
@@ -433,7 +434,7 @@ const getFunctionDeclarations = pipe(
       )
     ),
     arrows: pipe(
-      Source.sourceFile.getVariableDeclarations(),
+      source.sourceFile.getVariableDeclarations(),
       ReadonlyArray.filter(
         every<ast.VariableDeclaration>([
           (vd) => isVariableDeclarationList(vd.getParent()),
@@ -470,7 +471,7 @@ const getFunctionDeclarations = pipe(
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseFunctions = pipe(
   Effect.Do(),
@@ -520,13 +521,12 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseTypeAliases = pipe(
-  Service.Source,
-  Effect.map((Source) =>
+  Effect.map(Source, (source) =>
     pipe(
-      Source.sourceFile.getTypeAliases(),
+      source.sourceFile.getTypeAliases(),
       ReadonlyArray.filter(
         every<ast.TypeAliasDeclaration>([
           (alias) => alias.isExported(),
@@ -537,8 +537,7 @@ export const parseTypeAliases = pipe(
             )
         ])
       )
-    )
-  ),
+    )),
   Effect.flatMap((typeAliasDeclarations) =>
     pipe(typeAliasDeclarations, Effect.validateAll(parseTypeAliasDeclaration))
   ),
@@ -575,13 +574,12 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) => {
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseConstants = pipe(
-  Service.Source,
-  Effect.map((Source) =>
+  Effect.map(Source, (source) =>
     pipe(
-      Source.sourceFile.getVariableDeclarations(),
+      source.sourceFile.getVariableDeclarations(),
       ReadonlyArray.filter(
         every<ast.VariableDeclaration>([
           (vd) => isVariableDeclarationList(vd.getParent()),
@@ -614,8 +612,7 @@ export const parseConstants = pipe(
             )
         ])
       )
-    )
-  ),
+    )),
   Effect.flatMap((variableDeclarations) =>
     pipe(
       variableDeclarations,
@@ -629,54 +626,49 @@ export const parseConstants = pipe(
 // -------------------------------------------------------------------------------------
 
 const parseExportSpecifier = (es: ast.ExportSpecifier) =>
-  pipe(
-    Service.Source,
-    Effect.flatMap((Source) =>
-      pipe(
-        Effect.Do(),
-        Effect.bind("name", () => Effect.succeed(es.compilerNode.name.text)),
-        Effect.bind("type", () => Effect.succeed(stripImportTypes(es.getType().getText(es)))),
-        Effect.bind(
-          "signature",
-          ({ name, type }) => Effect.succeed(`export declare const ${name}: ${type}`)
-        ),
-        Effect.flatMap(({ name, signature }) =>
-          pipe(
-            es.getLeadingCommentRanges(),
-            ReadonlyArray.head,
-            Option.toEither(
-              () => `Missing ${name} documentation in ${Source.path.join("/")}`
-            ),
-            Effect.flatMap((commentRange) => pipe(commentRange.getText(), getCommentInfo(name))),
-            Effect.map((info) =>
-              Domain.createExport(
-                Domain.createDocumentable(
-                  name,
-                  info.description,
-                  info.since,
-                  info.deprecated,
-                  info.examples,
-                  info.category
-                ),
-                signature
-              )
+  Effect.flatMap(Source, (source) =>
+    pipe(
+      Effect.Do(),
+      Effect.bind("name", () => Effect.succeed(es.compilerNode.name.text)),
+      Effect.bind("type", () => Effect.succeed(stripImportTypes(es.getType().getText(es)))),
+      Effect.bind(
+        "signature",
+        ({ name, type }) => Effect.succeed(`export declare const ${name}: ${type}`)
+      ),
+      Effect.flatMap(({ name, signature }) =>
+        pipe(
+          es.getLeadingCommentRanges(),
+          ReadonlyArray.head,
+          Option.toEither(
+            () => `Missing ${name} documentation in ${source.path.join("/")}`
+          ),
+          Effect.flatMap((commentRange) => pipe(commentRange.getText(), getCommentInfo(name))),
+          Effect.map((info) =>
+            Domain.createExport(
+              Domain.createDocumentable(
+                name,
+                info.description,
+                info.since,
+                info.deprecated,
+                info.examples,
+                info.category
+              ),
+              signature
             )
           )
         )
       )
-    )
-  )
+    ))
 
 const parseExportDeclaration = (ed: ast.ExportDeclaration) =>
   pipe(ed.getNamedExports(), Effect.validateAll(parseExportSpecifier))
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseExports = pipe(
-  Service.Source,
-  Effect.map((Source) => Source.sourceFile.getExportDeclarations()),
+  Effect.map(Source, (source) => source.sourceFile.getExportDeclarations()),
   Effect.flatMap((exportDeclarations) =>
     pipe(exportDeclarations, Effect.validateAll(parseExportDeclaration))
   ),
@@ -827,25 +819,20 @@ export const getConstructorDeclarationSignature = (
   )
 
 const getClassName = (c: ast.ClassDeclaration) =>
-  pipe(
-    Service.Source,
-    Effect.flatMap((Source) =>
-      pipe(
-        Option.fromNullable(c.getName()),
-        Option.toEither(
-          () => `Missing class name in module ${Source.path.join("/")}`
-        )
+  Effect.flatMap(Source, (source) =>
+    pipe(
+      Option.fromNullable(c.getName()),
+      Option.toEither(
+        () => `Missing class name in module ${source.path.join("/")}`
       )
-    )
-  )
+    ))
 
 const getClassCommentInfo = (name: string, c: ast.ClassDeclaration) =>
   pipe(c.getJsDocs(), getJSDocText, getCommentInfo(name))
 
 const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
   pipe(
-    Service.Source,
-    Effect.map(() => getTypeParameters(c.getTypeParameters())),
+    Effect.succeed(getTypeParameters(c.getTypeParameters())),
     Effect.map((typeParameters) =>
       pipe(
         c.getConstructors(),
@@ -902,13 +889,12 @@ const parseClass = (c: ast.ClassDeclaration) =>
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseClasses = pipe(
-  Service.Source,
-  Effect.map((Source) =>
+  Effect.map(Source, (source) =>
     pipe(
-      Source.sourceFile.getClasses(),
+      source.sourceFile.getClasses(),
       ReadonlyArray.filter(every<ast.ClassDeclaration>([
         (id) => id.isExported(),
         (id) =>
@@ -917,8 +903,7 @@ export const parseClasses = pipe(
             not(flow(getJSDocText, parseComment, shouldIgnore))
           )
       ]))
-    )
-  ),
+    )),
   Effect.flatMap((classDeclarations) =>
     pipe(
       classDeclarations,
@@ -940,19 +925,19 @@ const getModuleName = (
  * @internal
  */
 export const parseModuleDocumentation = pipe(
-  Effect.all(Service.Config, Service.Source),
-  Effect.flatMap(([Config, Source]) => {
-    const name = getModuleName(Source.path)
+  Effect.all(Config.Config, Source),
+  Effect.flatMap(([config, source]) => {
+    const name = getModuleName(source.path)
     // if any of the settings enforcing documentation are set to `true`, then
     // a module should have associated documentation
     const isDocumentationRequired = Boolean.MonoidSome.combineAll([
-      Config.config.enforceDescriptions,
-      Config.config.enforceVersion
+      config.enforceDescriptions,
+      config.enforceVersion
     ])
     const onMissingDocumentation = () =>
       isDocumentationRequired
         ? Either.left(
-          `Missing documentation in ${Source.path.join("/")} module`
+          `Missing documentation in ${source.path.join("/")} module`
         )
         : Either.right(
           Domain.createDocumentable(
@@ -965,7 +950,7 @@ export const parseModuleDocumentation = pipe(
           )
         )
     return pipe(
-      Source.sourceFile.getStatements(),
+      source.sourceFile.getStatements(),
       ReadonlyArray.matchLeft(onMissingDocumentation, (statement) =>
         pipe(
           statement.getLeadingCommentRanges(),
@@ -990,11 +975,10 @@ export const parseModuleDocumentation = pipe(
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseModule = pipe(
-  Service.Source,
-  Effect.flatMap((Source) =>
+  Effect.flatMap(Source, (source) =>
     pipe(
       Effect.Do(),
       Effect.bind("documentation", () => Effect.mapError(parseModuleDocumentation, (e) => [e])),
@@ -1016,7 +1000,7 @@ export const parseModule = pipe(
         }) =>
           Domain.createModule(
             documentation,
-            Source.path,
+            source.path,
             classes,
             interfaces,
             functions,
@@ -1025,8 +1009,7 @@ export const parseModule = pipe(
             exports
           )
       )
-    )
-  )
+    ))
 )
 
 /**
@@ -1035,7 +1018,7 @@ export const parseModule = pipe(
 export const parseFile = (project: ast.Project) =>
   (
     file: FileSystem.File
-  ): Effect.Effect<Service.Config, Array<string>, Domain.Module> => {
+  ): Effect.Effect<Config.Config, Array<string>, Domain.Module> => {
     const path = file.path.split(
       NodePath.sep
     ) as any as ReadonlyArray.NonEmptyReadonlyArray<string>
@@ -1043,10 +1026,7 @@ export const parseFile = (project: ast.Project) =>
     if (sourceFile !== undefined) {
       return pipe(
         parseModule,
-        Effect.provideService(Service.Source, {
-          path,
-          sourceFile
-        })
+        Effect.provideService(Source, { path, sourceFile })
       )
     }
     return Either.left([`Unable to locate file: ${file.path}`])
@@ -1054,8 +1034,8 @@ export const parseFile = (project: ast.Project) =>
 
 const createProject = (files: ReadonlyArray<FileSystem.File>) =>
   pipe(
-    Service.Config,
-    Effect.map(({ config }) => {
+    Config.Config,
+    Effect.map((config) => {
       const options: ast.ProjectOptions = {
         compilerOptions: {
           strict: true,
@@ -1072,7 +1052,7 @@ const createProject = (files: ReadonlyArray<FileSystem.File>) =>
 
 /**
  * @category parsers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const parseFiles = (files: ReadonlyArray<FileSystem.File>) =>
   pipe(

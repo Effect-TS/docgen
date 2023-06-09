@@ -1,5 +1,5 @@
 /**
- * @since 0.9.0
+ * @since 1.0.0
  */
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
@@ -220,7 +220,7 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
 
 /**
  * @category printers
- * @since 0.9.0
+ * @since 1.0.0
  */
 export const printModule = (module: Domain.Module, order: number): string => {
   const DEFAULT_CATEGORY = "utils"

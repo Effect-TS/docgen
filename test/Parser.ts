@@ -4,10 +4,9 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as assert from "assert"
 import * as ast from "ts-morph"
-import type * as _ from "../src/Config"
+import * as Config from "../src/Config"
 import * as FileSystem from "../src/FileSystem"
 import * as Parser from "../src/Parser"
-import * as Service from "../src/Service"
 
 let testCounter = 0
 
@@ -16,9 +15,9 @@ const project = new ast.Project({
   useInMemoryFileSystem: true
 })
 
-const defaultConfig: _.Config = {
-  projectName: "docs-ts",
-  projectHomepage: "https://github.com/gcanti/docs-ts",
+const defaultConfig: Config.Config = {
+  projectName: "docgen",
+  projectHomepage: "https://github.com/effect-ts/docgen",
   srcDir: "src",
   outDir: "docs",
   theme: "pmarsceill/just-the-docs",
@@ -31,24 +30,22 @@ const defaultConfig: _.Config = {
   examplesCompilerOptions: {}
 }
 
-const getParser = (sourceText: string): Service.Source => ({
+const getParser = (sourceText: string): Parser.Source => ({
   path: ["test"],
   sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
 })
 
 const expectLeft = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Service.Source | Service.Config, E, A>,
+  eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
   left: E,
-  config?: Partial<_.Config>
+  config?: Partial<Config.Config>
 ) => {
   expect(
     pipe(
       eff,
-      Effect.provideService(Service.Source, getParser(sourceText)),
-      Effect.provideService(Service.Config, {
-        config: { ...defaultConfig, ...config }
-      }),
+      Effect.provideService(Parser.Source, getParser(sourceText)),
+      Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
       Effect.runSyncEither
     )
   ).toEqual(Either.left(left))
@@ -56,17 +53,15 @@ const expectLeft = <E, A>(
 
 const expectRight = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Service.Source | Service.Config, E, A>,
+  eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
   a: A,
-  config?: Partial<_.Config>
+  config?: Partial<Config.Config>
 ) => {
   expect(
     pipe(
       eff,
-      Effect.provideService(Service.Source, getParser(sourceText)),
-      Effect.provideService(Service.Config, {
-        config: { ...defaultConfig, ...config }
-      }),
+      Effect.provideService(Parser.Source, getParser(sourceText)),
+      Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
       Effect.runSyncEither
     )
   ).toEqual(Either.right(a))
@@ -992,11 +987,11 @@ describe.concurrent("Parser", () => {
         )
         const actual = pipe(
           Parser.parseExports,
-          Effect.provideService(Service.Source, {
+          Effect.provideService(Parser.Source, {
             path: ["test"],
             sourceFile
           }),
-          Effect.provideService(Service.Config, { config: defaultConfig }),
+          Effect.provideService(Config.Config, defaultConfig),
           Effect.runSyncEither
         )
         expect(actual).toEqual(
@@ -1078,13 +1073,13 @@ export const foo = 'foo'`,
 
     describe.concurrent("parseFile", () => {
       it("should not parse a non-existent file", async () => {
-        const file = FileSystem.createFile("non-existent.ts", "")
+        const file = FileSystem.makeFile("non-existent.ts", "")
         const project = new ast.Project({ useInMemoryFileSystem: true })
 
         assert.deepStrictEqual(
           pipe(
             Parser.parseFile(project)(file),
-            Effect.provideService(Service.Config, { config: defaultConfig }),
+            Effect.provideService(Config.Config, defaultConfig),
             Effect.runSyncEither
           ),
           Either.left(["Unable to locate file: non-existent.ts"])

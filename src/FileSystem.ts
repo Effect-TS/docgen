@@ -1,116 +1,263 @@
 /**
- * @since 0.9.0
+ * @since 1.0.0
  */
-import * as Either from "@effect/data/Either"
-import { pipe } from "@effect/data/Function"
+import * as Context from "@effect/data/Context"
+import * as Data from "@effect/data/Data"
 import * as Effect from "@effect/io/Effect"
-import * as fs from "fs-extra"
+import * as Layer from "@effect/io/Layer"
+import * as NodeFS from "fs-extra"
 import Glob from "glob"
-import rimraf from "rimraf"
+import Rimraf from "rimraf"
+
+/**
+ * Represents a file system which can be read from and written to.
+ *
+ * @category model
+ * @since 1.0.0
+ */
+export interface FileSystem {
+  /**
+   * Read a file from the file system at the specified `path`.
+   */
+  readFile(path: string): Effect.Effect<never, ReadFileError, string>
+  /**
+   * Read a `.json` file from the file system at the specified `path` and parse
+   * the contents.
+   */
+  readJsonFile(path: string): Effect.Effect<never, ReadFileError | ParseJsonError, unknown>
+  /**
+   * Write a file to the specified `path` containing the specified `content`.
+   */
+  writeFile(path: string, content: string): Effect.Effect<never, WriteFileError, void>
+  /**
+   * Removes a file from the file system at the specified `path`.
+   */
+  removeFile(path: string): Effect.Effect<never, RemoveFileError, void>
+  /**
+   * Checks if the specified `path` exists on the file system.
+   */
+  pathExists(path: string): Effect.Effect<never, ReadFileError, boolean>
+  /**
+   * Find all files matching the specified `glob` pattern, optionally excluding
+   * files matching the provided `exclude` patterns.
+   */
+  glob(
+    pattern: string,
+    exclude?: ReadonlyArray<string>
+  ): Effect.Effect<never, GlobError, ReadonlyArray<string>>
+}
+
+/**
+ * Represents an error that occurs when attempting to read a file from the
+ * file system.
+ *
+ * @category model
+ * @since 1.0.0
+ */
+export interface ReadFileError extends Data.Case {
+  readonly _tag: "ReadFileError"
+  readonly path: string
+  readonly error: Error
+}
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const ReadFileError = Data.tagged<ReadFileError>("ReadFileError")
+
+/**
+ * Represents an error that occurs when attempting to write a file to the
+ * file system.
+ *
+ * @category model
+ * @since 1.0.0
+ */
+export interface WriteFileError extends Data.Case {
+  readonly _tag: "WriteFileError"
+  readonly path: string
+  readonly error: Error
+}
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const WriteFileError = Data.tagged<WriteFileError>("WriteFileError")
+
+/**
+ * Represents an error that occurs when attempting to remove a file from the
+ * file system.
+ *
+ * @category model
+ * @since 1.0.0
+ */
+export interface RemoveFileError extends Data.Case {
+  readonly _tag: "RemoveFileError"
+  readonly path: string
+  readonly error: Error
+}
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const RemoveFileError = Data.tagged<RemoveFileError>("RemoveFileError")
+
+/**
+ * Represents an error that occurs when attempting to parse JSON content.
+ *
+ * @category model
+ * @since 1.0.0
+ */
+export interface ParseJsonError extends Data.Case {
+  readonly _tag: "ParseJsonError"
+  readonly content: string
+  readonly error: Error
+}
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const ParseJsonError = Data.tagged<ParseJsonError>("ParseJsonError")
+
+/**
+ * Represents an error that occurs when attempting to execute a glob pattern to
+ * find multiple files on the file system.
+ *
+ * @category model
+ * @since 1.0.0
+ */
+export interface GlobError extends Data.Case {
+  readonly _tag: "GlobError"
+  readonly pattern: string
+  readonly exclude: ReadonlyArray<string>
+  readonly error: Error
+}
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const GlobError = Data.tagged<GlobError>("GlobError")
+
+/**
+ * @category service
+ * @since 1.0.0
+ */
+export const FileSystem = Context.Tag<FileSystem>()
+
+/**
+ * @category service
+ * @since 1.0.0
+ */
+export const FileSystemLive = Layer.effect(
+  FileSystem,
+  Effect.sync(() => {
+    const readFile = (path: string): Effect.Effect<never, ReadFileError, string> =>
+      Effect.async((resume) =>
+        NodeFS.readFile(path, "utf8", (error, data) => {
+          if (error) {
+            resume(Effect.fail(ReadFileError({ path, error })))
+          } else {
+            resume(Effect.succeed(data))
+          }
+        })
+      )
+    const readJsonFile = (
+      path: string
+    ): Effect.Effect<never, ReadFileError | ParseJsonError, unknown> =>
+      Effect.flatMap(readFile(path), (content) =>
+        Effect.tryCatch(
+          () => JSON.parse(content),
+          (error) =>
+            ParseJsonError({
+              content,
+              error: error instanceof Error ? error : new Error(String(error))
+            })
+        ))
+    const writeFile = (path: string, content: string): Effect.Effect<never, WriteFileError, void> =>
+      Effect.async((resume) =>
+        NodeFS.outputFile(path, content, "utf8", (error) => {
+          if (error) {
+            resume(Effect.fail(WriteFileError({ path, error })))
+          } else {
+            resume(Effect.unit())
+          }
+        })
+      )
+    const removeFile = (path: string): Effect.Effect<never, RemoveFileError, void> =>
+      Effect.async((resume) =>
+        Rimraf(path, {}, (error) => {
+          if (error) {
+            resume(Effect.fail(RemoveFileError({ error, path })))
+          } else {
+            resume(Effect.unit())
+          }
+        })
+      )
+    const pathExists = (path: string): Effect.Effect<never, ReadFileError, boolean> =>
+      Effect.async((resume) =>
+        NodeFS.pathExists(path, (error, data) => {
+          if (error) {
+            resume(Effect.fail(ReadFileError({ error, path })))
+          } else {
+            resume(Effect.succeed(data))
+          }
+        })
+      )
+    const glob = (
+      pattern: string,
+      exclude: ReadonlyArray<string> = []
+    ): Effect.Effect<never, GlobError, Array<string>> =>
+      Effect.async((resume) =>
+        Glob(pattern, { ignore: exclude }, (error, data) => {
+          if (error) {
+            resume(Effect.fail(GlobError({ error, exclude, pattern })))
+          } else {
+            resume(Effect.succeed(data))
+          }
+        })
+      )
+    return FileSystem.of({
+      readFile,
+      readJsonFile,
+      writeFile,
+      removeFile,
+      pathExists,
+      glob
+    })
+  })
+)
 
 /**
  * Represents a file which can be optionally overwriteable.
  *
  * @category model
- * @since 0.9.0
+ * @since 1.0.0
  */
-export interface File {
-  readonly path: string
-  readonly content: string
-  readonly overwrite: boolean
-}
+export interface File extends
+  Data.Data<{
+    readonly path: string
+    readonly content: string
+    readonly overwrite: boolean
+  }>
+{}
 
 /**
  * By default files are readonly (`overwrite = false`).
  *
  * @category constructors
- * @since 0.9.0
+ * @since 1.0.0
  */
-export const createFile = (
+export const makeFile = (
   path: string,
   content: string,
   overwrite = false
-): File => ({
-  path,
-  content,
-  overwrite
-})
-
-/** @internal */
-export const readFile = (path: string): Effect.Effect<never, Error, string> =>
-  Effect.async((resume) =>
-    fs.readFile(path, "utf8", (error, data) => {
-      if (error) {
-        resume(Effect.fail(error))
-      } else {
-        resume(Effect.succeed(data))
-      }
-    })
-  )
-
-/**
- * read a JSON file and parse the content
- *
- * @internal
- */
-export const readJsonFile = (path: string): Effect.Effect<never, Error, unknown> =>
-  pipe(
-    readFile(path),
-    Effect.flatMap(
-      Either.liftThrowable(JSON.parse, (e) => e instanceof Error ? e : new Error(String(e)))
-    )
-  )
-
-/** @internal */
-export const writeFile = (
-  path: string,
-  content: string
-): Effect.Effect<never, Error, void> =>
-  Effect.async((resume) =>
-    fs.outputFile(path, content, { encoding: "utf8" }, (error) => {
-      if (error) {
-        resume(Effect.fail(error))
-      } else {
-        resume(Effect.succeed(undefined))
-      }
-    })
-  )
-
-/** @internal */
-export const remove = (path: string): Effect.Effect<never, Error, void> =>
-  Effect.async((resume) =>
-    rimraf(path, {}, (error) => {
-      if (error) {
-        resume(Effect.fail(error))
-      } else {
-        resume(Effect.succeed(undefined))
-      }
-    })
-  )
-
-/** @internal */
-export const glob = (
-  pattern: string,
-  exclude: ReadonlyArray<string>
-): Effect.Effect<never, Error, Array<string>> =>
-  Effect.async((resume) =>
-    Glob(pattern, { ignore: exclude }, (error, data) => {
-      if (error) {
-        resume(Effect.fail(error))
-      } else {
-        resume(Effect.succeed(data))
-      }
-    })
-  )
-
-/** @internal */
-export const exists = (path: string): Effect.Effect<never, Error, boolean> =>
-  Effect.async((resume) =>
-    fs.pathExists(path, (error, data) => {
-      if (error) {
-        resume(Effect.fail(error))
-      } else {
-        resume(Effect.succeed(data))
-      }
-    })
-  )
+): File =>
+  Data.struct({
+    path,
+    content,
+    overwrite
+  })

@@ -1,12 +1,12 @@
 ---
 title: Domain.ts
-nav_order: 4
+nav_order: 5
 parent: Modules
 ---
 
 ## Domain overview
 
-Added in v0.9.0
+Added in v1.0.0
 
 ---
 
@@ -56,7 +56,7 @@ export declare const createClass: (
 ) => Class
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createConstant
 
@@ -66,7 +66,7 @@ Added in v0.9.0
 export declare const createConstant: (documentable: Documentable, signature: string) => Constant
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createDocumentable
 
@@ -83,7 +83,7 @@ export declare const createDocumentable: (
 ) => Documentable
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createExport
 
@@ -93,7 +93,7 @@ Added in v0.9.0
 export declare const createExport: (documentable: Documentable, signature: string) => Export
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createFunction
 
@@ -103,7 +103,7 @@ Added in v0.9.0
 export declare const createFunction: (documentable: Documentable, signatures: ReadonlyArray<string>) => Function
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createInterface
 
@@ -113,7 +113,7 @@ Added in v0.9.0
 export declare const createInterface: (documentable: Documentable, signature: string) => Interface
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createMethod
 
@@ -123,7 +123,7 @@ Added in v0.9.0
 export declare const createMethod: (documentable: Documentable, signatures: ReadonlyArray<string>) => Method
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createModule
 
@@ -142,7 +142,7 @@ export declare const createModule: (
 ) => Module
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createProperty
 
@@ -152,7 +152,7 @@ Added in v0.9.0
 export declare const createProperty: (documentable: Documentable, signature: string) => Property
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## createTypeAlias
 
@@ -162,7 +162,7 @@ Added in v0.9.0
 export declare const createTypeAlias: (documentable: Documentable, signature: string) => TypeAlias
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 # instances
 
@@ -174,7 +174,7 @@ Added in v0.9.0
 export declare const Order: order.Order<Module>
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 # model
 
@@ -192,7 +192,7 @@ export interface Class extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Constant (interface)
 
@@ -205,7 +205,7 @@ export interface Constant extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Documentable (interface)
 
@@ -222,7 +222,7 @@ export interface Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Example (type alias)
 
@@ -232,7 +232,7 @@ Added in v0.9.0
 export type Example = string
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Export (interface)
 
@@ -245,7 +245,7 @@ export interface Export extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Function (interface)
 
@@ -258,7 +258,7 @@ export interface Function extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Interface (interface)
 
@@ -271,7 +271,7 @@ export interface Interface extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Method (interface)
 
@@ -283,7 +283,7 @@ export interface Method extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Module (interface)
 
@@ -301,7 +301,7 @@ export interface Module extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## Property (interface)
 
@@ -313,7 +313,7 @@ export interface Property extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0
 
 ## TypeAlias (interface)
 
@@ -326,4 +326,4 @@ export interface TypeAlias extends Documentable {
 }
 ```
 
-Added in v0.9.0
+Added in v1.0.0

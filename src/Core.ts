@@ -1,22 +1,25 @@
 /**
- * @since 0.9.0
+ * @since 1.0.0
  */
 
+import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as ReadonlyArray from "@effect/data/ReadonlyArray"
 import * as String from "@effect/data/String"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
+import * as Logger from "@effect/io/Logger"
+import * as LogLevel from "@effect/io/Logger/Level"
 import chalk from "chalk"
 import * as NodePath from "path"
+import * as ChildProcess from "./ChildProcess"
 import * as Config from "./Config"
 import type * as Domain from "./Domain"
 import * as FileSystem from "./FileSystem"
-import * as Logger from "./Logger"
+import { SimpleLogger } from "./Logger"
 import { printModule } from "./Markdown"
-import * as NodeChildProcess from "./NodeChildProcess"
 import * as Parser from "./Parser"
 import * as Process from "./Process"
-import * as Service from "./Service"
 
 // -------------------------------------------------------------------------------------
 // readFiles
@@ -25,16 +28,18 @@ import * as Service from "./Service"
 const join = (...paths: Array<string>): string => NodePath.normalize(NodePath.join(...paths))
 
 const readFiles = pipe(
-  Service.Config,
-  Effect.flatMap(({ config }) =>
-    FileSystem.glob(join(config.srcDir, "**", "*.ts"), config.exclude)
-  ),
-  Effect.tap((paths) => Logger.info(chalk.bold(`${paths.length} module(s) found`))),
-  Effect.flatMap(
-    Effect.forEachPar((path) =>
-      Effect.map(
-        FileSystem.readFile(path),
-        (content) => FileSystem.createFile(path, content, false)
+  Effect.all(Config.Config, FileSystem.FileSystem),
+  Effect.flatMap(([config, fileSystem]) =>
+    pipe(
+      fileSystem.glob(join(config.srcDir, "**", "*.ts"), config.exclude),
+      Effect.tap((paths) => Effect.logInfo(chalk.bold(`${paths.length} module(s) found`))),
+      Effect.flatMap(
+        Effect.forEachPar((path) =>
+          Effect.map(
+            fileSystem.readFile(path),
+            (content) => FileSystem.makeFile(path, content, false)
+          )
+        )
       )
     )
   )
@@ -42,50 +47,69 @@ const readFiles = pipe(
 
 const writeFile = (
   file: FileSystem.File
-): Effect.Effect<Service.Config, Error, void> =>
+): Effect.Effect<
+  Config.Config | FileSystem.FileSystem | Process.Process,
+  FileSystem.ReadFileError | FileSystem.WriteFileError,
+  void
+> =>
   pipe(
-    Effect.all(Service.Config, Process.cwd),
-    Effect.flatMap(([Config, cwd]) => {
-      const fileName = NodePath.relative(
-        NodePath.join(cwd, Config.config.outDir),
-        file.path
-      )
+    Effect.all(Config.Config, FileSystem.FileSystem, Process.Process),
+    Effect.flatMap(([config, fileSystem, process]) =>
+      pipe(
+        process.cwd,
+        Effect.map((cwd) => NodePath.relative(NodePath.join(cwd, config.outDir), file.path)),
+        Effect.flatMap((fileName) => {
+          const overwrite = pipe(
+            Effect.logDebug(`overwriting file ${chalk.black(fileName)}`),
+            Effect.flatMap(() => fileSystem.writeFile(file.path, file.content))
+          )
 
-      const overwrite = pipe(
-        Logger.debug(`overwriting file ${chalk.black(fileName)}`),
-        Effect.flatMap(() => FileSystem.writeFile(file.path, file.content))
-      )
+          const skip = Effect.logDebug(
+            `file ${chalk.black(fileName)} already exists, skipping creation`
+          )
 
-      const skip = Logger.debug(
-        `file ${chalk.black(fileName)} already exists, skipping creation`
-      )
+          const write = fileSystem.writeFile(file.path, file.content)
 
-      const write = FileSystem.writeFile(file.path, file.content)
-
-      return Effect.ifEffect(
-        FileSystem.exists(file.path),
-        file.overwrite ? overwrite : skip,
-        write
+          return Effect.ifEffect(
+            fileSystem.pathExists(file.path),
+            file.overwrite ? overwrite : skip,
+            write
+          )
+        })
       )
-    })
+    )
   )
 
 // -------------------------------------------------------------------------------------
 // parse
 // -------------------------------------------------------------------------------------
 
+/**
+ * Represents errors that occurred during parsing of TypeScript source files.
+ *
+ * @category model
+ * @since 1.0.0
+ */
+export interface ParseError extends Data.Case {
+  readonly _tag: "ParseError"
+  readonly message: string
+}
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const ParseError = Data.tagged<ParseError>("ParseError")
+
 const getModules = (files: ReadonlyArray<FileSystem.File>) =>
   pipe(
     Parser.parseFiles(files),
-    Effect.mapError(
-      (errors) =>
-        new Error(
-          `[PARSE ERROR] ${
-            errors
-              .map((errors) => errors.join("\n"))
-              .join("\n")
-          }`
-        )
+    Effect.mapError((errors) =>
+      ParseError({
+        message: errors
+          .map((errors) => errors.join("\n"))
+          .join("\n")
+      })
     )
   )
 
@@ -112,82 +136,78 @@ const typeCheckExamples = (modules: ReadonlyArray<Domain.Module>) =>
 const combineAllFiles = ReadonlyArray.getMonoid<FileSystem.File>().combineAll
 
 const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
-  pipe(
-    Service.Config,
-    Effect.map(({ config }) =>
-      pipe(
-        modules,
-        ReadonlyArray.flatMap((module) => {
-          const prefix = module.path.join("-")
+  Effect.map(Config.Config, (config) =>
+    pipe(
+      modules,
+      ReadonlyArray.flatMap((module) => {
+        const prefix = module.path.join("-")
 
-          const getDocumentableExamples = (id: string) =>
-            (
-              documentable: Domain.Documentable
-            ): ReadonlyArray<FileSystem.File> =>
-              pipe(
-                documentable.examples,
-                ReadonlyArray.map((content, i) =>
-                  FileSystem.createFile(
-                    join(
-                      config.outDir,
-                      "examples",
-                      `${prefix}-${id}-${documentable.name}-${i}.ts`
-                    ),
-                    `${content}\n`,
-                    true
-                  )
+        const getDocumentableExamples = (id: string) =>
+          (
+            documentable: Domain.Documentable
+          ): ReadonlyArray<FileSystem.File> =>
+            pipe(
+              documentable.examples,
+              ReadonlyArray.map((content, i) =>
+                FileSystem.makeFile(
+                  join(
+                    config.outDir,
+                    "examples",
+                    `${prefix}-${id}-${documentable.name}-${i}.ts`
+                  ),
+                  `${content}\n`,
+                  true
                 )
               )
-
-          const moduleExamples = getDocumentableExamples("module")(module)
-          const methods = pipe(
-            module.classes,
-            ReadonlyArray.flatMap((c) =>
-              combineAllFiles([
-                pipe(
-                  c.methods,
-                  ReadonlyArray.flatMap(
-                    getDocumentableExamples(`${c.name}-method`)
-                  )
-                ),
-                pipe(
-                  c.staticMethods,
-                  ReadonlyArray.flatMap(
-                    getDocumentableExamples(`${c.name}-staticmethod`)
-                  )
-                )
-              ])
             )
-          )
-          const interfaces = pipe(
-            module.interfaces,
-            ReadonlyArray.flatMap(getDocumentableExamples("interface"))
-          )
-          const typeAliases = pipe(
-            module.typeAliases,
-            ReadonlyArray.flatMap(getDocumentableExamples("typealias"))
-          )
-          const constants = pipe(
-            module.constants,
-            ReadonlyArray.flatMap(getDocumentableExamples("constant"))
-          )
-          const functions = pipe(
-            module.functions,
-            ReadonlyArray.flatMap(getDocumentableExamples("function"))
-          )
 
-          return combineAllFiles([
-            moduleExamples,
-            methods,
-            interfaces,
-            typeAliases,
-            constants,
-            functions
-          ])
-        })
-      )
-    )
-  )
+        const moduleExamples = getDocumentableExamples("module")(module)
+        const methods = pipe(
+          module.classes,
+          ReadonlyArray.flatMap((c) =>
+            combineAllFiles([
+              pipe(
+                c.methods,
+                ReadonlyArray.flatMap(
+                  getDocumentableExamples(`${c.name}-method`)
+                )
+              ),
+              pipe(
+                c.staticMethods,
+                ReadonlyArray.flatMap(
+                  getDocumentableExamples(`${c.name}-staticmethod`)
+                )
+              )
+            ])
+          )
+        )
+        const interfaces = pipe(
+          module.interfaces,
+          ReadonlyArray.flatMap(getDocumentableExamples("interface"))
+        )
+        const typeAliases = pipe(
+          module.typeAliases,
+          ReadonlyArray.flatMap(getDocumentableExamples("typealias"))
+        )
+        const constants = pipe(
+          module.constants,
+          ReadonlyArray.flatMap(getDocumentableExamples("constant"))
+        )
+        const functions = pipe(
+          module.functions,
+          ReadonlyArray.flatMap(getDocumentableExamples("function"))
+        )
+
+        return combineAllFiles([
+          moduleExamples,
+          methods,
+          interfaces,
+          typeAliases,
+          constants,
+          functions
+        ])
+      })
+    ))
 
 const addAssertImport = (code: string): string =>
   code.indexOf("assert.") !== -1
@@ -195,30 +215,27 @@ const addAssertImport = (code: string): string =>
     : code
 
 const replaceProjectName = (source: string) =>
-  pipe(
-    Service.Config,
-    Effect.map(({ config }) => {
-      const importRegex = (projectName: string) =>
-        new RegExp(
-          `from (?<quote>['"])${projectName}(?:/lib)?(?:/(?<path>.*))?\\k<quote>`,
-          "g"
-        )
+  Effect.map(Config.Config, (config) => {
+    const importRegex = (projectName: string) =>
+      new RegExp(
+        `from (?<quote>['"])${projectName}(?:/lib)?(?:/(?<path>.*))?\\k<quote>`,
+        "g"
+      )
 
-      const out = source.replace(importRegex(config.projectName), (...args) => {
-        const groups: { path?: string } = args[args.length - 1]
-        return `from '../../src${groups.path ? `/${groups.path}` : ""}'`
-      })
-
-      return out
+    const out = source.replace(importRegex(config.projectName), (...args) => {
+      const groups: { path?: string } = args[args.length - 1]
+      return `from '../../src${groups.path ? `/${groups.path}` : ""}'`
     })
-  )
+
+    return out
+  })
 
 const handleImports = (files: ReadonlyArray<FileSystem.File>) =>
   Effect.forEach(files, (file) =>
     pipe(
       replaceProjectName(file.content),
       Effect.map(addAssertImport),
-      Effect.map((content) => FileSystem.createFile(file.path, content, file.overwrite))
+      Effect.map((content) => FileSystem.makeFile(file.path, content, file.overwrite))
     ))
 
 const getExampleIndex = (examples: ReadonlyArray<FileSystem.File>) => {
@@ -228,60 +245,66 @@ const getExampleIndex = (examples: ReadonlyArray<FileSystem.File>) => {
       (example) => `import './${NodePath.basename(example.path, ".ts")}'\n`
     )
   )
-  return pipe(
-    Service.Config,
-    Effect.map(({ config }) =>
-      FileSystem.createFile(
-        join(config.outDir, "examples", "index.ts"),
-        `${content}\n`,
-        true
-      )
-    )
-  )
+  return Effect.map(Config.Config, (config) =>
+    FileSystem.makeFile(
+      join(config.outDir, "examples", "index.ts"),
+      `${content}\n`,
+      true
+    ))
 }
 
-const cleanExamples = pipe(
-  Service.Config,
-  Effect.flatMap(({ config }) => FileSystem.remove(join(config.outDir, "examples")))
+const cleanExamples = Effect.flatMap(
+  Effect.all(Config.Config, FileSystem.FileSystem),
+  ([config, fileSystem]) => fileSystem.removeFile(join(config.outDir, "examples"))
 )
 
 const spawnTsNode = pipe(
-  Logger.debug("Type checking examples..."),
-  Effect.flatMap(() => Effect.all(Service.Config, Process.cwd)),
-  Effect.flatMap(([Config, cwd]) => {
-    const command = process.platform === "win32" ? "ts-node.cmd" : "ts-node"
-    const executable = join(cwd, Config.config.outDir, "examples", "index.ts")
-    return NodeChildProcess.spawn(command, executable)
-  })
+  Effect.logDebug("Type checking examples..."),
+  Effect.flatMap(() => Effect.all(ChildProcess.ChildProcess, Config.Config, Process.Process)),
+  Effect.flatMap(([childProcess, config, process]) =>
+    pipe(
+      Effect.all([process.cwd, process.platform]),
+      Effect.flatMap(([cwd, platform]) => {
+        const command = platform === "win32" ? "ts-node.cmd" : "ts-node"
+        const executable = join(cwd, config.outDir, "examples", "index.ts")
+        return childProcess.spawn(command, executable)
+      })
+    )
+  )
 )
 
 const writeFiles = (
   files: ReadonlyArray<FileSystem.File>
-): Effect.Effect<Service.Config, Error, void> => Effect.forEachDiscard(files, writeFile)
+) => Effect.forEachDiscard(files, writeFile)
 
 const writeExamples = (examples: ReadonlyArray<FileSystem.File>) =>
   pipe(
-    Logger.debug("Writing examples..."),
+    Effect.logDebug("Writing examples..."),
     Effect.flatMap(() => getExampleIndex(examples)),
     Effect.map((index) => pipe(examples, ReadonlyArray.prepend(index))),
     Effect.flatMap(writeFiles)
   )
 
 const writeTsConfigJson = pipe(
-  Logger.debug("Writing examples tsconfig..."),
-  Effect.flatMap(() => Effect.all(Service.Config, Process.cwd)),
-  Effect.flatMap(([Config, cwd]) =>
-    writeFile(
-      FileSystem.createFile(
-        join(cwd, Config.config.outDir, "examples", "tsconfig.json"),
-        JSON.stringify(
-          {
-            compilerOptions: Config.config.examplesCompilerOptions
-          },
-          null,
-          2
-        ),
-        true
+  Effect.logDebug("Writing examples tsconfig..."),
+  Effect.flatMap(() => Effect.all(Config.Config, Process.Process)),
+  Effect.flatMap(([config, process]) =>
+    pipe(
+      process.cwd,
+      Effect.flatMap((cwd) =>
+        writeFile(
+          FileSystem.makeFile(
+            join(cwd, config.outDir, "examples", "tsconfig.json"),
+            JSON.stringify(
+              {
+                compilerOptions: config.examplesCompilerOptions
+              },
+              null,
+              2
+            ),
+            true
+          )
+        )
       )
     )
   )
@@ -306,32 +329,42 @@ const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
   )
 
 const getHome = pipe(
-  Effect.all(Service.Config, Process.cwd),
-  Effect.map(([Config, cwd]) =>
-    FileSystem.createFile(
-      join(cwd, Config.config.outDir, "index.md"),
-      `---
-title: Home
-nav_order: 1
----
-`,
-      false
+  Effect.all(Config.Config, Process.Process),
+  Effect.flatMap(([config, process]) =>
+    pipe(
+      process.cwd,
+      Effect.map((cwd) =>
+        FileSystem.makeFile(
+          join(cwd, config.outDir, "index.md"),
+          `---
+  title: Home
+  nav_order: 1
+  ---
+  `,
+          false
+        )
+      )
     )
   )
 )
 
 const getModulesIndex = pipe(
-  Effect.all(Service.Config, Process.cwd),
-  Effect.map(([Config, cwd]) =>
-    FileSystem.createFile(
-      join(cwd, Config.config.outDir, "modules", "index.md"),
-      `---
-title: Modules
-has_children: true
-permalink: /docs/modules
-nav_order: 2
----`,
-      false
+  Effect.all(Config.Config, Process.Process),
+  Effect.flatMap(([config, process]) =>
+    pipe(
+      process.cwd,
+      Effect.map((cwd) =>
+        FileSystem.makeFile(
+          join(cwd, config.outDir, "modules", "index.md"),
+          `---
+  title: Modules
+  has_children: true
+  permalink: /docs/modules
+  nav_order: 2
+  ---`,
+          false
+        )
+      )
     )
   )
 )
@@ -361,54 +394,52 @@ const getHomepageNavigationHeader = (config: Config.Config): string => {
 }
 
 const getConfigYML = pipe(
-  Effect.all(Service.Config, Process.cwd),
-  Effect.flatMap(([Config, cwd]) => {
-    const filePath = join(cwd, Config.config.outDir, "_config.yml")
-    return pipe(
-      FileSystem.exists(filePath),
-      Effect.flatMap((exists) =>
-        exists
-          ? pipe(
-            FileSystem.readFile(filePath),
-            Effect.map((content) =>
-              FileSystem.createFile(
-                filePath,
-                resolveConfigYML(content, Config.config),
-                true
+  Effect.all(Config.Config, FileSystem.FileSystem, Process.Process),
+  Effect.flatMap(([config, fileSystem, process]) =>
+    Effect.flatMap(process.cwd, (cwd) => {
+      const filePath = join(cwd, config.outDir, "_config.yml")
+      return pipe(
+        fileSystem.pathExists(filePath),
+        Effect.flatMap((exists) =>
+          exists
+            ? pipe(
+              fileSystem.readFile(filePath),
+              Effect.map((content) =>
+                FileSystem.makeFile(
+                  filePath,
+                  resolveConfigYML(content, config),
+                  true
+                )
               )
             )
-          )
-          : Effect.succeed(
-            FileSystem.createFile(
-              filePath,
-              `remote_theme: ${Config.config.theme}
+            : Effect.succeed(
+              FileSystem.makeFile(
+                filePath,
+                `remote_theme: ${config.theme}
 
-  # Enable or disable the site search
-  search_enabled: ${Config.config.enableSearch}
+    # Enable or disable the site search
+    search_enabled: ${config.enableSearch}
 
-  # Aux links for the upper right navigation
-  aux_links:
-  '${getHomepageNavigationHeader(Config.config)}':
-    - '${Config.config.projectHomepage}'`,
-              false
+    # Aux links for the upper right navigation
+    aux_links:
+    '${getHomepageNavigationHeader(config)}':
+      - '${config.projectHomepage}'`,
+                false
+              )
             )
-          )
+        )
       )
-    )
-  })
+    })
+  )
 )
 
 const getMarkdownOutputPath = (module: Domain.Module) =>
-  pipe(
-    Service.Config,
-    Effect.map(({ config }) =>
-      join(
-        config.outDir,
-        "modules",
-        `${module.path.slice(1).join(NodePath.sep)}.md`
-      )
-    )
-  )
+  Effect.map(Config.Config, (config) =>
+    join(
+      config.outDir,
+      "modules",
+      `${module.path.slice(1).join(NodePath.sep)}.md`
+    ))
 
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.forEachWithIndex(modules, (module, order) =>
@@ -416,7 +447,7 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
       Effect.Do(),
       Effect.bind("outputPath", () => getMarkdownOutputPath(module)),
       Effect.bind("content", () => Effect.succeed(printModule(module, order + 1))),
-      Effect.map(({ content, outputPath }) => FileSystem.createFile(outputPath, content, true))
+      Effect.map(({ content, outputPath }) => FileSystem.makeFile(outputPath, content, true))
     ))
 
 // -------------------------------------------------------------------------------------
@@ -425,27 +456,65 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
 
 const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
   pipe(
-    Service.Config,
-    Effect.map(({ config }) => join(config.outDir, "**/*.ts.md")),
-    Effect.tap((pattern) => Logger.debug(`deleting ${chalk.black(pattern)}`)),
-    Effect.flatMap((pattern) => FileSystem.remove(pattern)),
+    Effect.map(Config.Config, (config) => join(config.outDir, "**/*.ts.md")),
+    Effect.tap((pattern) => Effect.logDebug(`deleting ${chalk.black(pattern)}`)),
+    Effect.flatMap((pattern) =>
+      Effect.flatMap(FileSystem.FileSystem, (fileSystem) => fileSystem.removeFile(pattern))
+    ),
     Effect.flatMap(() => writeFiles(files))
   )
 
+const MainLayer = pipe(
+  Logger.replace(Logger.defaultLogger, SimpleLogger),
+  Layer.merge(ChildProcess.ChildProcessLive),
+  Layer.merge(FileSystem.FileSystemLive),
+  Layer.merge(Process.ProcessLive),
+  Layer.provideMerge(Config.ConfigLive)
+)
+
 /**
  * @category main
- * @since 0.9.0
+ * @since 1.0.0
  */
-export const main = pipe(
-  Logger.info("reading modules..."),
-  Effect.flatMap(() => readFiles),
-  Effect.tap(() => Logger.info("parsing modules...")),
+export const main: Effect.Effect<never, never, void> = pipe(
+  Effect.logInfo("reading modules..."),
+  Effect.zipRight(readFiles),
+  Effect.zipLeft(Effect.logInfo("parsing modules...")),
   Effect.flatMap(getModules),
-  Effect.tap(() => Logger.info("typechecking examples...")),
+  Effect.zipLeft(Effect.logInfo("typechecking examples...")),
   Effect.tap(typeCheckExamples),
-  Effect.tap(() => Logger.info("creating markdown files...")),
+  Effect.zipLeft(Effect.logInfo("creating markdown files...")),
   Effect.flatMap(getMarkdown),
-  Effect.tap(() => Logger.info("writing markdown files...")),
+  Effect.zipLeft(Effect.logInfo("writing markdown files...")),
   Effect.flatMap(writeMarkdown),
-  Effect.provideServiceEffect(Service.Config, Config.getConfig)
+  Effect.zipLeft(Effect.logInfo(chalk.bold.green("Docs generation succeeded!"))),
+  Logger.withMinimumLogLevel(LogLevel.Debug),
+  Effect.provideLayer(MainLayer),
+  Effect.catchTags({
+    // Configuration errors
+    ConfigError: ({ message }) => Effect.dieMessage(message),
+    // File system errors
+    ReadFileError: ({ path }) => Effect.dieMessage(`Unable to read file from: '${path}'`),
+    WriteFileError: ({ path }) => Effect.dieMessage(`Unable to write file to: '${path}'`),
+    RemoveFileError: ({ path }) => Effect.dieMessage(`Unable to remove file from: '${path}'`),
+    GlobError: ({ exclude, pattern }) =>
+      Effect.dieMessage(
+        `Unable to execute glob pattern '${pattern}' excluding files matching '${exclude}'`
+      ),
+    // Child process errors
+    ExecutionError: ({ command, stderr }) =>
+      Effect.dieMessage(
+        `During execution of '${command}', the following error occurred:\n${stderr}`
+      ),
+    SpawnError: ({ args, command, error }) =>
+      Effect.dieMessage(
+        `Unable to spawn child process for command: '${command} ${args.join(" ")}'\n${error}`
+      ),
+    // Parsing errors
+    ParseJsonError: ({ content }) => Effect.dieMessage(`Unable to parse JSON: ${content}`),
+    ParseError: ({ message }) =>
+      Effect.dieMessage(
+        `The following error(s) occurred while parsing the TypeScript source files:\n${message}`
+      )
+  })
 )
