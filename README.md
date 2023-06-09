@@ -14,7 +14,7 @@ This library was inspired by the following projects:
 pnpm add @effect/docgen -D
 ```
 
-2. (Optional) Add a `docs-ts.json` configuration file.
+2. (Optional) Add a `docgen.json` configuration file.
 
 3. Add the following script to your `package.json` file:
 
@@ -28,7 +28,7 @@ pnpm add @effect/docgen -D
 
 ## Example Configuration
 
-The `docs-ts.json` configuration file allows you to customize `docgen`'s behavior. Here's an example configuration:
+The `docgen.json` configuration file allows you to customize `docgen`'s behavior. Here's an example configuration:
 
 ```json
 {
@@ -76,9 +76,9 @@ By default, `docgen` will search for files in the `src` directory and will outpu
 
 # Configuration
 
-`docgen` is meant to be a zero-configuration command-line tool by default. However, there are several configuration settings that can be specified for `docgen`. To customize the configuration of `docgen`, create a `docs-ts.json` file in the root directory of your project and indicate the custom configuration parameters that the tool should use when generating documentation.
+`docgen` is meant to be a zero-configuration command-line tool by default. However, there are several configuration settings that can be specified for `docgen`. To customize the configuration of `docgen`, create a `docgen.json` file in the root directory of your project and indicate the custom configuration parameters that the tool should use when generating documentation.
 
-The `docs-ts.json` configuration file adheres to the following interface:
+The `docgen.json` configuration file adheres to the following interface:
 
 ```ts
 interface Config {
