@@ -154,7 +154,7 @@ export const ConfigLive = Layer.effect(
       Option.match(
         maybeConfig,
         () => defaultConfig,
-        (loadedConfig) => ({ ...defaultConfig, loadedConfig })
+        (loadedConfig) => ({ ...defaultConfig, ...loadedConfig })
       )
     )
   })
