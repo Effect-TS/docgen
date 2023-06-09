@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.1.0
+
+### Minor Changes
+
+- eb5ef08: rename docs-ts.json to docgen.json
+
 ## 0.0.3
 
 ### Patch Changes
