@@ -2,4 +2,4 @@
 "@effect/docgen": minor
 ---
 
-swap internals to a layer-based design
+rename docs-ts.json to docgen.json
