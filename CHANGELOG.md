@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.1.1
+
+### Patch Changes
+
+- 2a909a1: fix config handling
+
 ## 0.1.0
 
 ### Minor Changes
