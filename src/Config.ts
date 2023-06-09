@@ -3,7 +3,6 @@
  */
 import * as Context from "@effect/data/Context"
 import * as Data from "@effect/data/Data"
-import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
@@ -81,11 +80,17 @@ const PackageJsonSchema = Schema.struct({
 
 const parseJsonFile = <I, A>(
   schema: Schema.Schema<I, A>,
-  content: unknown
-): Effect.Effect<never, ConfigError, A> =>
+  path: string,
+  fileSystem: FileSystem.FileSystem
+): Effect.Effect<never, ConfigError | FileSystem.ReadFileError | FileSystem.ParseJsonError, A> =>
   pipe(
-    Schema.parseEither(schema)(content),
-    Either.mapLeft((e) => ConfigError({ message: TreeFormatter.formatErrors(e.errors) }))
+    fileSystem.readJsonFile(path),
+    Effect.flatMap((content) =>
+      pipe(
+        Schema.parseEither(schema)(content),
+        Effect.mapError((e) => ConfigError({ message: TreeFormatter.formatErrors(e.errors) }))
+      )
+    )
   )
 
 const getDefaultConfig = (projectName: string, projectHomepage: string): Config => ({
@@ -108,14 +113,14 @@ const loadConfig = (
   fileSystem: FileSystem.FileSystem
 ): Effect.Effect<
   never,
-  ConfigError | FileSystem.ReadFileError,
+  ConfigError | FileSystem.ReadFileError | FileSystem.ParseJsonError,
   Option.Option<Schema.To<typeof PartialConfigSchema>>
 > =>
   Effect.ifEffect(
     fileSystem.pathExists(path),
     pipe(
       Effect.logInfo(chalk.bold("Configuration file found")),
-      Effect.zipRight(parseJsonFile(PartialConfigSchema, path)),
+      Effect.zipRight(parseJsonFile(PartialConfigSchema, path, fileSystem)),
       Effect.map(Option.some)
     ),
     pipe(
@@ -138,8 +143,7 @@ export const ConfigLive = Layer.effect(
 
     // Read and parse the package.json
     const packageJsonPath = NodePath.join(cwd, PACKAGE_JSON_FILE_NAME)
-    const packageJsonContent = yield* $(fileSystem.readJsonFile(packageJsonPath))
-    const packageJson = yield* $(parseJsonFile(PackageJsonSchema, packageJsonContent))
+    const packageJson = yield* $(parseJsonFile(PackageJsonSchema, packageJsonPath, fileSystem))
 
     // Read and resolve the configuration
     const defaultConfig = getDefaultConfig(packageJson.name, packageJson.homepage)

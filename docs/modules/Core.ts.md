@@ -40,7 +40,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const main: unknown
+export declare const main: Effect.Effect<never, never, void>
 ```
 
 Added in v1.0.0

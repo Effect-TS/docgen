@@ -476,7 +476,7 @@ const MainLayer = pipe(
  * @category main
  * @since 1.0.0
  */
-export const main = pipe(
+export const main: Effect.Effect<never, never, void> = pipe(
   Effect.logInfo("reading modules..."),
   Effect.zipRight(readFiles),
   Effect.zipLeft(Effect.logInfo("parsing modules...")),
