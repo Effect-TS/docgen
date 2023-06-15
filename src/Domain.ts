@@ -3,6 +3,7 @@
  */
 
 import type * as Option from "@effect/data/Option"
+import * as ReadonlyArray from "@effect/data/ReadonlyArray"
 import * as String from "@effect/data/String"
 import * as order from "@effect/data/typeclass/Order"
 
@@ -111,6 +112,18 @@ export interface Export extends Documentable {
  * @since 1.0.0
  */
 export type Example = string
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export type Printable =
+  | Class
+  | Constant
+  | Export
+  | Function
+  | Interface
+  | TypeAlias
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -267,6 +280,24 @@ export const createExport = (
   ...documentable,
   signature
 })
+
+// -------------------------------------------------------------------------------------
+// accessors
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category accessors
+ * @since 1.0.0
+ */
+export const printablesFromModule = (module: Module): ReadonlyArray<Printable> =>
+  ReadonlyArray.getMonoid<Printable>().combineAll([
+    module.classes,
+    module.constants,
+    module.exports,
+    module.functions,
+    module.interfaces,
+    module.typeAliases
+  ])
 
 /**
  * @category instances

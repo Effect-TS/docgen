@@ -8,18 +8,10 @@ import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
 import * as String from "@effect/data/String"
 import * as Order from "@effect/data/typeclass/Order"
 import * as Prettier from "prettier"
-import type * as Domain from "./Domain"
+import * as Domain from "./Domain"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const toc = require("markdown-toc")
-
-type Printable =
-  | Domain.Class
-  | Domain.Constant
-  | Domain.Export
-  | Domain.Function
-  | Domain.Interface
-  | Domain.TypeAlias
 
 const bold = (s: string) => `**${s}**`
 
@@ -191,7 +183,7 @@ const fromTypeAlias = (ta: Domain.TypeAlias): string =>
   )
 
 /** @internal */
-export const fromPrintable = (p: Printable): string => {
+export const fromPrintable = (p: Domain.Printable): string => {
   switch (p._tag) {
     case "Class":
       return fromClass(p)
@@ -208,16 +200,6 @@ export const fromPrintable = (p: Printable): string => {
   }
 }
 
-const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
-  ReadonlyArray.getMonoid<Printable>().combineAll([
-    module.classes,
-    module.constants,
-    module.exports,
-    module.functions,
-    module.interfaces,
-    module.typeAliases
-  ])
-
 /**
  * @category printers
  * @since 1.0.0
@@ -230,7 +212,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
   const description = paragraph(getModuleDescription(module))
 
   const content = pipe(
-    getPrintables(module),
+    Domain.printablesFromModule(module),
     ReadonlyArray.groupBy(({ category }) =>
       pipe(
         category,
@@ -249,7 +231,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
           ReadonlyArray.sort(
             Order.contramap(
               String.Order,
-              (printable: Printable) => printable.name
+              (printable: Domain.Printable) => printable.name
             )
           ),
           ReadonlyArray.map(fromPrintable)
@@ -271,6 +253,31 @@ export const printModule = (module: Domain.Module, order: number): string => {
       tableOfContents(content),
       "---\n",
       content
+    ].join("\n")
+  )
+}
+
+/**
+ * @category printers
+ * @since 1.0.0
+ */
+export const printPrintableForAI = (
+  projectName: string,
+  module: Domain.Module,
+  printable: Domain.Printable
+): string => {
+  const namespace = module.path.slice(1).join("/").replace(/\.ts$/, "")
+  return prettify(
+    [
+      h1(printable.name),
+      getDescription(printable.description),
+      paragraph(
+        `Part of the \`${namespace}\` module from the \`${projectName}\` package. Also known as \`${namespace}.${printable.name}\`.`
+      ),
+      printable.examples.map((code) =>
+        [h3("Example"), paragraph(fence("typescript", code))].join("\n")
+      )
+        .join("\n\n")
     ].join("\n")
   )
 }
