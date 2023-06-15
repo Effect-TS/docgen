@@ -6,15 +6,6 @@ import { pipe } from "effect/Function"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain.js"
 
-type Printable =
-  | Domain.Class
-  | Domain.Constant
-  | Domain.Export
-  | Domain.Function
-  | Domain.Interface
-  | Domain.TypeAlias
-  | Domain.Namespace
-
 const createHeaderPrinter = (level: number) => (content: string): string =>
   "#".repeat(level) + " " + content + "\n\n"
 
@@ -64,6 +55,28 @@ const printExamples = (es: ReadonlyArray<string>): string =>
       MarkdownPrinter.paragraph(MarkdownPrinter.fence("ts", code))
     )
     .join("\n\n")
+
+const printImportDescription = (
+  projectName: string,
+  module: Domain.Module,
+  method: string
+): string => {
+  const namespace = module.path.slice(1).join("/").replace(/\.ts$/, "")
+
+  return (
+    MarkdownPrinter.paragraph(
+      `To import and use \`${method}\` from the "${module.name}" module:`
+    ) +
+    MarkdownPrinter.paragraph(
+      MarkdownPrinter.fence(
+        "ts",
+        `import * as ${module.name} from "${projectName}/${namespace}"
+    // Can be accessed like this
+    ${module.name}.${method}`
+      )
+    )
+  )
+}
 
 const printStaticMethod = (m: Domain.Method): string =>
   MarkdownPrinter.paragraph(
@@ -223,7 +236,7 @@ export const printNamespace = (ns: Domain.Namespace, indentation: number): strin
   )
 
 /** @internal */
-export const print = (p: Printable): string => {
+export const print = (p: Domain.Printable): string => {
   switch (p._tag) {
     case "Class":
       return printClass(p)
@@ -242,8 +255,8 @@ export const print = (p: Printable): string => {
   }
 }
 
-const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
-  ReadonlyArray.flatten<Printable>([
+const getPrintables = (module: Domain.Module): ReadonlyArray<Domain.Printable> =>
+  ReadonlyArray.flatten<Domain.Printable>([
     module.classes,
     module.constants,
     module.exports,
@@ -295,7 +308,7 @@ export const printModule = (
             ReadonlyArray.sort(
               Order.mapInput(
                 String.Order,
-                (printable: Printable) => printable.name
+                (printable: Domain.Printable) => printable.name
               )
             ),
             ReadonlyArray.map(print)
@@ -330,6 +343,29 @@ export const printModule = (
       ].join("\n")
     ))
   })
+
+/**
+ * @category printers
+ * @since 1.0.0
+ */
+export const printPrintableForAI = (
+  projectName: string,
+  module: Domain.Module,
+  printable: Domain.Printable
+) =>
+  prettify(
+    [
+      MarkdownPrinter.h1(printable.name),
+      printDescription(printable.description),
+      printImportDescription(projectName, module, printable.name),
+      printExamples(printable.examples),
+      printable._tag === "Function"
+        ? printSignatures(printable.signatures)
+        : printable._tag === "Constant"
+        ? printSignature(printable.signature)
+        : ""
+    ].join("\n")
+  )
 
 const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",
