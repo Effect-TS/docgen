@@ -147,6 +147,19 @@ export interface Namespace extends NamedDoc {
   readonly namespaces: ReadonlyArray<Namespace>
 }
 
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export type Printable =
+  | Class
+  | Constant
+  | Export
+  | Function
+  | Interface
+  | TypeAlias
+  | Namespace
+
 // -------------------------------------------------------------------------------------
 // constructors
 // -------------------------------------------------------------------------------------
@@ -281,6 +294,24 @@ export const createExport = (doc: NamedDoc, signature: string): Export => ({
   ...doc,
   signature
 })
+
+// -------------------------------------------------------------------------------------
+// accessors
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category accessors
+ * @since 1.0.0
+ */
+export const printablesFromModule = (module: Module): ReadonlyArray<Printable> =>
+  [
+    module.classes,
+    module.constants,
+    module.exports,
+    module.functions,
+    module.interfaces,
+    module.typeAliases
+  ].flat()
 
 /**
  * @category constructors

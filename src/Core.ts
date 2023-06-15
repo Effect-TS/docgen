@@ -12,14 +12,15 @@ import { pipe } from "effect"
 import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
-import type * as Domain from "./Domain.js"
+import * as Domain from "./Domain.js"
 import { DocgenError } from "./Error.js"
 import * as File from "./File.js"
-import { printModule } from "./Markdown.js"
+import { printModule, printPrintableForAI } from "./Markdown.js"
 import * as Parser from "./Parser.js"
 import * as Process from "./Process.js"
 
@@ -436,7 +437,8 @@ const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
     const index = yield* _(getMarkdownIndex)
     const yml = yield* _(getMarkdownConfigYML)
     const moduleFiles = yield* _(getModuleMarkdownFiles(modules))
-    return [homepage, index, yml, ...moduleFiles]
+    const aiFiles = yield* _(maybeGetAIMarkdownFiles(modules))
+    return [homepage, index, yml, ...moduleFiles, ...aiFiles]
   })
 
 const getMarkdownHomepage = Effect.gen(function*(_) {
@@ -538,6 +540,14 @@ const getModuleMarkdownOutputPath = (module: Domain.Module) =>
       ))
   )
 
+const getAIMarkdownOutputPath = (module: Domain.Module, printable: Domain.Printable) =>
+  Effect.map(Effect.all([Configuration.Configuration, Path.Path]), ([config, path]) =>
+    path.join(
+      config.outDir,
+      "ai",
+      `${module.path.slice(1).join("-").replace(/\.ts$/, "")}-${printable.name}.md`
+    ))
+
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.forEach(modules, (module, order) =>
     Effect.gen(function*(_) {
@@ -545,6 +555,34 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
       const content = yield* _(printModule(module, order + 1))
       return File.createFile(outputPath, content, true)
     }))
+
+const getAIMarkdownFiles = (projectName: string, modules: ReadonlyArray<Domain.Module>) =>
+  Effect.gen(function*(_) {
+    const aiModules = pipe(
+      modules,
+      Array.flatMap((module) =>
+        pipe(
+          Domain.printablesFromModule(module),
+          Array.map((printable) => ({ module, printable }))
+        )
+      ),
+      Array.filter(({ printable }) => printable.description._tag === "Some")
+    )
+
+    return yield* _(Effect.forEach(aiModules, ({ module, printable }) =>
+      Effect.gen(function*(_) {
+        const outputPath = yield* _(getAIMarkdownOutputPath(module, printable))
+        const content = yield* _(printPrintableForAI(projectName, module, printable))
+        return File.createFile(outputPath, content, true)
+      })))
+  })
+
+const maybeGetAIMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
+  Effect.flatMap(
+    Configuration.Configuration,
+    (config) =>
+      config.enableAI ? getAIMarkdownFiles(config.projectName, modules) : Effect.succeed([])
+  )
 
 const writeMarkdown = (files: ReadonlyArray<File.File>) =>
   Effect.gen(function*(_) {

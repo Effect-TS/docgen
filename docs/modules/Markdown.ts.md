@@ -14,6 +14,7 @@ Added in v1.0.0
 
 - [printers](#printers)
   - [printModule](#printmodule)
+  - [printPrintableForAI](#printprintableforai)
 
 ---
 
@@ -37,6 +38,20 @@ import { Option } from "effect"
 const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
 const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 console.log(Markdown.printModule(m, 0))
+```
+
+Added in v1.0.0
+
+## printPrintableForAI
+
+**Signature**
+
+```ts
+export declare const printPrintableForAI: (
+  projectName: string,
+  module: Domain.Module,
+  printable: Domain.Printable
+) => Effect.Effect<string, never, never>
 ```
 
 Added in v1.0.0
