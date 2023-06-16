@@ -459,15 +459,11 @@ const getAIMarkdownFiles = (projectName: string, modules: ReadonlyArray<Domain.M
     ReadonlyArray.flatMap((module) =>
       pipe(
         Domain.printablesFromModule(module),
-        ReadonlyArray.map((printable) => [module, printable] as const)
+        ReadonlyArray.map((printable) => ({ module, printable }))
       )
     ),
-    ReadonlyArray.filter(([, printable]) =>
-      printable.description._tag === "Some" &&
-      (printable.examples.length > 0 || printable.description.value.includes("```") ||
-        printable.description.value.length >= 115)
-    ),
-    Effect.forEach(([module, printable]) =>
+    ReadonlyArray.filter(({ printable }) => printable.description._tag === "Some"),
+    Effect.forEach(({ module, printable }) =>
       pipe(
         Effect.Do(),
         Effect.bind("outputPath", () => getAIMarkdownOutputPath(module, printable)),

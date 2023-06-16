@@ -267,6 +267,11 @@ export const printPrintableForAI = (
   printable: Domain.Printable
 ): string => {
   const namespace = module.path.slice(1).join("/").replace(/\.ts$/, "")
+  const signatures = printable._tag === "Function" ?
+    printable.signatures :
+    printable._tag === "Constant" ?
+    [printable.signature] :
+    []
   return prettify(
     [
       h1(printable.name),
@@ -277,6 +282,8 @@ export const printPrintableForAI = (
       printable.examples.map((code) =>
         [h3("Example"), paragraph(fence("typescript", code))].join("\n")
       )
+        .join("\n\n"),
+      signatures.map((code) => [h3("Signature"), paragraph(fence("typescript", code))].join("\n"))
         .join("\n\n")
     ].join("\n")
   )
