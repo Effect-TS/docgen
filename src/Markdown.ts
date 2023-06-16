@@ -61,6 +61,13 @@ const getExamples = (es: ReadonlyArray<string>): string =>
     .map((code) => paragraph(bold("Example")) + paragraph(fence("ts", code)))
     .join("\n\n")
 
+const getLocationDescription = (projectName: string, module: Domain.Module): string => {
+  const namespace = module.path.slice(1).join("/").replace(/\.ts$/, "")
+  return paragraph(
+    `Part of the \`${module.name}\` module, imported from \`${projectName}/${namespace}\`.`
+  )
+}
+
 const getStaticMethod = (m: Domain.Method): string =>
   paragraph(
     h3(getTitle(m.name, m.deprecated, "(static method)")),
@@ -265,29 +272,20 @@ export const printPrintableForAI = (
   projectName: string,
   module: Domain.Module,
   printable: Domain.Printable
-): string => {
-  const namespace = module.path.slice(1).join("/").replace(/\.ts$/, "")
-  const signatures = printable._tag === "Function" ?
-    printable.signatures :
-    printable._tag === "Constant" ?
-    [printable.signature] :
-    []
-  return prettify(
+): string =>
+  prettify(
     [
       h1(printable.name),
       getDescription(printable.description),
-      paragraph(
-        `Part of the \`${module.name}\` module, imported from \`${projectName}/${namespace}\`.`
-      ),
-      printable.examples.map((code) =>
-        [h3("Example"), paragraph(fence("typescript", code))].join("\n")
-      )
-        .join("\n\n"),
-      signatures.map((code) => [h3("Signature"), paragraph(fence("typescript", code))].join("\n"))
-        .join("\n\n")
+      getLocationDescription(projectName, module),
+      getExamples(printable.examples),
+      printable._tag === "Function" ?
+        getSignatures(printable.signatures) :
+        printable._tag === "Constant" ?
+        getSignature(printable.signature) :
+        ""
     ].join("\n")
   )
-}
 
 const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",
