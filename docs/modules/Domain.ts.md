@@ -12,6 +12,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [accessors](#accessors)
+  - [printablesFromModule](#printablesfrommodule)
 - [constructors](#constructors)
   - [createClass](#createclass)
   - [createConstant](#createconstant)
@@ -35,10 +37,23 @@ Added in v1.0.0
   - [Interface (interface)](#interface-interface)
   - [Method (interface)](#method-interface)
   - [Module (interface)](#module-interface)
+  - [Printable (type alias)](#printable-type-alias)
   - [Property (interface)](#property-interface)
   - [TypeAlias (interface)](#typealias-interface)
 
 ---
+
+# accessors
+
+## printablesFromModule
+
+**Signature**
+
+```ts
+export declare const printablesFromModule: (module: Module) => ReadonlyArray<Printable>
+```
+
+Added in v1.0.0
 
 # constructors
 
@@ -299,6 +314,16 @@ export interface Module extends Documentable {
   readonly constants: ReadonlyArray<Constant>
   readonly exports: ReadonlyArray<Export>
 }
+```
+
+Added in v1.0.0
+
+## Printable (type alias)
+
+**Signature**
+
+```ts
+export type Printable = Class | Constant | Export | Function | Interface | TypeAlias
 ```
 
 Added in v1.0.0

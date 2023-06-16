@@ -21,6 +21,7 @@ const defaultConfig: Config.Config = {
   srcDir: "src",
   outDir: "docs",
   theme: "pmarsceill/just-the-docs",
+  enableAI: false,
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,

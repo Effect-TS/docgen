@@ -14,6 +14,7 @@ Added in v1.0.0
 
 - [printers](#printers)
   - [printModule](#printmodule)
+  - [printPrintableForAI](#printprintableforai)
 
 ---
 
@@ -25,6 +26,20 @@ Added in v1.0.0
 
 ```ts
 export declare const printModule: (module: Domain.Module, order: number) => string
+```
+
+Added in v1.0.0
+
+## printPrintableForAI
+
+**Signature**
+
+```ts
+export declare const printPrintableForAI: (
+  projectName: string,
+  module: Domain.Module,
+  printable: Domain.Printable
+) => string
 ```
 
 Added in v1.0.0

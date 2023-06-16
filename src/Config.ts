@@ -28,6 +28,7 @@ export interface Config {
   readonly outDir: string
   readonly theme: string
   readonly enableSearch: boolean
+  readonly enableAI: boolean
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
@@ -62,6 +63,7 @@ const ConfigSchema = Schema.struct({
   srcDir: Schema.string,
   outDir: Schema.string,
   theme: Schema.string,
+  enableAI: Schema.boolean,
   enableSearch: Schema.boolean,
   enforceDescriptions: Schema.boolean,
   enforceExamples: Schema.boolean,
@@ -99,6 +101,7 @@ const getDefaultConfig = (projectName: string, projectHomepage: string): Config 
   srcDir: "src",
   outDir: "docs",
   theme: "pmarsceill/just-the-docs",
+  enableAI: false,
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,

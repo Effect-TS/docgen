@@ -14,10 +14,10 @@ import chalk from "chalk"
 import * as NodePath from "path"
 import * as ChildProcess from "./ChildProcess"
 import * as Config from "./Config"
-import type * as Domain from "./Domain"
+import * as Domain from "./Domain"
 import * as FileSystem from "./FileSystem"
 import { SimpleLogger } from "./Logger"
-import { printModule } from "./Markdown"
+import { printModule, printPrintableForAI } from "./Markdown"
 import * as Parser from "./Parser"
 import * as Process from "./Process"
 
@@ -35,10 +35,8 @@ const readFiles = pipe(
       Effect.tap((paths) => Effect.logInfo(chalk.bold(`${paths.length} module(s) found`))),
       Effect.flatMap(
         Effect.forEachPar((path) =>
-          Effect.map(
-            fileSystem.readFile(path),
-            (content) => FileSystem.makeFile(path, content, false)
-          )
+          Effect.map(fileSystem.readFile(path), (content) =>
+            FileSystem.makeFile(path, content, false))
         )
       )
     )
@@ -320,12 +318,9 @@ const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
     Effect.bind("home", () => getHome),
     Effect.bind("index", () => getModulesIndex),
     Effect.bind("yml", () => getConfigYML),
-    Effect.flatMap(({ home, index, yml }) =>
-      pipe(
-        getModuleMarkdownFiles(modules),
-        Effect.map((files) => [home, index, yml].concat(files))
-      )
-    )
+    Effect.bind("modules", () => getModuleMarkdownFiles(modules)),
+    Effect.bind("ai", () => maybeGetAIMarkdownFiles(modules)),
+    Effect.map(({ ai, home, index, modules, yml }) => [home, index, yml].concat(modules).concat(ai))
   )
 
 const getHome = pipe(
@@ -441,6 +436,14 @@ const getMarkdownOutputPath = (module: Domain.Module) =>
       `${module.path.slice(1).join(NodePath.sep)}.md`
     ))
 
+const getAIMarkdownOutputPath = (module: Domain.Module, printable: Domain.Printable) =>
+  Effect.map(Config.Config, (config) =>
+    join(
+      config.outDir,
+      "ai",
+      `${module.path.slice(1).join("-").replace(/\.ts$/, "")}-${printable.name}.md`
+    ))
+
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.forEachWithIndex(modules, (module, order) =>
     pipe(
@@ -449,6 +452,33 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
       Effect.bind("content", () => Effect.succeed(printModule(module, order + 1))),
       Effect.map(({ content, outputPath }) => FileSystem.makeFile(outputPath, content, true))
     ))
+
+const getAIMarkdownFiles = (projectName: string, modules: ReadonlyArray<Domain.Module>) =>
+  pipe(
+    modules,
+    ReadonlyArray.flatMap((module) =>
+      pipe(
+        Domain.printablesFromModule(module),
+        ReadonlyArray.map((printable) => ({ module, printable }))
+      )
+    ),
+    ReadonlyArray.filter(({ printable }) => printable.description._tag === "Some"),
+    Effect.forEach(({ module, printable }) =>
+      pipe(
+        Effect.Do(),
+        Effect.bind("outputPath", () => getAIMarkdownOutputPath(module, printable)),
+        Effect.let("content", () => printPrintableForAI(projectName, module, printable)),
+        Effect.map(({ content, outputPath }) => FileSystem.makeFile(outputPath, content, true))
+      )
+    )
+  )
+
+const maybeGetAIMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
+  Effect.flatMap(
+    Config.Config,
+    (config) =>
+      config.enableAI ? getAIMarkdownFiles(config.projectName, modules) : Effect.succeed([])
+  )
 
 // -------------------------------------------------------------------------------------
 // writeMarkdown

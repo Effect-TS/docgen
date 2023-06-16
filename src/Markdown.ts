@@ -8,18 +8,10 @@ import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
 import * as String from "@effect/data/String"
 import * as Order from "@effect/data/typeclass/Order"
 import * as Prettier from "prettier"
-import type * as Domain from "./Domain"
+import * as Domain from "./Domain"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const toc = require("markdown-toc")
-
-type Printable =
-  | Domain.Class
-  | Domain.Constant
-  | Domain.Export
-  | Domain.Function
-  | Domain.Interface
-  | Domain.TypeAlias
 
 const bold = (s: string) => `**${s}**`
 
@@ -68,6 +60,13 @@ const getExamples = (es: ReadonlyArray<string>): string =>
   es
     .map((code) => paragraph(bold("Example")) + paragraph(fence("ts", code)))
     .join("\n\n")
+
+const getLocationDescription = (projectName: string, module: Domain.Module): string => {
+  const namespace = module.path.slice(1).join("/").replace(/\.ts$/, "")
+  return paragraph(
+    `Part of the \`${module.name}\` module, imported from \`${projectName}/${namespace}\`.`
+  )
+}
 
 const getStaticMethod = (m: Domain.Method): string =>
   paragraph(
@@ -191,7 +190,7 @@ const fromTypeAlias = (ta: Domain.TypeAlias): string =>
   )
 
 /** @internal */
-export const fromPrintable = (p: Printable): string => {
+export const fromPrintable = (p: Domain.Printable): string => {
   switch (p._tag) {
     case "Class":
       return fromClass(p)
@@ -208,16 +207,6 @@ export const fromPrintable = (p: Printable): string => {
   }
 }
 
-const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
-  ReadonlyArray.getMonoid<Printable>().combineAll([
-    module.classes,
-    module.constants,
-    module.exports,
-    module.functions,
-    module.interfaces,
-    module.typeAliases
-  ])
-
 /**
  * @category printers
  * @since 1.0.0
@@ -230,7 +219,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
   const description = paragraph(getModuleDescription(module))
 
   const content = pipe(
-    getPrintables(module),
+    Domain.printablesFromModule(module),
     ReadonlyArray.groupBy(({ category }) =>
       pipe(
         category,
@@ -249,7 +238,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
           ReadonlyArray.sort(
             Order.contramap(
               String.Order,
-              (printable: Printable) => printable.name
+              (printable: Domain.Printable) => printable.name
             )
           ),
           ReadonlyArray.map(fromPrintable)
@@ -274,6 +263,29 @@ export const printModule = (module: Domain.Module, order: number): string => {
     ].join("\n")
   )
 }
+
+/**
+ * @category printers
+ * @since 1.0.0
+ */
+export const printPrintableForAI = (
+  projectName: string,
+  module: Domain.Module,
+  printable: Domain.Printable
+): string =>
+  prettify(
+    [
+      h1(printable.name),
+      getDescription(printable.description),
+      getLocationDescription(projectName, module),
+      getExamples(printable.examples),
+      printable._tag === "Function" ?
+        getSignatures(printable.signatures) :
+        printable._tag === "Constant" ?
+        getSignature(printable.signature) :
+        ""
+    ].join("\n")
+  )
 
 const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",
