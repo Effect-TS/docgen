@@ -277,7 +277,7 @@ export const printPrintableForAI = (
       h1(printable.name),
       getDescription(printable.description),
       paragraph(
-        `Part of the \`${namespace}\` module from the \`${projectName}\` package.`
+        `Part of the \`${module.name}\` module, imported from \`${projectName}/${namespace}\`.`
       ),
       printable.examples.map((code) =>
         [h3("Example"), paragraph(fence("typescript", code))].join("\n")
