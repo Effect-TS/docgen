@@ -1,5 +1,12 @@
 # @effect/docgen
 
+## 0.1.2
+
+### Patch Changes
+
+- 115b996: fix formatting of the \_config.yml output by docgen
+- 115b996: upgrade dependencies
+
 ## 0.1.1
 
 ### Patch Changes
