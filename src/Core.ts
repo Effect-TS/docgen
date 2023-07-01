@@ -340,7 +340,8 @@ const getHome = pipe(
             `|---
              |title: Home
              |nav_order: 1
-             |---`
+             |---
+             |`
           ),
           false
         )
@@ -363,7 +364,8 @@ const getModulesIndex = pipe(
              |has_children: true
              |permalink: /docs/modules
              |nav_order: 2
-             |---`
+             |---
+             |`
           ),
           false
         )
