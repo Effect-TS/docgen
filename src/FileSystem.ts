@@ -188,13 +188,14 @@ export const FileSystemLive = Layer.effect(
         })
       )
     const removeFile = (path: string): Effect.Effect<never, RemoveFileError, void> =>
-        Effect.tryCatchPromise(
-          () => Rimraf.rimraf(path),
-          (error) => RemoveFileError({
+      Effect.tryCatchPromise(
+        () => Rimraf.rimraf(path),
+        (error) =>
+          RemoveFileError({
             error: error instanceof Error ? error : new Error(String(error)),
             path
           })
-        )
+      )
 
     const pathExists = (path: string): Effect.Effect<never, ReadFileError, boolean> =>
       Effect.async((resume) =>
@@ -212,11 +213,12 @@ export const FileSystemLive = Layer.effect(
     ): Effect.Effect<never, GlobError, Array<string>> =>
       Effect.tryCatchPromise(
         () => Glob.glob(pattern, { ignore: exclude, withFileTypes: false }),
-        (error) => GlobError({
-          error: error instanceof Error ? error : new Error(String(error)),
-          exclude,
-          pattern
-        })
+        (error) =>
+          GlobError({
+            error: error instanceof Error ? error : new Error(String(error)),
+            exclude,
+            pattern
+          })
       )
     return FileSystem.of({
       readFile,

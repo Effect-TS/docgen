@@ -1,14 +1,14 @@
 import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
-import * as String from "@effect/data/String"
 import * as Option from "@effect/data/Option"
+import * as String from "@effect/data/String"
 import * as Effect from "@effect/io/Effect"
 import * as assert from "assert"
+import chalk from "chalk"
 import * as ast from "ts-morph"
 import * as Config from "../src/Config"
 import * as FileSystem from "../src/FileSystem"
 import * as Parser from "../src/Parser"
-import chalk from "chalk"
 
 let testCounter = 0
 
