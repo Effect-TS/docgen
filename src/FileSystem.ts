@@ -6,8 +6,8 @@ import * as Data from "@effect/data/Data"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as NodeFS from "fs-extra"
-import Glob from "glob"
-import Rimraf from "rimraf"
+import * as Glob from "glob"
+import * as Rimraf from "rimraf"
 
 /**
  * Represents a file system which can be read from and written to.
@@ -188,15 +188,15 @@ export const FileSystemLive = Layer.effect(
         })
       )
     const removeFile = (path: string): Effect.Effect<never, RemoveFileError, void> =>
-      Effect.async((resume) =>
-        Rimraf(path, {}, (error) => {
-          if (error) {
-            resume(Effect.fail(RemoveFileError({ error, path })))
-          } else {
-            resume(Effect.unit())
-          }
-        })
+      Effect.tryCatchPromise(
+        () => Rimraf.rimraf(path),
+        (error) =>
+          RemoveFileError({
+            error: error instanceof Error ? error : new Error(String(error)),
+            path
+          })
       )
+
     const pathExists = (path: string): Effect.Effect<never, ReadFileError, boolean> =>
       Effect.async((resume) =>
         NodeFS.pathExists(path, (error, data) => {
@@ -209,16 +209,16 @@ export const FileSystemLive = Layer.effect(
       )
     const glob = (
       pattern: string,
-      exclude: ReadonlyArray<string> = []
+      exclude: Array<string> = []
     ): Effect.Effect<never, GlobError, Array<string>> =>
-      Effect.async((resume) =>
-        Glob(pattern, { ignore: exclude }, (error, data) => {
-          if (error) {
-            resume(Effect.fail(GlobError({ error, exclude, pattern })))
-          } else {
-            resume(Effect.succeed(data))
-          }
-        })
+      Effect.tryCatchPromise(
+        () => Glob.glob(pattern, { ignore: exclude, withFileTypes: false }),
+        (error) =>
+          GlobError({
+            error: error instanceof Error ? error : new Error(String(error)),
+            exclude,
+            pattern
+          })
       )
     return FileSystem.of({
       readFile,

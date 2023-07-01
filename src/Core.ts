@@ -336,11 +336,13 @@ const getHome = pipe(
       Effect.map((cwd) =>
         FileSystem.makeFile(
           join(cwd, config.outDir, "index.md"),
-          `---
-  title: Home
-  nav_order: 1
-  ---
-  `,
+          String.stripMargin(
+            `|---
+             |title: Home
+             |nav_order: 1
+             |---
+             |`
+          ),
           false
         )
       )
@@ -356,12 +358,15 @@ const getModulesIndex = pipe(
       Effect.map((cwd) =>
         FileSystem.makeFile(
           join(cwd, config.outDir, "modules", "index.md"),
-          `---
-  title: Modules
-  has_children: true
-  permalink: /docs/modules
-  nav_order: 2
-  ---`,
+          String.stripMargin(
+            `|---
+             |title: Modules
+             |has_children: true
+             |permalink: /docs/modules
+             |nav_order: 2
+             |---
+             |`
+          ),
           false
         )
       )
@@ -415,15 +420,17 @@ const getConfigYML = pipe(
             : Effect.succeed(
               FileSystem.makeFile(
                 filePath,
-                `remote_theme: ${config.theme}
-
-    # Enable or disable the site search
-    search_enabled: ${config.enableSearch}
-
-    # Aux links for the upper right navigation
-    aux_links:
-    '${getHomepageNavigationHeader(config)}':
-      - '${config.projectHomepage}'`,
+                String.stripMargin(
+                  `|remote_theme: ${config.theme}
+                   |
+                   |# Enable or disable the site search
+                   |search_enabled: ${config.enableSearch}
+                   |
+                   |# Aux links for the upper right navigation
+                   |aux_links:
+                   |'${getHomepageNavigationHeader(config)}':
+                   |  - '${config.projectHomepage}'`
+                ),
                 false
               )
             )

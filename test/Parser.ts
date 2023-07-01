@@ -1,8 +1,10 @@
 import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
+import * as String from "@effect/data/String"
 import * as Effect from "@effect/io/Effect"
 import * as assert from "assert"
+import chalk from "chalk"
 import * as ast from "ts-morph"
 import * as Config from "../src/Config"
 import * as FileSystem from "../src/FileSystem"
@@ -507,7 +509,7 @@ describe.concurrent("Parser", () => {
 
       it("should raise an error if an `@since` tag is missing in a module", () => {
         expectLeft(`export class MyClass {}`, Parser.parseClasses, [
-          "Missing @since tag in test#MyClass documentation"
+          `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass")} documentation`
         ])
       })
 
@@ -528,7 +530,7 @@ describe.concurrent("Parser", () => {
               readonly _A!: A
             }`,
           Parser.parseClasses,
-          ["Missing @since tag in test#MyClass#_A documentation"]
+          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass#_A")} documentation`]
         )
       })
 
@@ -1091,11 +1093,13 @@ export const foo = 'foo'`,
   describe.concurrent("utils", () => {
     describe.concurrent("getCommentInfo", () => {
       it("should parse comment information", () => {
-        const text = `/**
-* description
-* @category instances
-* @since 1.0.0
-*/`
+        const text = String.stripMargin(
+          `|/**
+           | * description
+           | * @category instances
+           | * @since 1.0.0
+           | */`
+        )
         expectRight("", Parser.getCommentInfo("name")(text), {
           description: Option.some("description"),
           since: Option.some("1.0.0"),
@@ -1106,28 +1110,30 @@ export const foo = 'foo'`,
       })
 
       it("should fail if an empty comment tag is provided", () => {
-        const text = `/**
-* @category
-* @since 1.0.0
-*/`
-
+        const text = String.stripMargin(
+          `|/**
+           | * @category
+           | * @since 1.0.0
+           | */`
+        )
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
-          "Missing @category tag in test#name documentation"
+          `Missing ${chalk.bold("@category")} tag in ${chalk.bold("test#name")} documentation`
         )
       })
 
       it("should require a description if `enforceDescriptions` is set to true", () => {
-        const text = `/**
-* @category instances
-* @since 1.0.0
-*/`
-
+        const text = String.stripMargin(
+          `|/**
+           | * @category instances
+           | * @since 1.0.0
+           | */`
+        )
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
-          "Missing description in test#name documentation",
+          `Missing ${chalk.bold("description")} in ${chalk.bold("test#name")} documentation`,
           {
             enforceDescriptions: true
           }
@@ -1135,16 +1141,17 @@ export const foo = 'foo'`,
       })
 
       it("should require at least one example if `enforceExamples` is set to true", () => {
-        const text = `/**
-* description
-* @category instances
-* @since 1.0.0
-*/`
-
+        const text = String.stripMargin(
+          `|/**
+           | * description
+           | * @category instances
+           | * @since 1.0.0
+           | */`
+        )
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
-          "Missing @example tag in test#name documentation",
+          `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
           {
             enforceExamples: true
           }
@@ -1152,17 +1159,18 @@ export const foo = 'foo'`,
       })
 
       it("should require at least one non-empty example if `enforceExamples` is set to true", () => {
-        const text = `/**
-* description
-* @example
-* @category instances
-* @since 1.0.0
-*/`
-
+        const text = String.stripMargin(
+          `|/**
+           | * description
+           | * @example
+           | * @category instances
+           | * @since 1.0.0
+           | */`
+        )
         expectLeft(
           "",
           Parser.getCommentInfo("name")(text),
-          "Missing @example tag in test#name documentation",
+          `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
           {
             enforceExamples: true
           }

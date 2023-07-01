@@ -8,7 +8,7 @@
 
 import * as Effect from "@effect/io/Effect"
 import chalk from "chalk"
-import { main } from "."
+import { main } from "./index"
 
 Effect.runPromise(main).catch((defect) => {
   console.error(chalk.bold.red("Unexpected Error"))
