@@ -34,11 +34,10 @@
   },
   "homepage": "https://github.com/effect-ts/docgen",
   "dependencies": {
-    "@effect/data": "^0.17.1",
-    "@effect/io": "^0.38.0",
     "@effect/schema": "^0.33.0",
     "chalk": "^5.3.0",
     "doctrine": "^3.0.0",
+    "effect": "2.0.0-next.24",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.3",
     "markdown-toc": "^1.2.0",

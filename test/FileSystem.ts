@@ -1,17 +1,14 @@
-import { pipe } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
 import * as assert from "assert"
+import { Effect, Exit } from "effect"
 import * as FileSystem from "../src/FileSystem"
 
 describe.concurrent("FileSystem", () => {
   describe.concurrent("readFile", () => {
     it("should error out on non existing files", async () => {
-      const program = pipe(
-        Effect.flatMap(
-          FileSystem.FileSystem,
-          (fileSystem) => fileSystem.readFile("non-existent.txt")
-        ),
+      const program = Effect.flatMap(
+        FileSystem.FileSystem,
+        (fileSystem) => fileSystem.readFile("non-existent.txt")
+      ).pipe(
         Effect.mapError(({ error }) => error.message),
         Effect.provideLayer(FileSystem.FileSystemLive)
       )

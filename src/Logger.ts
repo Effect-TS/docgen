@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Logger from "@effect/io/Logger"
 import chalk from "chalk"
+import { Logger } from "effect"
 
 /**
  * @category logging

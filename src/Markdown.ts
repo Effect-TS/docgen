@@ -1,12 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as Order from "@effect/data/Order"
-import * as ReadonlyArray from "@effect/data/ReadonlyArray"
-import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
-import * as String from "@effect/data/String"
+import { Option, Order, pipe, ReadonlyArray, ReadonlyRecord, String } from "effect"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain"
 
@@ -47,8 +42,7 @@ const getSince: (v: Option.Option<string>) => string = Option.match({
 const getTitle = (s: string, deprecated: boolean, type?: string): string => {
   const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
   const title = deprecated ? strikethrough(name) : name
-  return pipe(
-    Option.fromNullable(type),
+  return Option.fromNullable(type).pipe(
     Option.match({
       onNone: () => title,
       onSome: (t) => title + ` ${t}`
@@ -231,12 +225,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
 
   const content = pipe(
     getPrintables(module),
-    ReadonlyArray.groupBy(({ category }) =>
-      pipe(
-        category,
-        Option.getOrElse(() => DEFAULT_CATEGORY)
-      )
-    ),
+    ReadonlyArray.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
     ReadonlyRecord.toEntries,
     ReadonlyArray.sort(
       Order.mapInput(String.Order, ([category]: [string, unknown]) => category)

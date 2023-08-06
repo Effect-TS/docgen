@@ -1,10 +1,8 @@
 /**
  * @since 1.0.0
  */
-
-import type * as Option from "@effect/data/Option"
-import * as order from "@effect/data/Order"
-import * as String from "@effect/data/String"
+import { Order as order, String } from "effect"
+import type { Option } from "effect"
 
 /**
  * @category model

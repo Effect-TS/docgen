@@ -1,10 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Context from "@effect/data/Context"
-import * as Data from "@effect/data/Data"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import { Context, Data, Effect, Layer } from "effect"
 import * as NodeFS from "fs-extra"
 import * as Glob from "glob"
 import * as Rimraf from "rimraf"

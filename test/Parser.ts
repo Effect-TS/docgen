@@ -1,10 +1,6 @@
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as String from "@effect/data/String"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
 import * as assert from "assert"
 import chalk from "chalk"
+import { Effect, Exit, Option, String } from "effect"
 import * as ast from "ts-morph"
 import * as Config from "../src/Config"
 import * as FileSystem from "../src/FileSystem"
@@ -44,8 +40,7 @@ const expectFailure = <E, A>(
   config?: Partial<Config.Config>
 ) => {
   expect(
-    pipe(
-      eff,
+    eff.pipe(
       Effect.provideService(Parser.Source, getParser(sourceText)),
       Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
       Effect.runSyncExit,
@@ -61,12 +56,12 @@ const expectSuccess = <E, A>(
   config?: Partial<Config.Config>
 ) => {
   expect(
-    pipe(
-      eff,
-      Effect.provideService(Parser.Source, getParser(sourceText)),
-      Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
-      Effect.runSyncExit
-    )
+    eff
+      .pipe(
+        Effect.provideService(Parser.Source, getParser(sourceText)),
+        Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
+        Effect.runSyncExit
+      )
   ).toEqual(Exit.succeed(a))
 }
 
@@ -988,8 +983,7 @@ describe.concurrent("Parser", () => {
             b
           }`
         )
-        const actual = pipe(
-          Parser.parseExports,
+        const actual = Parser.parseExports.pipe(
           Effect.provideService(Parser.Source, {
             path: ["test"],
             sourceFile
@@ -1080,8 +1074,7 @@ export const foo = 'foo'`,
         const project = new ast.Project({ useInMemoryFileSystem: true })
 
         assert.deepStrictEqual(
-          pipe(
-            Parser.parseFile(project)(file),
+          Parser.parseFile(project)(file).pipe(
             Effect.provideService(Config.Config, defaultConfig),
             Effect.runSyncExit,
             Exit.unannotate

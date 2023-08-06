@@ -1,9 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Context from "@effect/data/Context"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+
+import { Context, Effect, Layer } from "effect"
 
 /**
  * Represents a handle to the currently executing process.

@@ -1,18 +1,20 @@
 /**
  * @since 1.0.0
  */
-import * as Context from "@effect/data/Context"
-import { flow, pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as Order from "@effect/data/Order"
-import type { Predicate } from "@effect/data/Predicate"
-import { not } from "@effect/data/Predicate"
-import * as ReadonlyArray from "@effect/data/ReadonlyArray"
-import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
-import * as String from "@effect/data/String"
-import * as Effect from "@effect/io/Effect"
 import chalk from "chalk"
 import * as doctrine from "doctrine"
+import {
+  Context,
+  Effect,
+  Option,
+  Order,
+  pipe,
+  Predicate,
+  ReadonlyArray,
+  ReadonlyRecord,
+  String
+} from "effect"
+import { flow } from "effect/Function"
 import * as NodePath from "node:path"
 import * as ast from "ts-morph"
 import * as Config from "./Config"
@@ -57,10 +59,10 @@ const createCommentInfo = (
   category
 })
 
-const every = <A>(predicates: ReadonlyArray<Predicate<A>>) => (a: A): boolean =>
+const every = <A>(predicates: ReadonlyArray<Predicate.Predicate<A>>) => (a: A): boolean =>
   predicates.every((p) => p(a))
 
-const some = <A>(predicates: ReadonlyArray<Predicate<A>>) => (a: A): boolean =>
+const some = <A>(predicates: ReadonlyArray<Predicate.Predicate<A>>) => (a: A): boolean =>
   predicates.some((p) => p(a))
 
 const byName = pipe(
@@ -89,7 +91,7 @@ const hasInternalTag = hasTag("internal")
 
 const hasIgnoreTag = hasTag("ignore")
 
-const shouldIgnore: Predicate<Comment> = some([hasInternalTag, hasIgnoreTag])
+const shouldIgnore: Predicate.Predicate<Comment> = some([hasInternalTag, hasIgnoreTag])
 
 const isVariableDeclarationList = (
   u: ast.VariableDeclarationList | ast.CatchClause
@@ -287,7 +289,7 @@ export const parseInterfaces = pipe(
           (id) =>
             pipe(
               id.getJsDocs(),
-              not(flow(getJSDocText, parseComment, shouldIgnore))
+              Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
             )
         ])
       )
@@ -410,7 +412,7 @@ const getFunctionDeclarations = pipe(
       ReadonlyArray.filter(
         every<ast.FunctionDeclaration>([
           (fd) => fd.isExported(),
-          not(
+          Predicate.not(
             flow(
               getFunctionDeclarationJSDocs,
               getJSDocText,
@@ -443,7 +445,7 @@ const getFunctionDeclarations = pipe(
                     (
                       vd.getParent().getParent() as ast.VariableStatement
                     ).getJsDocs(),
-                    not(flow(getJSDocText, parseComment, shouldIgnore))
+                    Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
                   ),
                 () =>
                   (
@@ -521,7 +523,7 @@ export const parseTypeAliases = pipe(
           (alias) =>
             pipe(
               alias.getJsDocs(),
-              not(flow(getJSDocText, parseComment, shouldIgnore))
+              Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
             )
         ])
       )
@@ -580,7 +582,7 @@ export const parseConstants = pipe(
                   Option.fromNullable,
                   Option.flatMap(
                     Option.liftPredicate(
-                      not(ast.Node.isFunctionLikeDeclaration)
+                      Predicate.not(ast.Node.isFunctionLikeDeclaration)
                     )
                   ),
                   Option.isSome
@@ -590,7 +592,7 @@ export const parseConstants = pipe(
                     (
                       vd.getParent().getParent() as ast.VariableStatement
                     ).getJsDocs(),
-                    not(flow(getJSDocText, parseComment, shouldIgnore))
+                    Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
                   ),
                 () =>
                   (
@@ -784,7 +786,7 @@ const parseProperties = (name: string, c: ast.ClassDeclaration) =>
         (prop) =>
           pipe(
             prop.getJsDocs(),
-            not(flow(getJSDocText, parseComment, shouldIgnore))
+            Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
           )
       ])
     ),
@@ -888,7 +890,7 @@ export const parseClasses = pipe(
         (id) =>
           pipe(
             id.getJsDocs(),
-            not(flow(getJSDocText, parseComment, shouldIgnore))
+            Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
           )
       ]))
     )),

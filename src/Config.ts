@@ -1,15 +1,10 @@
 /**
  * @since 1.0.0
  */
-import * as Context from "@effect/data/Context"
-import * as Data from "@effect/data/Data"
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import chalk from "chalk"
+import { Context, Data, Effect, Layer, Option } from "effect"
 import * as NodePath from "node:path"
 import * as FileSystem from "./FileSystem"
 import * as Process from "./Process"
@@ -83,11 +78,9 @@ const parseJsonFile = <I, A>(
   path: string,
   fileSystem: FileSystem.FileSystem
 ): Effect.Effect<never, ConfigError | FileSystem.ReadFileError | FileSystem.ParseJsonError, A> =>
-  pipe(
-    fileSystem.readJsonFile(path),
+  fileSystem.readJsonFile(path).pipe(
     Effect.flatMap((content) =>
-      pipe(
-        Schema.parseEither(schema)(content),
+      Schema.parse(schema)(content).pipe(
         Effect.mapError((e) => ConfigError({ message: TreeFormatter.formatErrors(e.errors) }))
       )
     )
@@ -117,14 +110,15 @@ const loadConfig = (
   Option.Option<Schema.To<typeof PartialConfigSchema>>
 > =>
   Effect.if(fileSystem.pathExists(path), {
-    onTrue: pipe(
-      Effect.logInfo(chalk.bold("Configuration file found")),
+    onTrue: Effect.logInfo(chalk.bold("Configuration file found")).pipe(
       Effect.zipRight(parseJsonFile(PartialConfigSchema, path, fileSystem)),
-      Effect.map(Option.some)
+      Effect.asSome
     ),
-    onFalse: pipe(
-      Effect.logInfo(chalk.bold("No configuration file detected, using default configuration")),
-      Effect.as(Option.none())
+    onFalse: Effect.as(
+      Effect.logInfo(
+        chalk.bold("No configuration file detected, using default configuration")
+      ),
+      Option.none()
     )
   })
 
