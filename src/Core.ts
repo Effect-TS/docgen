@@ -28,18 +28,17 @@ import * as Process from "./Process"
 const join = (...paths: Array<string>): string => NodePath.normalize(NodePath.join(...paths))
 
 const readFiles = pipe(
-  Effect.all(Config.Config, FileSystem.FileSystem),
+  Effect.all([Config.Config, FileSystem.FileSystem]),
   Effect.flatMap(([config, fileSystem]) =>
     pipe(
       fileSystem.glob(join(config.srcDir, "**", "*.ts"), config.exclude),
       Effect.tap((paths) => Effect.logInfo(chalk.bold(`${paths.length} module(s) found`))),
       Effect.flatMap(
-        Effect.forEachPar((path) =>
+        Effect.forEach((path) =>
           Effect.map(
             fileSystem.readFile(path),
             (content) => FileSystem.makeFile(path, content, false)
-          )
-        )
+          ), { concurrency: "inherit" })
       )
     )
   )
@@ -53,7 +52,7 @@ const writeFile = (
   void
 > =>
   pipe(
-    Effect.all(Config.Config, FileSystem.FileSystem, Process.Process),
+    Effect.all([Config.Config, FileSystem.FileSystem, Process.Process]),
     Effect.flatMap(([config, fileSystem, process]) =>
       pipe(
         process.cwd,
@@ -70,11 +69,10 @@ const writeFile = (
 
           const write = fileSystem.writeFile(file.path, file.content)
 
-          return Effect.ifEffect(
-            fileSystem.pathExists(file.path),
-            file.overwrite ? overwrite : skip,
-            write
-          )
+          return Effect.if(fileSystem.pathExists(file.path), {
+            onTrue: file.overwrite ? overwrite : skip,
+            onFalse: write
+          })
         })
       )
     )
@@ -133,8 +131,6 @@ const typeCheckExamples = (modules: ReadonlyArray<Domain.Module>) =>
     )
   )
 
-const combineAllFiles = ReadonlyArray.getMonoid<FileSystem.File>().combineAll
-
 const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.map(Config.Config, (config) =>
     pipe(
@@ -143,29 +139,29 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         const prefix = module.path.join("-")
 
         const getDocumentableExamples = (id: string) =>
-          (
-            documentable: Domain.Documentable
-          ): ReadonlyArray<FileSystem.File> =>
-            pipe(
-              documentable.examples,
-              ReadonlyArray.map((content, i) =>
-                FileSystem.makeFile(
-                  join(
-                    config.outDir,
-                    "examples",
-                    `${prefix}-${id}-${documentable.name}-${i}.ts`
-                  ),
-                  `${content}\n`,
-                  true
-                )
+        (
+          documentable: Domain.Documentable
+        ): ReadonlyArray<FileSystem.File> =>
+          pipe(
+            documentable.examples,
+            ReadonlyArray.map((content, i) =>
+              FileSystem.makeFile(
+                join(
+                  config.outDir,
+                  "examples",
+                  `${prefix}-${id}-${documentable.name}-${i}.ts`
+                ),
+                `${content}\n`,
+                true
               )
             )
+          )
 
         const moduleExamples = getDocumentableExamples("module")(module)
         const methods = pipe(
           module.classes,
           ReadonlyArray.flatMap((c) =>
-            combineAllFiles([
+            ReadonlyArray.flatten([
               pipe(
                 c.methods,
                 ReadonlyArray.flatMap(
@@ -198,7 +194,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
           ReadonlyArray.flatMap(getDocumentableExamples("function"))
         )
 
-        return combineAllFiles([
+        return ReadonlyArray.flatten([
           moduleExamples,
           methods,
           interfaces,
@@ -241,9 +237,10 @@ const handleImports = (files: ReadonlyArray<FileSystem.File>) =>
 const getExampleIndex = (examples: ReadonlyArray<FileSystem.File>) => {
   const content = pipe(
     examples,
-    ReadonlyArray.combineMap(String.Monoid)(
-      (example) => `import './${NodePath.basename(example.path, ".ts")}'\n`
-    )
+    ReadonlyArray.map(
+      (example) => `import './${NodePath.basename(example.path, ".ts")}'`
+    ),
+    ReadonlyArray.join("\n")
   )
   return Effect.map(Config.Config, (config) =>
     FileSystem.makeFile(
@@ -254,13 +251,13 @@ const getExampleIndex = (examples: ReadonlyArray<FileSystem.File>) => {
 }
 
 const cleanExamples = Effect.flatMap(
-  Effect.all(Config.Config, FileSystem.FileSystem),
+  Effect.all([Config.Config, FileSystem.FileSystem]),
   ([config, fileSystem]) => fileSystem.removeFile(join(config.outDir, "examples"))
 )
 
 const spawnTsNode = pipe(
   Effect.logDebug("Type checking examples..."),
-  Effect.flatMap(() => Effect.all(ChildProcess.ChildProcess, Config.Config, Process.Process)),
+  Effect.flatMap(() => Effect.all([ChildProcess.ChildProcess, Config.Config, Process.Process])),
   Effect.flatMap(([childProcess, config, process]) =>
     pipe(
       Effect.all([process.cwd, process.platform]),
@@ -275,7 +272,7 @@ const spawnTsNode = pipe(
 
 const writeFiles = (
   files: ReadonlyArray<FileSystem.File>
-) => Effect.forEachDiscard(files, writeFile)
+) => Effect.forEach(files, writeFile, { discard: true })
 
 const writeExamples = (examples: ReadonlyArray<FileSystem.File>) =>
   pipe(
@@ -287,7 +284,7 @@ const writeExamples = (examples: ReadonlyArray<FileSystem.File>) =>
 
 const writeTsConfigJson = pipe(
   Effect.logDebug("Writing examples tsconfig..."),
-  Effect.flatMap(() => Effect.all(Config.Config, Process.Process)),
+  Effect.flatMap(() => Effect.all([Config.Config, Process.Process])),
   Effect.flatMap(([config, process]) =>
     pipe(
       process.cwd,
@@ -316,7 +313,7 @@ const writeTsConfigJson = pipe(
 
 const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
   pipe(
-    Effect.Do(),
+    Effect.Do,
     Effect.bind("home", () => getHome),
     Effect.bind("index", () => getModulesIndex),
     Effect.bind("yml", () => getConfigYML),
@@ -329,7 +326,7 @@ const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
   )
 
 const getHome = pipe(
-  Effect.all(Config.Config, Process.Process),
+  Effect.all([Config.Config, Process.Process]),
   Effect.flatMap(([config, process]) =>
     pipe(
       process.cwd,
@@ -351,7 +348,7 @@ const getHome = pipe(
 )
 
 const getModulesIndex = pipe(
-  Effect.all(Config.Config, Process.Process),
+  Effect.all([Config.Config, Process.Process]),
   Effect.flatMap(([config, process]) =>
     pipe(
       process.cwd,
@@ -377,7 +374,8 @@ const getModulesIndex = pipe(
 const replace = (
   searchValue: string | RegExp,
   replaceValue: string
-): ((s: string) => string) => (s) => s.replace(searchValue, replaceValue)
+): (s: string) => string =>
+(s) => s.replace(searchValue, replaceValue)
 
 const resolveConfigYML = (
   previousContent: string,
@@ -399,7 +397,7 @@ const getHomepageNavigationHeader = (config: Config.Config): string => {
 }
 
 const getConfigYML = pipe(
-  Effect.all(Config.Config, FileSystem.FileSystem, Process.Process),
+  Effect.all([Config.Config, FileSystem.FileSystem, Process.Process]),
   Effect.flatMap(([config, fileSystem, process]) =>
     Effect.flatMap(process.cwd, (cwd) => {
       const filePath = join(cwd, config.outDir, "_config.yml")
@@ -449,9 +447,9 @@ const getMarkdownOutputPath = (module: Domain.Module) =>
     ))
 
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
-  Effect.forEachWithIndex(modules, (module, order) =>
+  Effect.forEach(modules, (module, order) =>
     pipe(
-      Effect.Do(),
+      Effect.Do,
       Effect.bind("outputPath", () => getMarkdownOutputPath(module)),
       Effect.bind("content", () => Effect.succeed(printModule(module, order + 1))),
       Effect.map(({ content, outputPath }) => FileSystem.makeFile(outputPath, content, true))

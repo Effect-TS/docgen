@@ -11,5 +11,5 @@ import * as Core from "./Core"
  */
 export const main = pipe(
   Core.main,
-  Effect.tapErrorCause(Effect.logErrorCause)
+  Effect.tapErrorCause(Effect.logError)
 )

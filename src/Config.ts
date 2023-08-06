@@ -116,18 +116,17 @@ const loadConfig = (
   ConfigError | FileSystem.ReadFileError | FileSystem.ParseJsonError,
   Option.Option<Schema.To<typeof PartialConfigSchema>>
 > =>
-  Effect.ifEffect(
-    fileSystem.pathExists(path),
-    pipe(
+  Effect.if(fileSystem.pathExists(path), {
+    onTrue: pipe(
       Effect.logInfo(chalk.bold("Configuration file found")),
       Effect.zipRight(parseJsonFile(PartialConfigSchema, path, fileSystem)),
       Effect.map(Option.some)
     ),
-    pipe(
+    onFalse: pipe(
       Effect.logInfo(chalk.bold("No configuration file detected, using default configuration")),
       Effect.as(Option.none())
     )
-  )
+  })
 
 /**
  * @category service
@@ -151,11 +150,10 @@ export const ConfigLive = Layer.effect(
     const maybeConfig = yield* $(loadConfig(configPath, fileSystem))
 
     return Config.of(
-      Option.match(
-        maybeConfig,
-        () => defaultConfig,
-        (loadedConfig) => ({ ...defaultConfig, ...loadedConfig })
-      )
+      Option.match(maybeConfig, {
+        onNone: () => defaultConfig,
+        onSome: (loadedConfig) => ({ ...defaultConfig, ...loadedConfig })
+      })
     )
   })
 )

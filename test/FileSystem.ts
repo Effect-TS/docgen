@@ -1,6 +1,6 @@
-import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
+import * as Exit from "@effect/io/Exit"
 import * as assert from "assert"
 import * as FileSystem from "../src/FileSystem"
 
@@ -16,8 +16,8 @@ describe.concurrent("FileSystem", () => {
         Effect.provideLayer(FileSystem.FileSystemLive)
       )
       assert.deepStrictEqual(
-        await Effect.runPromiseEither(program),
-        Either.left("ENOENT: no such file or directory, open 'non-existent.txt'")
+        Exit.unannotate(await Effect.runPromiseExit(program)),
+        Exit.fail("ENOENT: no such file or directory, open 'non-existent.txt'")
       )
     })
   })

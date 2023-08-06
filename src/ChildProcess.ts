@@ -82,19 +82,22 @@ export const ChildProcessLive = Layer.succeed(
   ChildProcess.of({
     spawn: (command, executable) =>
       pipe(
-        Effect.tryCatch(() =>
-          NodeChildProcess.spawnSync(command, [executable], {
-            stdio: "pipe",
-            encoding: "utf8"
-          }), (error) =>
-          SpawnError({
-            command,
-            args: [executable],
-            error: error instanceof Error ? error : new Error(String(error))
-          })),
+        Effect.try({
+          try: () =>
+            NodeChildProcess.spawnSync(command, [executable], {
+              stdio: "pipe",
+              encoding: "utf8"
+            }),
+          catch: (error) =>
+            SpawnError({
+              command,
+              args: [executable],
+              error: error instanceof Error ? error : new Error(String(error))
+            })
+        }),
         Effect.flatMap(({ status, stderr }) =>
           status === 0
-            ? Effect.unit()
+            ? Effect.unit
             : Effect.fail(ExecutionError({ command, stderr }))
         )
       )

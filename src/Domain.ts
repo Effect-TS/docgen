@@ -3,8 +3,8 @@
  */
 
 import type * as Option from "@effect/data/Option"
+import * as order from "@effect/data/Order"
 import * as String from "@effect/data/String"
-import * as order from "@effect/data/typeclass/Order"
 
 /**
  * @category model
@@ -272,7 +272,7 @@ export const createExport = (
  * @category instances
  * @since 1.0.0
  */
-export const Order: order.Order<Module> = order.contramap(
+export const Order: order.Order<Module> = order.mapInput(
   String.Order,
   (module: Module) => module.path.join("/").toLowerCase()
 )

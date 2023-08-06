@@ -169,33 +169,33 @@ export const FileSystemLive = Layer.effect(
       path: string
     ): Effect.Effect<never, ReadFileError | ParseJsonError, unknown> =>
       Effect.flatMap(readFile(path), (content) =>
-        Effect.tryCatch(
-          () => JSON.parse(content),
-          (error) =>
+        Effect.try({
+          try: () => JSON.parse(content),
+          catch: (error) =>
             ParseJsonError({
               content,
               error: error instanceof Error ? error : new Error(String(error))
             })
-        ))
+        }))
     const writeFile = (path: string, content: string): Effect.Effect<never, WriteFileError, void> =>
       Effect.async((resume) =>
         NodeFS.outputFile(path, content, "utf8", (error) => {
           if (error) {
             resume(Effect.fail(WriteFileError({ path, error })))
           } else {
-            resume(Effect.unit())
+            resume(Effect.unit)
           }
         })
       )
     const removeFile = (path: string): Effect.Effect<never, RemoveFileError, void> =>
-      Effect.tryCatchPromise(
-        () => Rimraf.rimraf(path),
-        (error) =>
+      Effect.tryPromise({
+        try: () => Rimraf.rimraf(path),
+        catch: (error) =>
           RemoveFileError({
             error: error instanceof Error ? error : new Error(String(error)),
             path
           })
-      )
+      })
 
     const pathExists = (path: string): Effect.Effect<never, ReadFileError, boolean> =>
       Effect.async((resume) =>
@@ -211,15 +211,15 @@ export const FileSystemLive = Layer.effect(
       pattern: string,
       exclude: Array<string> = []
     ): Effect.Effect<never, GlobError, Array<string>> =>
-      Effect.tryCatchPromise(
-        () => Glob.glob(pattern, { ignore: exclude, withFileTypes: false }),
-        (error) =>
+      Effect.tryPromise({
+        try: () => Glob.glob(pattern, { ignore: exclude, withFileTypes: false }),
+        catch: (error) =>
           GlobError({
             error: error instanceof Error ? error : new Error(String(error)),
             exclude,
             pattern
           })
-      )
+      })
     return FileSystem.of({
       readFile,
       readJsonFile,
