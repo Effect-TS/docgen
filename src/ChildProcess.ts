@@ -1,11 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Context from "@effect/data/Context"
-import * as Data from "@effect/data/Data"
-import { pipe } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import { Context, Data, Effect, Layer } from "effect"
 import * as NodeChildProcess from "node:child_process"
 
 /**
@@ -81,20 +77,22 @@ export const ChildProcessLive = Layer.succeed(
   ChildProcess,
   ChildProcess.of({
     spawn: (command, executable) =>
-      pipe(
-        Effect.tryCatch(() =>
+      Effect.try({
+        try: () =>
           NodeChildProcess.spawnSync(command, [executable], {
             stdio: "pipe",
             encoding: "utf8"
-          }), (error) =>
+          }),
+        catch: (error) =>
           SpawnError({
             command,
             args: [executable],
             error: error instanceof Error ? error : new Error(String(error))
-          })),
+          })
+      }).pipe(
         Effect.flatMap(({ status, stderr }) =>
           status === 0
-            ? Effect.unit()
+            ? Effect.unit
             : Effect.fail(ExecutionError({ command, stderr }))
         )
       )

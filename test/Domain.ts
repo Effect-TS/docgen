@@ -1,7 +1,5 @@
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as ReadonlyArray from "@effect/data/ReadonlyArray"
 import * as assert from "assert"
+import { Option, ReadonlyArray } from "effect"
 import * as Domain from "../src/Domain"
 
 const documentable = (name: string) =>
@@ -171,7 +169,7 @@ describe.concurrent("Domain", () => {
         []
       )
 
-      const sorted = pipe([m2, m1], ReadonlyArray.sort(Domain.Order))
+      const sorted = ReadonlyArray.sort([m2, m1], Domain.Order)
 
       assert.deepStrictEqual(sorted, [m1, m2])
     })

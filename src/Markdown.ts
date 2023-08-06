@@ -1,12 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as ReadonlyArray from "@effect/data/ReadonlyArray"
-import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
-import * as String from "@effect/data/String"
-import * as Order from "@effect/data/typeclass/Order"
+import { Option, Order, pipe, ReadonlyArray, ReadonlyRecord, String } from "effect"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain"
 
@@ -30,8 +25,8 @@ const paragraph = (...content: ReadonlyArray<string>) => "\n" + content.join("")
 
 const strikethrough = (content: string) => `~~${content}~~`
 
-const createHeader = (level: number) =>
-  (content: string): string => "#".repeat(level) + " " + content + "\n\n"
+const createHeader = (level: number) => (content: string): string =>
+  "#".repeat(level) + " " + content + "\n\n"
 
 const h1 = createHeader(1)
 
@@ -39,20 +34,19 @@ const h2 = createHeader(2)
 
 const h3 = createHeader(3)
 
-const getSince: (v: Option.Option<string>) => string = Option.match(
-  () => "",
-  (v) => paragraph(`Added in v${v}`)
-)
+const getSince: (v: Option.Option<string>) => string = Option.match({
+  onNone: () => "",
+  onSome: (v) => paragraph(`Added in v${v}`)
+})
 
 const getTitle = (s: string, deprecated: boolean, type?: string): string => {
   const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
   const title = deprecated ? strikethrough(name) : name
-  return pipe(
-    Option.fromNullable(type),
-    Option.match(
-      () => title,
-      (t) => title + ` ${t}`
-    )
+  return Option.fromNullable(type).pipe(
+    Option.match({
+      onNone: () => title,
+      onSome: (t) => title + ` ${t}`
+    })
   )
 }
 
@@ -209,7 +203,7 @@ export const fromPrintable = (p: Printable): string => {
 }
 
 const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
-  ReadonlyArray.getMonoid<Printable>().combineAll([
+  ReadonlyArray.flatten<Printable>([
     module.classes,
     module.constants,
     module.exports,
@@ -231,15 +225,10 @@ export const printModule = (module: Domain.Module, order: number): string => {
 
   const content = pipe(
     getPrintables(module),
-    ReadonlyArray.groupBy(({ category }) =>
-      pipe(
-        category,
-        Option.getOrElse(() => DEFAULT_CATEGORY)
-      )
-    ),
+    ReadonlyArray.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
     ReadonlyRecord.toEntries,
     ReadonlyArray.sort(
-      Order.contramap(String.Order, ([category]: [string, unknown]) => category)
+      Order.mapInput(String.Order, ([category]: [string, unknown]) => category)
     ),
     ReadonlyArray.map(([category, printables]) =>
       [
@@ -247,7 +236,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
         ...pipe(
           printables,
           ReadonlyArray.sort(
-            Order.contramap(
+            Order.mapInput(
               String.Order,
               (printable: Printable) => printable.name
             )

@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-import * as Logger from "@effect/io/Logger"
 import chalk from "chalk"
+import { Logger } from "effect"
 
 /**
  * @category logging
  * @since 1.0.0
  */
-export const SimpleLogger = Logger.make((_, logLevel, message) => {
+export const SimpleLogger = Logger.make(({ logLevel, message }) => {
   if (logLevel._tag === "Debug") {
     globalThis.console.log(chalk.gray(`[${logLevel.label}] ${message}`))
   } else {

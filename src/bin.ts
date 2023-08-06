@@ -6,8 +6,8 @@
  * @since 1.0.0
  */
 
-import * as Effect from "@effect/io/Effect"
 import chalk from "chalk"
+import { Effect } from "effect"
 import { main } from "./index"
 
 Effect.runPromise(main).catch((defect) => {

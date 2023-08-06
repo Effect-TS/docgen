@@ -1,15 +1,14 @@
-import { pipe } from "@effect/data/Function"
-import * as ReadonlyRecord from "@effect/data/ReadonlyRecord"
-import * as Effect from "@effect/io/Effect"
+import { Effect, ReadonlyRecord } from "effect"
 import * as path from "node:path"
 import * as FileSystem from "../src/FileSystem"
 
+const excludedPrefixes = ["@effect", "effect", "chalk"]
+
 const excludeEffectPackages = (deps: Record<string, string>): Record<string, string> => {
-  return ReadonlyRecord.filter(deps, (_, k) => !k.startsWith("@effect"))
+  return ReadonlyRecord.filter(deps, (_, k) => !excludedPrefixes.some((_) => k.startsWith(_)))
 }
 
-const read = pipe(
-  FileSystem.FileSystem,
+const read = FileSystem.FileSystem.pipe(
   Effect.flatMap((fileSystem) => fileSystem.readJsonFile("package.json")),
   Effect.map((json: any) => ({
     name: json.name,
@@ -33,14 +32,13 @@ const read = pipe(
 const pathTo = path.join("dist", "package.json")
 
 const write = (pkg: object) =>
-  pipe(
+  Effect.flatMap(
     FileSystem.FileSystem,
-    Effect.flatMap((fileSystem) => fileSystem.writeFile(pathTo, JSON.stringify(pkg, null, 2)))
+    (fileSystem) => fileSystem.writeFile(pathTo, JSON.stringify(pkg, null, 2))
   )
 
-const program = pipe(
-  Effect.sync(() => console.log(`copying package.json to ${pathTo}...`)),
-  Effect.flatMap(() => read),
+const program = Effect.sync(() => console.log(`copying package.json to ${pathTo}...`)).pipe(
+  Effect.zipRight(read),
   Effect.flatMap(write),
   Effect.provideLayer(FileSystem.FileSystemLive)
 )

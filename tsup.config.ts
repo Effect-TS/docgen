@@ -4,5 +4,5 @@ export default defineConfig({
   entry: ["src/bin.ts"],
   clean: true,
   publicDir: true,
-  noExternal: [/@effect/]
+  noExternal: [/(effect|@effect|chalk)/]
 })

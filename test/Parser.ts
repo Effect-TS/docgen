@@ -1,10 +1,6 @@
-import * as Either from "@effect/data/Either"
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as String from "@effect/data/String"
-import * as Effect from "@effect/io/Effect"
 import * as assert from "assert"
 import chalk from "chalk"
+import { Effect, Exit, Option, String } from "effect"
 import * as ast from "ts-morph"
 import * as Config from "../src/Config"
 import * as FileSystem from "../src/FileSystem"
@@ -37,51 +33,51 @@ const getParser = (sourceText: string): Parser.Source => ({
   sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
 })
 
-const expectLeft = <E, A>(
+const expectFailure = <E, A>(
   sourceText: string,
   eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
-  left: E,
+  failure: E,
   config?: Partial<Config.Config>
 ) => {
   expect(
-    pipe(
-      eff,
+    eff.pipe(
       Effect.provideService(Parser.Source, getParser(sourceText)),
       Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
-      Effect.runSyncEither
+      Effect.runSyncExit,
+      Exit.unannotate
     )
-  ).toEqual(Either.left(left))
+  ).toEqual(Exit.fail(failure))
 }
 
-const expectRight = <E, A>(
+const expectSuccess = <E, A>(
   sourceText: string,
   eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
   a: A,
   config?: Partial<Config.Config>
 ) => {
   expect(
-    pipe(
-      eff,
-      Effect.provideService(Parser.Source, getParser(sourceText)),
-      Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
-      Effect.runSyncEither
-    )
-  ).toEqual(Either.right(a))
+    eff
+      .pipe(
+        Effect.provideService(Parser.Source, getParser(sourceText)),
+        Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
+        Effect.runSyncExit
+      )
+  ).toEqual(Exit.succeed(a))
 }
 
 describe.concurrent("Parser", () => {
   describe.concurrent("parsers", () => {
     describe.concurrent("parseInterfaces", () => {
       it("should return no `Interface`s if the file is empty", () => {
-        expectRight("", Parser.parseInterfaces, [])
+        expectSuccess("", Parser.parseInterfaces, [])
       })
 
       it("should return no `Interface`s if there are no exported interfaces", () => {
-        expectRight("interface A {}", Parser.parseInterfaces, [])
+        expectSuccess("interface A {}", Parser.parseInterfaces, [])
       })
 
       it("should return an `Interface`", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * a description...
         * @since 1.0.0
@@ -105,7 +101,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should return interfaces sorted by name", () => {
-        expectRight(
+        expectSuccess(
           `
         /**
          * @since 1.0.0
@@ -145,7 +141,7 @@ describe.concurrent("Parser", () => {
 
     describe.concurrent("parseFunctions", () => {
       it("should raise an error if the function is anonymous", () => {
-        expectLeft(
+        expectFailure(
           `export function(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           ["Missing function name in module test"]
@@ -153,7 +149,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not return private function declarations", () => {
-        expectRight(
+        expectSuccess(
           `function sum(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
           []
@@ -161,7 +157,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not return ignored function declarations", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * @ignore
         */
@@ -172,7 +168,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not return ignored function declarations with overloads", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * @ignore
             */
@@ -184,7 +180,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not return internal function declarations", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * @internal
             */
@@ -195,7 +191,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not return internal function declarations even with overloads", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * @internal
             */
@@ -207,7 +203,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not return private const function declarations", () => {
-        expectRight(
+        expectSuccess(
           `const sum = (a: number, b: number): number => a + b `,
           Parser.parseFunctions,
           []
@@ -215,7 +211,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not return internal const function declarations", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * @internal
             */
@@ -226,7 +222,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should account for nullable polymorphic return types", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * @since 1.0.0
             */
@@ -250,7 +246,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should return a const function declaration", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * a description...
             * @since 1.0.0
@@ -283,7 +279,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should return a function declaration", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * @since 1.0.0
             */
@@ -307,7 +303,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should return a function with comments", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * a description...
             * @since 1.0.0
@@ -333,7 +329,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should handle overloadings", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * a description...
             * @since 1.0.0
@@ -364,7 +360,7 @@ describe.concurrent("Parser", () => {
 
     describe.concurrent("parseTypeAlias", () => {
       it("should return a `TypeAlias`", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * a description...
             * @since 1.0.0
@@ -390,7 +386,7 @@ describe.concurrent("Parser", () => {
 
     describe.concurrent("parseConstants", () => {
       it("should handle a constant value", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * a description...
             * @since 1.0.0
@@ -414,7 +410,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should support constants with default type parameters", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * @since 1.0.0
             */
@@ -436,7 +432,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should support untyped constants", () => {
-        expectRight(
+        expectSuccess(
           `
         class A {}
       /**
@@ -460,7 +456,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should handle constants with typeof annotations", () => {
-        expectRight(
+        expectSuccess(
           ` const task: { a: number } = {
           a: 1
         }
@@ -488,7 +484,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should not include variables declared in for loops", () => {
-        expectRight(
+        expectSuccess(
           ` const object = { a: 1, b: 2, c: 3 };
 
         for (const property in object) {
@@ -502,27 +498,27 @@ describe.concurrent("Parser", () => {
 
     describe.concurrent("parseClasses", () => {
       it("should raise an error if the class is anonymous", () => {
-        expectLeft(`export class {}`, Parser.parseClasses, [
+        expectFailure(`export class {}`, Parser.parseClasses, [
           "Missing class name in module test"
         ])
       })
 
       it("should raise an error if an `@since` tag is missing in a module", () => {
-        expectLeft(`export class MyClass {}`, Parser.parseClasses, [
+        expectFailure(`export class MyClass {}`, Parser.parseClasses, [
           `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass")} documentation`
         ])
       })
 
       it("should ignore internal classes", () => {
-        expectRight(`/** @internal */export class MyClass {}`, Parser.parseClasses, [])
+        expectSuccess(`/** @internal */export class MyClass {}`, Parser.parseClasses, [])
       })
 
       it("should ignore `@ignore`d classes", () => {
-        expectRight(`/** @ignore */export class MyClass {}`, Parser.parseClasses, [])
+        expectSuccess(`/** @ignore */export class MyClass {}`, Parser.parseClasses, [])
       })
 
       it("should raise an error if `@since` is missing in a property", () => {
-        expectLeft(
+        expectFailure(
           `/**
             * @since 1.0.0
             */
@@ -535,7 +531,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should skip ignored properties", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * @since 1.0.0
         */
@@ -565,7 +561,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should skip the constructor body", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * description
         * @since 1.0.0
@@ -614,7 +610,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should handle non-readonly properties", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * description
         * @since 1.0.0
@@ -655,7 +651,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should return a `Class`", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * a class description...
         * @since 1.0.0
@@ -737,7 +733,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should handle method overloadings", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * a class description...
         * @since 1.0.0
@@ -810,7 +806,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should ignore internal/ignored methods (#42)", () => {
-        expectRight(
+        expectSuccess(
           `/**
         * a class description...
         * @since 1.0.0
@@ -849,7 +845,7 @@ describe.concurrent("Parser", () => {
 
     describe.concurrent("parseModuleDocumentation", () => {
       it("should return a description field and a deprecated field", () => {
-        expectRight(
+        expectSuccess(
           `/**
             * Manages the configuration settings for the widget
             * @deprecated
@@ -874,7 +870,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should return an error when documentation is enforced but no documentation is provided", () => {
-        expectLeft(
+        expectFailure(
           "export const a: number = 1",
           Parser.parseModuleDocumentation,
           "Missing documentation in test module"
@@ -882,7 +878,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should support absence of module documentation when no documentation is enforced", () => {
-        expectRight(
+        expectSuccess(
           "export const a: number = 1",
           Parser.parseModuleDocumentation,
           {
@@ -900,11 +896,11 @@ describe.concurrent("Parser", () => {
 
     describe.concurrent("parseExports", () => {
       it("should return no `Export`s if the file is empty", () => {
-        expectRight("", Parser.parseExports, [])
+        expectSuccess("", Parser.parseExports, [])
       })
 
       it("should handle renamimg", () => {
-        expectRight(
+        expectSuccess(
           `const a = 1;
           export {
             /**
@@ -929,7 +925,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should return an `Export`", () => {
-        expectRight(
+        expectSuccess(
           `export {
             /**
              * description_of_a
@@ -969,7 +965,7 @@ describe.concurrent("Parser", () => {
       })
 
       it("should raise an error if `@since` tag is missing in export", () => {
-        expectLeft("export { a }", Parser.parseExports, [
+        expectFailure("export { a }", Parser.parseExports, [
           "Missing a documentation in test"
         ])
       })
@@ -987,17 +983,16 @@ describe.concurrent("Parser", () => {
             b
           }`
         )
-        const actual = pipe(
-          Parser.parseExports,
+        const actual = Parser.parseExports.pipe(
           Effect.provideService(Parser.Source, {
             path: ["test"],
             sourceFile
           }),
           Effect.provideService(Config.Config, defaultConfig),
-          Effect.runSyncEither
+          Effect.runSyncExit
         )
         expect(actual).toEqual(
-          Either.right([
+          Exit.succeed([
             {
               _tag: "Export",
               name: "b",
@@ -1015,13 +1010,13 @@ describe.concurrent("Parser", () => {
 
     describe.concurrent("parseModule", () => {
       it("should raise an error if `@since` tag is missing", async () => {
-        expectLeft(`import * as assert from 'assert'`, Parser.parseModule, [
+        expectFailure(`import * as assert from 'assert'`, Parser.parseModule, [
           "Missing documentation in test module"
         ])
       })
 
       it("should not require an example for modules when `enforceExamples` is set to true (#38)", () => {
-        expectRight(
+        expectSuccess(
           `/**
 * This is the assert module.
 *
@@ -1079,12 +1074,12 @@ export const foo = 'foo'`,
         const project = new ast.Project({ useInMemoryFileSystem: true })
 
         assert.deepStrictEqual(
-          pipe(
-            Parser.parseFile(project)(file),
+          Parser.parseFile(project)(file).pipe(
             Effect.provideService(Config.Config, defaultConfig),
-            Effect.runSyncEither
+            Effect.runSyncExit,
+            Exit.unannotate
           ),
-          Either.left(["Unable to locate file: non-existent.ts"])
+          Exit.fail(["Unable to locate file: non-existent.ts"])
         )
       })
     })
@@ -1100,7 +1095,7 @@ export const foo = 'foo'`,
            | * @since 1.0.0
            | */`
         )
-        expectRight("", Parser.getCommentInfo("name")(text), {
+        expectSuccess("", Parser.getCommentInfo("name")(text), {
           description: Option.some("description"),
           since: Option.some("1.0.0"),
           category: Option.some("instances"),
@@ -1116,7 +1111,7 @@ export const foo = 'foo'`,
            | * @since 1.0.0
            | */`
         )
-        expectLeft(
+        expectFailure(
           "",
           Parser.getCommentInfo("name")(text),
           `Missing ${chalk.bold("@category")} tag in ${chalk.bold("test#name")} documentation`
@@ -1130,7 +1125,7 @@ export const foo = 'foo'`,
            | * @since 1.0.0
            | */`
         )
-        expectLeft(
+        expectFailure(
           "",
           Parser.getCommentInfo("name")(text),
           `Missing ${chalk.bold("description")} in ${chalk.bold("test#name")} documentation`,
@@ -1148,7 +1143,7 @@ export const foo = 'foo'`,
            | * @since 1.0.0
            | */`
         )
-        expectLeft(
+        expectFailure(
           "",
           Parser.getCommentInfo("name")(text),
           `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
@@ -1167,7 +1162,7 @@ export const foo = 'foo'`,
            | * @since 1.0.0
            | */`
         )
-        expectLeft(
+        expectFailure(
           "",
           Parser.getCommentInfo("name")(text),
           `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
@@ -1183,7 +1178,7 @@ export const foo = 'foo'`,
 * @category instances
 */`
 
-        expectRight(
+        expectSuccess(
           "",
           Parser.getCommentInfo("name")(text),
           {
