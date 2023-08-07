@@ -4,8 +4,13 @@ import * as FileSystem from "../src/FileSystem"
 
 const excludedPrefixes = ["@effect", "effect", "chalk"]
 
-const excludeEffectPackages = (deps: Record<string, string>): Record<string, string> => {
-  return ReadonlyRecord.filter(deps, (_, k) => !excludedPrefixes.some((_) => k.startsWith(_)))
+const excludeEffectPackages = (
+  deps: Record<string, string>
+): Record<string, string> => {
+  return ReadonlyRecord.filter(
+    deps,
+    (_, k) => !excludedPrefixes.some((_) => k.startsWith(_))
+  )
 }
 
 const read = FileSystem.FileSystem.pipe(

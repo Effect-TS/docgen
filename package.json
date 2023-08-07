@@ -40,7 +40,7 @@
     "effect": "2.0.0-next.24",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.3",
-    "markdown-toc": "^1.2.0",
+    "markdown-toc": "github:effect-ts/markdown-toc",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.1",
     "ts-morph": "^19.0.0",
