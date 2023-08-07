@@ -1,5 +1,12 @@
 # @effect/docgen
 
+## 0.1.3
+
+### Patch Changes
+
+- d8006f3: patch markdown-toc to prevent duplicate links
+- 514f73f: update to effect framework package
+
 ## 0.1.2
 
 ### Patch Changes
