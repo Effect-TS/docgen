@@ -34,6 +34,7 @@ describe.concurrent("Domain", () => {
         [],
         [],
         [],
+        [],
         []
       )
 
@@ -45,7 +46,8 @@ describe.concurrent("Domain", () => {
         functions: [],
         typeAliases: [],
         constants: [],
-        exports: []
+        exports: [],
+        namespaces: []
       })
     })
 
@@ -155,12 +157,14 @@ describe.concurrent("Domain", () => {
         [],
         [],
         [],
+        [],
         []
       )
 
       const m2 = Domain.createModule(
         documentable("test1"),
         ["src", "test1.ts"],
+        [],
         [],
         [],
         [],

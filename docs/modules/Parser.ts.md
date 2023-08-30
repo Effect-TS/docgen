@@ -20,6 +20,7 @@ Added in v1.0.0
   - [parseFunctions](#parsefunctions)
   - [parseInterfaces](#parseinterfaces)
   - [parseModule](#parsemodule)
+  - [parseNamespaces](#parsenamespaces)
   - [parseTypeAliases](#parsetypealiases)
 
 ---
@@ -94,6 +95,16 @@ Added in v1.0.0
 
 ```ts
 export declare const parseModule: Effect.Effect<Config.Config | Source, string[], Domain.Module>
+```
+
+Added in v1.0.0
+
+## parseNamespaces
+
+**Signature**
+
+```ts
+export declare const parseNamespaces: Effect.Effect<Config.Config | Source, string[], Domain.Namespace[]>
 ```
 
 Added in v1.0.0

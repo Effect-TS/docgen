@@ -16,7 +16,14 @@ export interface Module extends Documentable {
   readonly typeAliases: ReadonlyArray<TypeAlias>
   readonly constants: ReadonlyArray<Constant>
   readonly exports: ReadonlyArray<Export>
+  readonly namespaces: ReadonlyArray<Namespace>
 }
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export type Example = string
 
 /**
  * @category model
@@ -96,6 +103,16 @@ export interface Constant extends Documentable {
 }
 
 /**
+ * These are manual exports, like:
+ *
+ * ```ts
+ * const _null = ...
+ *
+ * export {
+ *   _null as null
+ * }
+ * ```
+ *
  * @category model
  * @since 1.0.0
  */
@@ -108,7 +125,12 @@ export interface Export extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export type Example = string
+export interface Namespace extends Documentable {
+  readonly _tag: "Namespace"
+  readonly interfaces: ReadonlyArray<Interface>
+  readonly typeAliases: ReadonlyArray<TypeAlias>
+  readonly namespaces: ReadonlyArray<Namespace>
+}
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -146,7 +168,8 @@ export const createModule = (
   functions: ReadonlyArray<Function>,
   typeAliases: ReadonlyArray<TypeAlias>,
   constants: ReadonlyArray<Constant>,
-  exports: ReadonlyArray<Export>
+  exports: ReadonlyArray<Export>,
+  namespaces: ReadonlyArray<Namespace>
 ): Module => ({
   ...documentable,
   path,
@@ -155,7 +178,8 @@ export const createModule = (
   functions,
   typeAliases,
   constants,
-  exports
+  exports,
+  namespaces
 })
 
 /**
@@ -264,6 +288,23 @@ export const createExport = (
   _tag: "Export",
   ...documentable,
   signature
+})
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const createNamespace = (
+  documentable: Documentable,
+  interfaces: ReadonlyArray<Interface>,
+  typeAliases: ReadonlyArray<TypeAlias>,
+  namespaces: ReadonlyArray<Namespace>
+): Namespace => ({
+  _tag: "Namespace",
+  ...documentable,
+  interfaces,
+  typeAliases,
+  namespaces
 })
 
 /**

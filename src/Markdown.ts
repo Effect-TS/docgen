@@ -15,6 +15,7 @@ type Printable =
   | Domain.Function
   | Domain.Interface
   | Domain.TypeAlias
+  | Domain.Namespace
 
 const bold = (s: string) => `**${s}**`
 
@@ -33,6 +34,8 @@ const h1 = createHeader(1)
 const h2 = createHeader(2)
 
 const h3 = createHeader(3)
+
+const h4 = createHeader(4)
 
 const getSince: (v: Option.Option<string>) => string = Option.match({
   onNone: () => "",
@@ -91,9 +94,7 @@ const getProperty = (p: Domain.Property): string =>
   )
 
 const getStaticMethods = (methods: ReadonlyArray<Domain.Method>): string =>
-  ReadonlyArray.map(methods, (method) => getStaticMethod(method) + "\n\n").join(
-    ""
-  )
+  ReadonlyArray.map(methods, (method) => getStaticMethod(method) + "\n\n").join("")
 
 const getMethods = (methods: ReadonlyArray<Domain.Method>): string =>
   ReadonlyArray.map(methods, (method) => getMethod(method) + "\n\n").join("")
@@ -166,22 +167,49 @@ const fromFunction = (f: Domain.Function): string =>
     getSince(f.since)
   )
 
-const fromInterface = (i: Domain.Interface): string =>
+const fromInterface = (i: Domain.Interface, indentation: number): string =>
   paragraph(
-    h2(getTitle(i.name, i.deprecated, "(interface)")),
+    getHeaderByIndentation(indentation)(getTitle(i.name, i.deprecated, "(interface)")),
     getDescription(i.description),
     getSignature(i.signature),
     getExamples(i.examples),
     getSince(i.since)
   )
 
-const fromTypeAlias = (ta: Domain.TypeAlias): string =>
+const fromTypeAlias = (ta: Domain.TypeAlias, indentation: number): string =>
   paragraph(
-    h2(getTitle(ta.name, ta.deprecated, "(type alias)")),
+    getHeaderByIndentation(indentation)(getTitle(ta.name, ta.deprecated, "(type alias)")),
     getDescription(ta.description),
     getSignature(ta.signature),
     getExamples(ta.examples),
     getSince(ta.since)
+  )
+
+const getHeaderByIndentation = (indentation: number) => {
+  switch (indentation) {
+    case 0:
+      return h2
+    case 1:
+      return h3
+    case 2:
+      return h4
+  }
+  throw new Error(`Unsupported namespace nesting: ${indentation + 1}`)
+}
+
+const fromNamespace = (ns: Domain.Namespace, indentation: number): string =>
+  paragraph(
+    paragraph(
+      getHeaderByIndentation(indentation)(getTitle(ns.name, ns.deprecated, "(namespace)")),
+      getDescription(ns.description),
+      getExamples(ns.examples),
+      getSince(ns.since)
+    ),
+    ReadonlyArray.map(ns.interfaces, (i) => fromInterface(i, indentation + 1) + "\n\n").join(""),
+    ReadonlyArray.map(ns.typeAliases, (typeAlias) =>
+      fromTypeAlias(typeAlias, indentation + 1) + "\n\n").join(""),
+    ReadonlyArray.map(ns.namespaces, (namespace) =>
+      fromNamespace(namespace, indentation + 1) + "\n\n").join("")
   )
 
 /** @internal */
@@ -196,9 +224,11 @@ export const fromPrintable = (p: Printable): string => {
     case "Function":
       return fromFunction(p)
     case "Interface":
-      return fromInterface(p)
+      return fromInterface(p, 0)
     case "TypeAlias":
-      return fromTypeAlias(p)
+      return fromTypeAlias(p, 0)
+    case "Namespace":
+      return fromNamespace(p, 0)
   }
 }
 
@@ -209,7 +239,8 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
     module.exports,
     module.functions,
     module.interfaces,
-    module.typeAliases
+    module.typeAliases,
+    module.namespaces
   ])
 
 /**
