@@ -1,5 +1,12 @@
 # @effect/docgen
 
+## 0.1.4
+
+### Patch Changes
+
+- 8be0092: add support for namespaces
+- 8be0092: BugFix: remove stale modules from /docs folder
+
 ## 0.1.3
 
 ### Patch Changes
