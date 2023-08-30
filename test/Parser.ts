@@ -3,6 +3,7 @@ import chalk from "chalk"
 import { Effect, Exit, Option, String } from "effect"
 import * as ast from "ts-morph"
 import * as Config from "../src/Config"
+import * as Domain from "../src/Domain"
 import * as FileSystem from "../src/FileSystem"
 import * as Parser from "../src/Parser"
 
@@ -67,6 +68,254 @@ const expectSuccess = <E, A>(
 
 describe.concurrent("Parser", () => {
   describe.concurrent("parsers", () => {
+    describe.concurrent("parseNamespaces", () => {
+      it("should return no `Namespaces`s if the file is empty", () => {
+        expectSuccess("", Parser.parseNamespaces, [])
+      })
+
+      it("should return no `Namespaces`s if there are no exported namespaces", () => {
+        expectSuccess("namespace A {}", Parser.parseNamespaces, [])
+      })
+
+      it("should raise an error if the namespace is not well documented", () => {
+        expectFailure("export namespace A {}", Parser.parseNamespaces, [
+          `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#A")} documentation`
+        ])
+      })
+
+      const documentableA = Domain.createDocumentable(
+        "A",
+        Option.none(),
+        Option.some("1.0.0"),
+        false,
+        [],
+        Option.none()
+      )
+
+      it("should parse an empty Namespace", () => {
+        expectSuccess(
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {}
+        `,
+          Parser.parseNamespaces,
+          [
+            Domain.createNamespace(documentableA, [], [], [])
+          ]
+        )
+      })
+
+      describe.concurrent("interfaces", () => {
+        it("should ignore not exported interfaces", () => {
+          expectSuccess(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            interface C {}
+          }
+          `,
+            Parser.parseNamespaces,
+            [Domain.createNamespace(documentableA, [], [], [])]
+          )
+        })
+
+        it("should raise an error if the interface is not well documented", () => {
+          expectFailure(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            export interface B {}
+          }
+          `,
+            Parser.parseNamespaces,
+            [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+          )
+        })
+
+        it("should parse an interface", () => {
+          const documentableB = Domain.createDocumentable(
+            "B",
+            Option.none(),
+            Option.some("1.0.1"),
+            false,
+            [],
+            Option.none()
+          )
+
+          expectSuccess(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            /**
+             * @since 1.0.1
+             */
+            export interface B {
+              readonly d: boolean
+            }
+          }
+          `,
+            Parser.parseNamespaces,
+            [Domain.createNamespace(
+              documentableA,
+              [Domain.createInterface(
+                documentableB,
+                `export interface B {
+              readonly d: boolean
+            }`
+              )],
+              [],
+              []
+            )]
+          )
+        })
+      })
+
+      describe.concurrent("type aliases", () => {
+        it("should ignore not exported type alias", () => {
+          expectSuccess(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            type C = number
+          }
+          `,
+            Parser.parseNamespaces,
+            [Domain.createNamespace(documentableA, [], [], [])]
+          )
+        })
+
+        it("should raise an error if the type alias is not well documented", () => {
+          expectFailure(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            export type B = string
+          }
+          `,
+            Parser.parseNamespaces,
+            [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+          )
+        })
+
+        it("should parse a type alias", () => {
+          const documentableB = Domain.createDocumentable(
+            "B",
+            Option.none(),
+            Option.some("1.0.1"),
+            false,
+            [],
+            Option.none()
+          )
+
+          expectSuccess(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            /**
+             * @since 1.0.1
+             */
+            export type B = string
+          }
+          `,
+            Parser.parseNamespaces,
+            [Domain.createNamespace(documentableA, [], [
+              Domain.createTypeAlias(documentableB, "export type B = string")
+            ], [])]
+          )
+        })
+      })
+
+      describe.concurrent("nested namespaces", () => {
+        it("should ignore not exported namespaces", () => {
+          expectSuccess(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            namespace B {}
+          }
+          `,
+            Parser.parseNamespaces,
+            [Domain.createNamespace(documentableA, [], [], [])]
+          )
+        })
+
+        it("should raise an error if the namespace is not well documented", () => {
+          expectFailure(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            export namespace B {}
+          }
+          `,
+            Parser.parseNamespaces,
+            [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+          )
+        })
+
+        it("should parse a namespace", () => {
+          const documentableB = Domain.createDocumentable(
+            "B",
+            Option.none(),
+            Option.some("1.0.1"),
+            false,
+            [],
+            Option.none()
+          )
+          const documentableC = Domain.createDocumentable(
+            "C",
+            Option.none(),
+            Option.some("1.0.2"),
+            false,
+            [],
+            Option.none()
+          )
+
+          expectSuccess(
+            `
+          /**
+           * @since 1.0.0
+           */
+          export namespace A {
+            /**
+             * @since 1.0.1
+             */
+            export namespace B {
+              /**
+               * @since 1.0.2
+               */
+              export type C = string
+            }
+          }
+          `,
+            Parser.parseNamespaces,
+            [Domain.createNamespace(documentableA, [], [], [
+              Domain.createNamespace(documentableB, [], [
+                Domain.createTypeAlias(documentableC, "export type C = string")
+              ], [])
+            ])]
+          )
+        })
+      })
+    })
+
     describe.concurrent("parseInterfaces", () => {
       it("should return no `Interface`s if the file is empty", () => {
         expectSuccess("", Parser.parseInterfaces, [])
@@ -1061,7 +1310,8 @@ export const foo = 'foo'`,
                 signature: "export declare const foo: \"foo\""
               }
             ],
-            exports: []
+            exports: [],
+            namespaces: []
           },
           { enforceExamples: true }
         )

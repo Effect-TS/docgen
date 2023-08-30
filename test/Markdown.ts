@@ -10,6 +10,7 @@ import {
   createInterface,
   createMethod,
   createModule,
+  createNamespace,
   createProperty,
   createTypeAlias
 } from "../src/Domain"
@@ -125,6 +126,91 @@ const testCases = {
 
 describe.concurrent("Markdown", () => {
   const print = flow(_.fromPrintable, _.prettify)
+
+  it("fromNamespace", () => {
+    const namespace = createNamespace(
+      createDocumentable(
+        "A",
+        Option.none(),
+        Option.some("1.0.0"),
+        false,
+        [],
+        Option.none()
+      ),
+      [],
+      [
+        createTypeAlias(
+          createDocumentable(
+            "B",
+            Option.none(),
+            Option.some("1.0.1"),
+            false,
+            [],
+            Option.none()
+          ),
+          "export type B = string"
+        )
+      ],
+      [
+        createNamespace(
+          createDocumentable(
+            "C",
+            Option.none(),
+            Option.some("1.0.2"),
+            false,
+            [],
+            Option.none()
+          ),
+          [],
+          [
+            createTypeAlias(
+              createDocumentable(
+                "D",
+                Option.none(),
+                Option.some("1.0.3"),
+                false,
+                [],
+                Option.none()
+              ),
+              "export type D = number"
+            )
+          ],
+          []
+        )
+      ]
+    )
+    assert.strictEqual(
+      print(namespace),
+      `## A (namespace)
+
+Added in v1.0.0
+
+### B (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type B = string
+\`\`\`
+
+Added in v1.0.1
+
+### C (namespace)
+
+Added in v1.0.2
+
+#### D (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type D = number
+\`\`\`
+
+Added in v1.0.3
+`
+    )
+  })
 
   it("fromClass", () => {
     assert.strictEqual(
@@ -303,7 +389,8 @@ export type A = number
           [testCases.function],
           [testCases.typeAlias],
           [testCases.constant],
-          [testCases.export]
+          [testCases.export],
+          []
         ),
         1
       ),
@@ -457,6 +544,7 @@ Added in v1.0.0
     const empty = createModule(
       documentation,
       ["src", "tests.ts"],
+      [],
       [],
       [],
       [],

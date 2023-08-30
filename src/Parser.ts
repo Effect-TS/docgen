@@ -275,32 +275,30 @@ const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
     )
   )
 
+const parseInterfaces_ = (interfaces: ReadonlyArray<ast.InterfaceDeclaration>) =>
+  pipe(
+    interfaces,
+    ReadonlyArray.filter(
+      every<ast.InterfaceDeclaration>([
+        (id) => id.isExported(),
+        (id) =>
+          pipe(
+            id.getJsDocs(),
+            Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
+          )
+      ])
+    ),
+    Effect.validateAll(parseInterfaceDeclaration),
+    Effect.map(ReadonlyArray.sort(byName))
+  )
+
 /**
  * @category parsers
  * @since 1.0.0
  */
-export const parseInterfaces = pipe(
-  Effect.map(Source, (source) =>
-    pipe(
-      source.sourceFile.getInterfaces(),
-      ReadonlyArray.filter(
-        every<ast.InterfaceDeclaration>([
-          (id) => id.isExported(),
-          (id) =>
-            pipe(
-              id.getJsDocs(),
-              Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
-            )
-        ])
-      )
-    )),
-  Effect.flatMap((interfaceDeclarations) =>
-    pipe(
-      interfaceDeclarations,
-      Effect.validateAll(parseInterfaceDeclaration),
-      Effect.map(ReadonlyArray.sort(byName))
-    )
-  )
+export const parseInterfaces = Effect.flatMap(
+  Source,
+  (source) => parseInterfaces_(source.sourceFile.getInterfaces())
 )
 
 // -------------------------------------------------------------------------------------
@@ -509,29 +507,30 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
     )
   )
 
+const parseTypeAliases_ = (typeAliases: ReadonlyArray<ast.TypeAliasDeclaration>) =>
+  pipe(
+    typeAliases,
+    ReadonlyArray.filter(
+      every<ast.TypeAliasDeclaration>([
+        (alias) => alias.isExported(),
+        (alias) =>
+          pipe(
+            alias.getJsDocs(),
+            Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
+          )
+      ])
+    ),
+    Effect.validateAll(parseTypeAliasDeclaration),
+    Effect.map(ReadonlyArray.sort(byName))
+  )
+
 /**
  * @category parsers
  * @since 1.0.0
  */
-export const parseTypeAliases = pipe(
-  Effect.map(Source, (source) =>
-    pipe(
-      source.sourceFile.getTypeAliases(),
-      ReadonlyArray.filter(
-        every<ast.TypeAliasDeclaration>([
-          (alias) => alias.isExported(),
-          (alias) =>
-            pipe(
-              alias.getJsDocs(),
-              Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
-            )
-        ])
-      )
-    )),
-  Effect.flatMap((typeAliasDeclarations) =>
-    pipe(typeAliasDeclarations, Effect.validateAll(parseTypeAliasDeclaration))
-  ),
-  Effect.map(ReadonlyArray.sort(byName))
+export const parseTypeAliases = Effect.flatMap(
+  Source,
+  (source) => parseTypeAliases_(source.sourceFile.getTypeAliases())
 )
 
 // -------------------------------------------------------------------------------------
@@ -650,7 +649,7 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
       )
     ))
 
-const parseExportDeclaration = (ed: ast.ExportDeclaration) =>
+const parseNamedExports = (ed: ast.ExportDeclaration) =>
   pipe(ed.getNamedExports(), Effect.validateAll(parseExportSpecifier))
 
 /**
@@ -660,13 +659,83 @@ const parseExportDeclaration = (ed: ast.ExportDeclaration) =>
 export const parseExports = pipe(
   Effect.map(Source, (source) => source.sourceFile.getExportDeclarations()),
   Effect.flatMap((exportDeclarations) =>
-    pipe(exportDeclarations, Effect.validateAll(parseExportDeclaration))
+    pipe(exportDeclarations, Effect.validateAll(parseNamedExports))
   ),
   Effect.mapBoth({
     onFailure: ReadonlyArray.flatten,
     onSuccess: ReadonlyArray.flatten
   })
 )
+
+// -------------------------------------------------------------------------------------
+// namespaces
+// -------------------------------------------------------------------------------------
+
+const parseModuleDeclaration = (
+  ed: ast.ModuleDeclaration
+): Effect.Effect<Source | Config.Config, Array<string>, Domain.Namespace> =>
+  Effect.flatMap(Source, (_source) => {
+    const name = ed.getName()
+    const getInfo = pipe(
+      getJSDocText(ed.getJsDocs()),
+      getCommentInfo(name),
+      Effect.mapError((e) => [e])
+    )
+    const getInterfaces = parseInterfaces_(ed.getInterfaces())
+    const getTypeAliases = parseTypeAliases_(
+      ed.getTypeAliases()
+    )
+    const getNamespaces = parseNamespaces_(ed.getModules())
+    return Effect.gen(function*(_) {
+      const info = yield* _(getInfo)
+      const interfaces = yield* _(getInterfaces)
+      const typeAliases = yield* _(getTypeAliases)
+      const namespaces = yield* _(getNamespaces)
+      return Domain.createNamespace(
+        Domain.createDocumentable(
+          name,
+          info.description,
+          info.since,
+          info.deprecated,
+          info.examples,
+          info.category
+        ),
+        interfaces,
+        typeAliases,
+        namespaces
+      )
+    })
+  })
+
+const parseNamespaces_ = (namespaces: ReadonlyArray<ast.ModuleDeclaration>) =>
+  pipe(
+    namespaces,
+    ReadonlyArray.filter(
+      every<ast.ModuleDeclaration>([
+        (module) => module.isExported(),
+        (module) =>
+          pipe(
+            module.getJsDocs(),
+            Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
+          )
+      ])
+    ),
+    Effect.validateAll(parseModuleDeclaration),
+    Effect.mapBoth({
+      onFailure: ReadonlyArray.flatten,
+      onSuccess: ReadonlyArray.sort(byName)
+    })
+  )
+
+/**
+ * @category parsers
+ * @since 1.0.0
+ */
+export const parseNamespaces: Effect.Effect<
+  Source | Config.Config,
+  Array<string>,
+  Array<Domain.Namespace>
+> = Effect.flatMap(Source, (source) => parseNamespaces_(source.sourceFile.getModules()))
 
 // -------------------------------------------------------------------------------------
 // classes
@@ -978,6 +1047,7 @@ export const parseModule = pipe(
       Effect.bind("classes", () => parseClasses),
       Effect.bind("constants", () => parseConstants),
       Effect.bind("exports", () => parseExports),
+      Effect.bind("namespaces", () => parseNamespaces),
       Effect.map(
         ({
           classes,
@@ -986,6 +1056,7 @@ export const parseModule = pipe(
           exports,
           functions,
           interfaces,
+          namespaces,
           typeAliases
         }) =>
           Domain.createModule(
@@ -996,7 +1067,8 @@ export const parseModule = pipe(
             functions,
             typeAliases,
             constants,
-            exports
+            exports,
+            namespaces
           )
       )
     ))

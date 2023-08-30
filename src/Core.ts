@@ -416,13 +416,17 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
 // -------------------------------------------------------------------------------------
 
 const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
-  Effect.map(Config.Config, (config) => join(config.outDir, "**/*.ts.md")).pipe(
-    Effect.tap((pattern) => Effect.logDebug(`deleting ${chalk.black(pattern)}`)),
-    Effect.flatMap((pattern) =>
-      Effect.flatMap(FileSystem.FileSystem, (fileSystem) => fileSystem.removeFile(pattern))
-    ),
-    Effect.flatMap(() => writeFiles(files))
-  )
+  Effect.gen(function*(_) {
+    const config = yield* _(Config.Config)
+    const fileSystem = yield* _(FileSystem.FileSystem)
+    const pattern = join(config.outDir, "**/*.ts.md")
+    yield* _(Effect.logDebug(`deleting ${chalk.black(pattern)}`))
+    const paths = yield* _(fileSystem.glob(pattern))
+    yield* _(
+      Effect.forEach(paths, (path) => fileSystem.removeFile(path), { concurrency: "unbounded" })
+    )
+    return yield* _(writeFiles(files))
+  })
 
 const MainLayer = Logger.replace(Logger.defaultLogger, SimpleLogger).pipe(
   Layer.merge(ChildProcess.ChildProcessLive),

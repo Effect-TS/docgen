@@ -21,6 +21,7 @@ Added in v1.0.0
   - [createInterface](#createinterface)
   - [createMethod](#createmethod)
   - [createModule](#createmodule)
+  - [createNamespace](#createnamespace)
   - [createProperty](#createproperty)
   - [createTypeAlias](#createtypealias)
 - [instances](#instances)
@@ -35,6 +36,7 @@ Added in v1.0.0
   - [Interface (interface)](#interface-interface)
   - [Method (interface)](#method-interface)
   - [Module (interface)](#module-interface)
+  - [Namespace (interface)](#namespace-interface)
   - [Property (interface)](#property-interface)
   - [TypeAlias (interface)](#typealias-interface)
 
@@ -138,8 +140,24 @@ export declare const createModule: (
   functions: ReadonlyArray<Function>,
   typeAliases: ReadonlyArray<TypeAlias>,
   constants: ReadonlyArray<Constant>,
-  exports: ReadonlyArray<Export>
+  exports: ReadonlyArray<Export>,
+  namespaces: ReadonlyArray<Namespace>
 ) => Module
+```
+
+Added in v1.0.0
+
+## createNamespace
+
+**Signature**
+
+```ts
+export declare const createNamespace: (
+  documentable: Documentable,
+  interfaces: ReadonlyArray<Interface>,
+  typeAliases: ReadonlyArray<TypeAlias>,
+  namespaces: ReadonlyArray<Namespace>
+) => Namespace
 ```
 
 Added in v1.0.0
@@ -236,6 +254,16 @@ Added in v1.0.0
 
 ## Export (interface)
 
+These are manual exports, like:
+
+```ts
+const _null = ...
+
+export {
+  _null as null
+}
+```
+
 **Signature**
 
 ```ts
@@ -298,6 +326,22 @@ export interface Module extends Documentable {
   readonly typeAliases: ReadonlyArray<TypeAlias>
   readonly constants: ReadonlyArray<Constant>
   readonly exports: ReadonlyArray<Export>
+  readonly namespaces: ReadonlyArray<Namespace>
+}
+```
+
+Added in v1.0.0
+
+## Namespace (interface)
+
+**Signature**
+
+```ts
+export interface Namespace extends Documentable {
+  readonly _tag: 'Namespace'
+  readonly interfaces: ReadonlyArray<Interface>
+  readonly typeAliases: ReadonlyArray<TypeAlias>
+  readonly namespaces: ReadonlyArray<Namespace>
 }
 ```
 
