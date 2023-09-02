@@ -17,7 +17,13 @@
     "forceConsistentCasingInFileNames": true,
     "stripInternal": true,
     "skipLibCheck": true,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "paths": {
+      "@effect/docgen": ["./src/index.ts"],
+      "@effect/docgen/test/*": ["./test/*"],
+      "@effect/docgen/examples/*": ["./examples/*"],
+      "@effect/docgen/*": ["./src/*"]
+    }
   },
   "include": ["./src", "./test"]
 }

@@ -90,7 +90,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ConfigLive: Layer.Layer<unknown, unknown, Config>
+export declare const ConfigLive: Layer.Layer<
+  Process.Process | FileSystem.FileSystem,
+  FileSystem.ReadFileError | FileSystem.ParseJsonError | ConfigError,
+  Config
+>
 ```
 
 Added in v1.0.0

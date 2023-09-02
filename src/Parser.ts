@@ -20,6 +20,7 @@ import * as ast from "ts-morph"
 import * as Config from "./Config"
 import * as Domain from "./Domain"
 import type * as FileSystem from "./FileSystem"
+import * as Process from "./Process"
 
 /** @internal */
 export interface Source {
@@ -1096,13 +1097,21 @@ export const parseFile = (project: ast.Project) =>
 
 const createProject = (files: ReadonlyArray<FileSystem.File>) =>
   pipe(
-    Config.Config,
-    Effect.map((config) => {
+    Effect.all([Config.Config, Effect.flatMap(Process.Process, (p) => p.cwd)]),
+    Effect.map(([config, cwd]) => {
+      // Convert the raw config into a format that TS/TS-Morph expects
+      const parsed = ast.ts.parseJsonConfigFileContent(
+        {
+          compilerOptions: {
+            strict: true,
+            ...config.parseCompilerOptions
+          }
+        },
+        ast.ts.sys,
+        cwd
+      )
       const options: ast.ProjectOptions = {
-        compilerOptions: {
-          strict: true,
-          ...config.parseCompilerOptions
-        }
+        compilerOptions: parsed.options
       }
       const project = new ast.Project(options)
       for (const file of files) {

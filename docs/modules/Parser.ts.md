@@ -64,7 +64,7 @@ Added in v1.0.0
 ```ts
 export declare const parseFiles: (
   files: ReadonlyArray<FileSystem.File>
-) => Effect.Effect<Config.Config, string[][], Domain.Module[]>
+) => Effect.Effect<Process.Process | Config.Config, string[][], Domain.Module[]>
 ```
 
 Added in v1.0.0
