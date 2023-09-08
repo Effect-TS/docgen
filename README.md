@@ -91,8 +91,8 @@ interface Config {
   readonly enforceExamples?: boolean;
   readonly enforceVersion?: boolean;
   readonly exclude?: ReadonlyArray<string>;
-  readonly parseCompilerOptions?: Record<string, unknown>;
-  readonly examplesCompilerOptions?: Record<string, unknown>;
+  readonly parseCompilerOptions?: string | Record<string, unknown>;
+  readonly examplesCompilerOptions?: string | Record<string, unknown>;
 }
 ```
 
@@ -109,8 +109,8 @@ The following table describes each configuration parameter, its purpose, and its
 | enforceExamples         | Whether or not `@example` tags for each module export should be required. (**Note**: examples will not be enforced in module documentation)                                         | `false`                      |
 | enforceVersion          | Whether or not `@since` tags for each module export should be required.                                                                                                             | `true`                       |
 | exclude                 | An array of glob strings specifying files that should be excluded from the documentation.                                                                                           | `[]`                         |
-| parseCompilerOptions    | tsconfig for parsing options                                                                                                                                                        | {}                           |
-| examplesCompilerOptions | tsconfig for the examples options                                                                                                                                                   | {}                           |
+| parseCompilerOptions    | tsconfig for parsing options (or path to a tsconfig)                                                                                                                                | {}                           |
+| examplesCompilerOptions | tsconfig for the examples options (or path to a tsconfig)                                                                                                                           | {}                           |
 
 # FAQ
 
