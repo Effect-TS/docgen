@@ -6,6 +6,7 @@ import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import chalk from "chalk"
 import { Context, Data, Effect, Layer, Option } from "effect"
 import * as NodePath from "node:path"
+import * as tsconfck from "tsconfck"
 import * as FileSystem from "./FileSystem"
 import * as Process from "./Process"
 
@@ -62,8 +63,8 @@ const ConfigSchema = Schema.struct({
   enforceExamples: Schema.boolean,
   enforceVersion: Schema.boolean,
   exclude: Schema.array(Schema.string),
-  parseCompilerOptions: Schema.record(Schema.string, Schema.unknown),
-  examplesCompilerOptions: Schema.record(Schema.string, Schema.unknown)
+  parseCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
+  examplesCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown))
 })
 
 const PartialConfigSchema = Schema.partial(ConfigSchema)
@@ -143,11 +144,47 @@ export const ConfigLive = Layer.effect(
     const configPath = NodePath.join(cwd, CONFIG_FILE_NAME)
     const maybeConfig = yield* $(loadConfig(configPath, fileSystem))
 
+    if (Option.isNone(maybeConfig)) {
+      return Config.of(defaultConfig)
+    }
+
+    // Allow the user to provide a path to a tsconfig.json file to resolve the compiler options
+    const examplesCompilerOptions = yield* $(
+      resolveCompilerOptions(cwd, maybeConfig.value.examplesCompilerOptions)
+    )
+    const parseCompilerOptions = yield* $(
+      resolveCompilerOptions(cwd, maybeConfig.value.parseCompilerOptions)
+    )
+
     return Config.of(
-      Option.match(maybeConfig, {
-        onNone: () => defaultConfig,
-        onSome: (loadedConfig) => ({ ...defaultConfig, ...loadedConfig })
-      })
+      {
+        ...defaultConfig,
+        ...maybeConfig.value,
+        examplesCompilerOptions,
+        parseCompilerOptions
+      }
     )
   })
 )
+
+function resolveCompilerOptions(
+  cwd: string,
+  options?: Schema.To<typeof ConfigSchema>["parseCompilerOptions" | "examplesCompilerOptions"]
+): Effect.Effect<
+  never,
+  ConfigError,
+  {
+    readonly [x: string]: unknown
+  }
+> {
+  if (options === undefined) return Effect.succeed({})
+  if (typeof options === "object") return Effect.succeed(options)
+
+  return Effect.tryPromise({
+    try: () =>
+      tsconfck.parse(NodePath.resolve(cwd, options)).then(({ tsconfig }) =>
+        tsconfig.compilerOptions ?? {}
+      ),
+    catch: (e) => ConfigError({ message: `Failed to resolve ${options}: ${e}` })
+  })
+}
