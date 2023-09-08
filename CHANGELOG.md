@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.1.5
+
+### Patch Changes
+
+- 85301ea: Add support for resolving compilerOptions from tsconfig files
+
 ## 0.1.4
 
 ### Patch Changes
