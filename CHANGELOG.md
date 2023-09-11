@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.1.6
+
+### Patch Changes
+
+- 172ac81: Fix parsing regression caused by compilerOptions parsing
+
 ## 0.1.5
 
 ### Patch Changes
