@@ -1104,12 +1104,14 @@ const createProject = (files: ReadonlyArray<FileSystem.File>) =>
         {
           compilerOptions: {
             strict: true,
+            moduleResolution: "node",
             ...config.parseCompilerOptions
           }
         },
         ast.ts.sys,
         cwd
       )
+
       const options: ast.ProjectOptions = {
         compilerOptions: parsed.options
       }
