@@ -14,6 +14,7 @@ Added in v1.0.0
 
 - [constructors](#constructors)
   - [createClass](#createclass)
+  - [createCommentInfo](#createcommentinfo)
   - [createConstant](#createconstant)
   - [createDocumentable](#createdocumentable)
   - [createExport](#createexport)
@@ -28,6 +29,7 @@ Added in v1.0.0
   - [Order](#order)
 - [model](#model)
   - [Class (interface)](#class-interface)
+  - [CommentInfo (interface)](#commentinfo-interface)
   - [Constant (interface)](#constant-interface)
   - [Documentable (interface)](#documentable-interface)
   - [Example (type alias)](#example-type-alias)
@@ -56,6 +58,22 @@ export declare const createClass: (
   staticMethods: ReadonlyArray<Method>,
   properties: ReadonlyArray<Property>
 ) => Class
+```
+
+Added in v1.0.0
+
+## createCommentInfo
+
+**Signature**
+
+```ts
+export declare const createCommentInfo: (
+  description: Option.Option<string>,
+  since: Option.Option<string>,
+  deprecated: boolean,
+  examples: ReadonlyArray<Example>,
+  category: Option.Option<string>
+) => CommentInfo
 ```
 
 Added in v1.0.0
@@ -212,6 +230,22 @@ export interface Class extends Documentable {
 
 Added in v1.0.0
 
+## CommentInfo (interface)
+
+**Signature**
+
+```ts
+export interface CommentInfo {
+  readonly description: Option.Option<string>
+  readonly since: Option.Option<string>
+  readonly deprecated: boolean
+  readonly examples: ReadonlyArray<Example>
+  readonly category: Option.Option<string>
+}
+```
+
+Added in v1.0.0
+
 ## Constant (interface)
 
 **Signature**
@@ -230,13 +264,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Documentable {
+export interface Documentable extends CommentInfo {
   readonly name: string
-  readonly description: Option.Option<string>
-  readonly since: Option.Option<string>
-  readonly deprecated: boolean
-  readonly examples: ReadonlyArray<Example>
-  readonly category: Option.Option<string>
 }
 ```
 

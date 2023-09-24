@@ -38,28 +38,6 @@ interface Comment {
   >
 }
 
-interface CommentInfo {
-  readonly description: Option.Option<string>
-  readonly since: Option.Option<string>
-  readonly deprecated: boolean
-  readonly examples: ReadonlyArray<Domain.Example>
-  readonly category: Option.Option<string>
-}
-
-const createCommentInfo = (
-  description: Option.Option<string>,
-  since: Option.Option<string>,
-  deprecated: boolean,
-  examples: ReadonlyArray<Domain.Example>,
-  category: Option.Option<string>
-): CommentInfo => ({
-  description,
-  since,
-  deprecated,
-  examples,
-  category
-})
-
 const every = <A>(predicates: ReadonlyArray<Predicate.Predicate<A>>) => (a: A): boolean =>
   predicates.every((p) => p(a))
 
@@ -217,7 +195,7 @@ export const getCommentInfo = (name: string, isModule = false) => (text: string)
         pipe(comment.tags, ReadonlyRecord.get("deprecated"), Option.isSome)
       )),
     Effect.map(({ category, deprecated, description, examples, since }) => {
-      return createCommentInfo(
+      return Domain.createCommentInfo(
         description,
         since,
         deprecated,
@@ -650,8 +628,51 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
       )
     ))
 
-const parseNamedExports = (ed: ast.ExportDeclaration) =>
-  pipe(ed.getNamedExports(), Effect.validateAll(parseExportSpecifier))
+const parseExportStar = (
+  ed: ast.ExportDeclaration
+): Effect.Effect<Source | Config.Config, string, Domain.Export> => {
+  const es = ed.getModuleSpecifier()!
+  const name = es.getText()
+  const signature = `export * from ${name}`
+  return Effect.flatMap(Source, (source) => {
+    return pipe(
+      ed.getLeadingCommentRanges(),
+      ReadonlyArray.head,
+      Effect.mapError(
+        () => `Missing ${signature} documentation in ${source.path.join("/")}`
+      ),
+      Effect.flatMap((commentRange) => pipe(commentRange.getText(), getCommentInfo(name))),
+      Effect.map((info) =>
+        Domain.createExport(
+          Domain.createDocumentable(
+            `From ${name}`,
+            info.description.pipe(Option.orElse(() =>
+              Option.some(`Re-exports all named exports from the ${name} module.`)
+            )),
+            info.since,
+            info.deprecated,
+            info.examples,
+            info.category.pipe(Option.orElse(() =>
+              Option.some("exports")
+            ))
+          ),
+          signature
+        )
+      )
+    )
+  })
+}
+
+const parseNamedExports = (ed: ast.ExportDeclaration) => {
+  const namedExports = ed.getNamedExports()
+  if (namedExports.length === 0) {
+    return parseExportStar(ed).pipe(Effect.mapBoth({
+      onFailure: ReadonlyArray.of,
+      onSuccess: ReadonlyArray.of
+    }))
+  }
+  return Effect.validateAll(namedExports, parseExportSpecifier)
+}
 
 /**
  * @category parsers
@@ -659,9 +680,7 @@ const parseNamedExports = (ed: ast.ExportDeclaration) =>
  */
 export const parseExports = pipe(
   Effect.map(Source, (source) => source.sourceFile.getExportDeclarations()),
-  Effect.flatMap((exportDeclarations) =>
-    pipe(exportDeclarations, Effect.validateAll(parseNamedExports))
-  ),
+  Effect.flatMap((exportDeclarations) => Effect.validateAll(exportDeclarations, parseNamedExports)),
   Effect.mapBoth({
     onFailure: ReadonlyArray.flatten,
     onSuccess: ReadonlyArray.flatten
