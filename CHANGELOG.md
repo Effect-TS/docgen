@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.1.7
+
+### Patch Changes
+
+- b94de9f: add support for `export * from ...`
+
 ## 0.1.6
 
 ### Patch Changes
