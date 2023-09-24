@@ -29,13 +29,20 @@ export type Example = string
  * @category model
  * @since 1.0.0
  */
-export interface Documentable {
-  readonly name: string
+export interface CommentInfo {
   readonly description: Option.Option<string>
   readonly since: Option.Option<string>
   readonly deprecated: boolean
   readonly examples: ReadonlyArray<Example>
   readonly category: Option.Option<string>
+}
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export interface Documentable extends CommentInfo {
+  readonly name: string
 }
 
 /**
@@ -135,6 +142,24 @@ export interface Namespace extends Documentable {
 // -------------------------------------------------------------------------------------
 // constructors
 // -------------------------------------------------------------------------------------
+
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const createCommentInfo = (
+  description: Option.Option<string>,
+  since: Option.Option<string>,
+  deprecated: boolean,
+  examples: ReadonlyArray<Example>,
+  category: Option.Option<string>
+): CommentInfo => ({
+  description,
+  since,
+  deprecated,
+  examples,
+  category
+})
 
 /**
  * @category constructors
