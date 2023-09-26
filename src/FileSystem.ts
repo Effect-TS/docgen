@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
+import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import { Context, Data, Effect, Layer } from "effect"
-import * as NodeFS from "fs-extra"
+import * as FSExtra from "fs-extra"
 import * as Glob from "glob"
-import * as Rimraf from "rimraf"
 
 /**
  * Represents a file system which can be read from and written to.
@@ -146,22 +146,17 @@ export const GlobError = Data.tagged<GlobError>("GlobError")
 export const FileSystem = Context.Tag<FileSystem>()
 
 /**
- * @category service
+ * @category layer
  * @since 1.0.0
  */
 export const FileSystemLive = Layer.effect(
   FileSystem,
-  Effect.sync(() => {
+  Effect.map(PlatformFileSystem.FileSystem, (fs) => {
     const readFile = (path: string): Effect.Effect<never, ReadFileError, string> =>
-      Effect.async((resume) =>
-        NodeFS.readFile(path, "utf8", (error, data) => {
-          if (error) {
-            resume(Effect.fail(ReadFileError({ path, error })))
-          } else {
-            resume(Effect.succeed(data))
-          }
-        })
+      fs.readFileString(path, "utf8").pipe(
+        Effect.mapError((error) => ReadFileError({ path, error: new Error(error.message) }))
       )
+
     const readJsonFile = (
       path: string
     ): Effect.Effect<never, ReadFileError | ParseJsonError, unknown> =>
@@ -174,9 +169,10 @@ export const FileSystemLive = Layer.effect(
               error: error instanceof Error ? error : new Error(String(error))
             })
         }))
+
     const writeFile = (path: string, content: string): Effect.Effect<never, WriteFileError, void> =>
       Effect.async((resume) =>
-        NodeFS.outputFile(path, content, "utf8", (error) => {
+        FSExtra.outputFile(path, content, "utf8", (error) => {
           if (error) {
             resume(Effect.fail(WriteFileError({ path, error })))
           } else {
@@ -184,26 +180,27 @@ export const FileSystemLive = Layer.effect(
           }
         })
       )
-    const removeFile = (path: string): Effect.Effect<never, RemoveFileError, void> =>
-      Effect.tryPromise({
-        try: () => Rimraf.rimraf(path),
-        catch: (error) =>
-          RemoveFileError({
-            error: error instanceof Error ? error : new Error(String(error)),
-            path
-          })
-      })
+
+    const removeFile = (
+      path: string
+    ): Effect.Effect<never, RemoveFileError, void> =>
+      Effect.if(
+        pathExists(path).pipe(
+          Effect.mapError((error) => RemoveFileError({ path, error: error.error }))
+        ),
+        {
+          onTrue: fs.remove(path, { recursive: true }).pipe(
+            Effect.mapError((error) => RemoveFileError({ path, error: new Error(error.message) }))
+          ),
+          onFalse: Effect.unit
+        }
+      )
 
     const pathExists = (path: string): Effect.Effect<never, ReadFileError, boolean> =>
-      Effect.async((resume) =>
-        NodeFS.pathExists(path, (error, data) => {
-          if (error) {
-            resume(Effect.fail(ReadFileError({ error, path })))
-          } else {
-            resume(Effect.succeed(data))
-          }
-        })
+      fs.exists(path).pipe(
+        Effect.mapError((error) => ReadFileError({ path, error: new Error(error.message) }))
       )
+
     const glob = (
       pattern: string,
       exclude: Array<string> = []
@@ -217,6 +214,7 @@ export const FileSystemLive = Layer.effect(
             pattern
           })
       })
+
     return FileSystem.of({
       readFile,
       readJsonFile,

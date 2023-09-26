@@ -1,3 +1,4 @@
+import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import * as assert from "assert"
 import { Effect, Exit } from "effect"
 import * as FileSystem from "../src/FileSystem"
@@ -10,10 +11,11 @@ describe.concurrent("FileSystem", () => {
         (fileSystem) => fileSystem.readFile("non-existent.txt")
       ).pipe(
         Effect.mapError(({ error }) => error.message),
-        Effect.provideLayer(FileSystem.FileSystemLive)
+        Effect.provide(FileSystem.FileSystemLive),
+        Effect.provide(PlatformFileSystem.layer)
       )
       assert.deepStrictEqual(
-        Exit.unannotate(await Effect.runPromiseExit(program)),
+        await Effect.runPromiseExit(program),
         Exit.fail("ENOENT: no such file or directory, open 'non-existent.txt'")
       )
     })

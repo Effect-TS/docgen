@@ -108,7 +108,7 @@ const loadConfig = (
 ): Effect.Effect<
   never,
   ConfigError | FileSystem.ReadFileError | FileSystem.ParseJsonError,
-  Option.Option<Schema.To<typeof PartialConfigSchema>>
+  Option.Option<Schema.Schema.To<typeof PartialConfigSchema>>
 > =>
   Effect.if(fileSystem.pathExists(path), {
     onTrue: Effect.logInfo(chalk.bold("Configuration file found")).pipe(
@@ -169,7 +169,9 @@ export const ConfigLive = Layer.effect(
 
 function resolveCompilerOptions(
   cwd: string,
-  options?: Schema.To<typeof ConfigSchema>["parseCompilerOptions" | "examplesCompilerOptions"]
+  options?: Schema.Schema.To<
+    typeof ConfigSchema
+  >["parseCompilerOptions" | "examplesCompilerOptions"]
 ): Effect.Effect<
   never,
   ConfigError,

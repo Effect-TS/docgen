@@ -44,8 +44,7 @@ const expectFailure = <E, A>(
     eff.pipe(
       Effect.provideService(Parser.Source, getParser(sourceText)),
       Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
-      Effect.runSyncExit,
-      Exit.unannotate
+      Effect.runSyncExit
     )
   ).toEqual(Exit.fail(failure))
 }
@@ -1326,8 +1325,7 @@ export const foo = 'foo'`,
         assert.deepStrictEqual(
           Parser.parseFile(project)(file).pipe(
             Effect.provideService(Config.Config, defaultConfig),
-            Effect.runSyncExit,
-            Exit.unannotate
+            Effect.runSyncExit
           ),
           Exit.fail(["Unable to locate file: non-existent.ts"])
         )

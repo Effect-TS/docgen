@@ -1,4 +1,5 @@
-import { Effect, ReadonlyRecord } from "effect"
+import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
+import { Console, Effect, ReadonlyRecord } from "effect"
 import * as path from "node:path"
 import * as FileSystem from "../src/FileSystem"
 
@@ -42,10 +43,11 @@ const write = (pkg: object) =>
     (fileSystem) => fileSystem.writeFile(pathTo, JSON.stringify(pkg, null, 2))
   )
 
-const program = Effect.sync(() => console.log(`copying package.json to ${pathTo}...`)).pipe(
+const program = Console.log(`copying package.json to ${pathTo}...`).pipe(
   Effect.zipRight(read),
   Effect.flatMap(write),
-  Effect.provideLayer(FileSystem.FileSystemLive)
+  Effect.provide(FileSystem.FileSystemLive),
+  Effect.provide(PlatformFileSystem.layer)
 )
 
 Effect.runPromise(program)

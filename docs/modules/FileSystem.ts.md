@@ -19,6 +19,8 @@ Added in v1.0.0
   - [RemoveFileError](#removefileerror)
   - [WriteFileError](#writefileerror)
   - [makeFile](#makefile)
+- [layer](#layer)
+  - [FileSystemLive](#filesystemlive)
 - [model](#model)
   - [File (interface)](#file-interface)
   - [FileSystem (interface)](#filesystem-interface)
@@ -29,7 +31,6 @@ Added in v1.0.0
   - [WriteFileError (interface)](#writefileerror-interface)
 - [service](#service)
   - [FileSystem](#filesystem)
-  - [FileSystemLive](#filesystemlive)
 
 ---
 
@@ -93,6 +94,18 @@ By default files are readonly (`overwrite = false`).
 
 ```ts
 export declare const makeFile: (path: string, content: string, overwrite?: boolean) => File
+```
+
+Added in v1.0.0
+
+# layer
+
+## FileSystemLive
+
+**Signature**
+
+```ts
+export declare const FileSystemLive: Layer.Layer<PlatformFileSystem.FileSystem, never, FileSystem>
 ```
 
 Added in v1.0.0
@@ -248,16 +261,6 @@ Added in v1.0.0
 
 ```ts
 export declare const FileSystem: Context.Tag<FileSystem, FileSystem>
-```
-
-Added in v1.0.0
-
-## FileSystemLive
-
-**Signature**
-
-```ts
-export declare const FileSystemLive: Layer.Layer<never, never, FileSystem>
 ```
 
 Added in v1.0.0

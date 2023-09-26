@@ -2,8 +2,9 @@
  * @since 1.0.0
  */
 
+import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import chalk from "chalk"
-import { Data, Effect, Layer, Logger, LoggerLevel, pipe, ReadonlyArray, String } from "effect"
+import { Data, Effect, Layer, Logger, LogLevel, pipe, ReadonlyArray, String } from "effect"
 import * as NodePath from "path"
 import * as ChildProcess from "./ChildProcess"
 import * as Config from "./Config"
@@ -428,30 +429,37 @@ const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
     return yield* _(writeFiles(files))
   })
 
-const MainLayer = Logger.replace(Logger.defaultLogger, SimpleLogger).pipe(
-  Layer.merge(ChildProcess.ChildProcessLive),
-  Layer.merge(FileSystem.FileSystemLive),
-  Layer.merge(Process.ProcessLive),
-  Layer.provideMerge(Config.ConfigLive)
+const program = Effect.gen(function*(_) {
+  yield* _(Effect.logInfo("reading modules..."))
+  const sourceFiles = yield* _(readFiles)
+  yield* _(Effect.logInfo("parsing modules..."))
+  const modules = yield* _(getModules(sourceFiles))
+  yield* _(Effect.logInfo("typechecking examples..."))
+  yield* _(typeCheckExamples(modules))
+  yield* _(Effect.logInfo("creating markdown files..."))
+  const outputFiles = yield* _(getMarkdown(modules))
+  yield* _(Effect.logInfo("writing markdown files..."))
+  yield* _(writeMarkdown(outputFiles))
+  yield* _(Effect.logInfo(chalk.bold.green("Docs generation succeeded!")))
+}).pipe(Logger.withMinimumLogLevel(LogLevel.Debug))
+
+const MainLayer = Layer.mergeAll(
+  Logger.replace(Logger.defaultLogger, SimpleLogger),
+  ChildProcess.ChildProcessLive,
+  FileSystem.FileSystemLive,
+  Process.ProcessLive
+).pipe(
+  Layer.provideMerge(Config.ConfigLive),
+  Layer.use(PlatformFileSystem.layer)
 )
+
+const runnable = program.pipe(Effect.provide(MainLayer))
 
 /**
  * @category main
  * @since 1.0.0
  */
-export const main: Effect.Effect<never, never, void> = Effect.logInfo("reading modules...").pipe(
-  Effect.zipRight(readFiles),
-  Effect.zipLeft(Effect.logInfo("parsing modules...")),
-  Effect.flatMap(getModules),
-  Effect.zipLeft(Effect.logInfo("typechecking examples...")),
-  Effect.tap(typeCheckExamples),
-  Effect.zipLeft(Effect.logInfo("creating markdown files...")),
-  Effect.flatMap(getMarkdown),
-  Effect.zipLeft(Effect.logInfo("writing markdown files...")),
-  Effect.flatMap(writeMarkdown),
-  Effect.zipLeft(Effect.logInfo(chalk.bold.green("Docs generation succeeded!"))),
-  Logger.withMinimumLogLevel(LoggerLevel.Debug),
-  Effect.provideLayer(MainLayer),
+export const main: Effect.Effect<never, never, void> = runnable.pipe(
   Effect.catchTags({
     // Configuration errors
     ConfigError: ({ message }) => Effect.dieMessage(message),
