@@ -59,20 +59,20 @@ const PackageJsonSchema = Schema.struct({
   homepage: Schema.string
 })
 
-const parseJsonFile = <I, A>(
+const validateJsonFile = <I, A>(
   schema: Schema.Schema<I, A>,
-  path: string,
-  fileSystem: FileSystem.FileSystem
-): Effect.Effect<never, Error, A> =>
-  fileSystem.readJsonFile(path).pipe(
-    Effect.flatMap((content) =>
-      Schema.parse(schema)(content).pipe(
-        Effect.mapError((e) =>
-          new Error(`[Config] Invalid config:\n${TreeFormatter.formatErrors(e.errors)}`)
-        )
+  path: string
+): Effect.Effect<FileSystem.FileSystem, Error, A> =>
+  Effect.gen(function*(_) {
+    const fs = yield* _(FileSystem.FileSystem)
+    const content = yield* _(fs.readJsonFile(path))
+    return yield* _(
+      Schema.parse(schema)(content),
+      Effect.mapError((e) =>
+        new Error(`[Config] Invalid config:\n${TreeFormatter.formatErrors(e.errors)}`)
       )
     )
-  )
+  })
 
 const getDefaultConfig = (projectName: string, projectHomepage: string): Config => ({
   projectName,
@@ -90,17 +90,21 @@ const getDefaultConfig = (projectName: string, projectHomepage: string): Config 
 })
 
 const loadConfig = (
-  path: string,
-  fileSystem: FileSystem.FileSystem
-): Effect.Effect<never, Error, Option.Option<Schema.Schema.To<typeof PartialConfigSchema>>> =>
-  Effect.if(fileSystem.pathExists(path), {
-    onTrue: Effect.logInfo(chalk.bold("Configuration file found")).pipe(
-      Effect.flatMap(() => parseJsonFile(PartialConfigSchema, path, fileSystem)),
-      Effect.asSome
-    ),
-    onFalse: Effect.logInfo(
-      chalk.bold("No configuration file detected, using default configuration")
-    ).pipe(Effect.as(Option.none()))
+  path: string
+): Effect.Effect<
+  FileSystem.FileSystem,
+  Error,
+  Option.Option<Schema.Schema.To<typeof PartialConfigSchema>>
+> =>
+  Effect.gen(function*(_) {
+    const fs = yield* _(FileSystem.FileSystem)
+    const exists = yield* _(fs.pathExists(path))
+    if (exists) {
+      const config = yield* _(validateJsonFile(PartialConfigSchema, path))
+      return Option.some(config)
+    } else {
+      return Option.none()
+    }
   })
 
 /**
@@ -109,30 +113,34 @@ const loadConfig = (
  */
 export const ConfigLive = Layer.effect(
   Config,
-  Effect.gen(function*($) {
+  Effect.gen(function*(_) {
     // Extract the requisite services
-    const process = yield* $(Process.Process)
-    const fileSystem = yield* $(FileSystem.FileSystem)
-    const cwd = yield* $(process.cwd)
+    const process = yield* _(Process.Process)
+    const cwd = yield* _(process.cwd)
 
     // Read and parse the package.json
     const packageJsonPath = NodePath.join(cwd, PACKAGE_JSON_FILE_NAME)
-    const packageJson = yield* $(parseJsonFile(PackageJsonSchema, packageJsonPath, fileSystem))
+    const packageJson = yield* _(validateJsonFile(PackageJsonSchema, packageJsonPath))
 
     // Read and resolve the configuration
     const defaultConfig = getDefaultConfig(packageJson.name, packageJson.homepage)
     const configPath = NodePath.join(cwd, CONFIG_FILE_NAME)
-    const maybeConfig = yield* $(loadConfig(configPath, fileSystem))
+    const maybeConfig = yield* _(loadConfig(configPath))
 
     if (Option.isNone(maybeConfig)) {
+      yield* _(
+        Effect.logInfo(chalk.bold("No configuration file detected, using default configuration"))
+      )
       return Config.of(defaultConfig)
     }
 
+    yield* _(Effect.logInfo(chalk.bold("Configuration file found")))
+
     // Allow the user to provide a path to a tsconfig.json file to resolve the compiler options
-    const examplesCompilerOptions = yield* $(
+    const examplesCompilerOptions = yield* _(
       resolveCompilerOptions(cwd, maybeConfig.value.examplesCompilerOptions)
     )
-    const parseCompilerOptions = yield* $(
+    const parseCompilerOptions = yield* _(
       resolveCompilerOptions(cwd, maybeConfig.value.parseCompilerOptions)
     )
 
@@ -159,8 +167,12 @@ function resolveCompilerOptions(
     readonly [x: string]: unknown
   }
 > {
-  if (options === undefined) return Effect.succeed({})
-  if (typeof options === "object") return Effect.succeed(options)
+  if (options === undefined) {
+    return Effect.succeed({})
+  }
+  if (typeof options === "object") {
+    return Effect.succeed(options)
+  }
 
   return Effect.tryPromise({
     try: () =>
