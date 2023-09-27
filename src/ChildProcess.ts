@@ -1,13 +1,13 @@
 /**
  * @since 1.0.0
  */
-import { Context, Data, Effect, Layer } from "effect"
+import { Context, Effect, Layer } from "effect"
 import * as NodeChildProcess from "node:child_process"
 
 /**
  * Represents an entity that is capable of spawning child processes.
  *
- * @category model
+ * @category service
  * @since 1.0.0
  */
 export interface ChildProcess {
@@ -23,45 +23,8 @@ export interface ChildProcess {
   spawn(
     command: string,
     executable: string
-  ): Effect.Effect<never, ExecutionError | SpawnError, void>
+  ): Effect.Effect<never, Error, void>
 }
-
-/**
- * Represents an error that occurs when trying to spawn a child process.
- *
- * @category model
- * @since 1.0.0
- */
-export interface SpawnError extends Data.Case {
-  readonly _tag: "SpawnError"
-  readonly command: string
-  readonly args: ReadonlyArray<string>
-  readonly error: Error
-}
-
-/**
- * @category constructors
- * @since 1.0.0
- */
-export const SpawnError = Data.tagged<SpawnError>("SpawnError")
-
-/**
- * Represents an error that occurs within a child process during execution.
- *
- * @category model
- * @since 1.0.0
- */
-export interface ExecutionError extends Data.Case {
-  readonly _tag: "ExecutionError"
-  readonly command: string
-  readonly stderr: string
-}
-
-/**
- * @category constructors
- * @since 1.0.0
- */
-export const ExecutionError = Data.tagged<ExecutionError>("ExecutionError")
 
 /**
  * @category service
@@ -84,16 +47,20 @@ export const ChildProcessLive = Layer.succeed(
             encoding: "utf8"
           }),
         catch: (error) =>
-          SpawnError({
-            command,
-            args: [executable],
-            error: error instanceof Error ? error : new Error(String(error))
-          })
+          new Error(
+            `[CommandExecutor] Unable to spawn child process for command: '${command} ${executable}':\n${
+              String(error)
+            }`
+          )
       }).pipe(
         Effect.flatMap(({ status, stderr }) =>
           status === 0
             ? Effect.unit
-            : Effect.fail(ExecutionError({ command, stderr }))
+            : Effect.fail(
+              new Error(
+                `[CommandExecutor] During execution of '${command}', the following error occurred:\n${stderr}`
+              )
+            )
         )
       )
   })

@@ -7,7 +7,7 @@ import { Context, Effect, Layer } from "effect"
 /**
  * Represents a handle to the currently executing process.
  *
- * @category model
+ * @category service
  * @since 1.0.0
  */
 export interface Process {

@@ -194,7 +194,7 @@ const getHeaderByIndentation = (indentation: number) => {
     case 2:
       return h4
   }
-  throw new Error(`Unsupported namespace nesting: ${indentation + 1}`)
+  throw new Error(`[Markdown] Unsupported namespace nesting: ${indentation + 1}`)
 }
 
 const fromNamespace = (ns: Domain.Namespace, indentation: number): string =>
@@ -243,13 +243,13 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
     module.namespaces
   ])
 
+const DEFAULT_CATEGORY = "utils"
+
 /**
  * @category printers
  * @since 1.0.0
  */
 export const printModule = (module: Domain.Module, order: number): string => {
-  const DEFAULT_CATEGORY = "utils"
-
   const header = getMeta(module.path.slice(1).join("/"), order)
 
   const description = paragraph(getModuleDescription(module))

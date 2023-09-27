@@ -4,7 +4,7 @@
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import chalk from "chalk"
-import { Context, Data, Effect, Layer, Option } from "effect"
+import { Context, Effect, Layer, Option } from "effect"
 import * as NodePath from "node:path"
 import * as tsconfck from "tsconfck"
 import * as FileSystem from "./FileSystem"
@@ -14,7 +14,7 @@ const PACKAGE_JSON_FILE_NAME = "package.json"
 const CONFIG_FILE_NAME = "docgen.json"
 
 /**
- * @category model
+ * @category service
  * @since 1.0.0
  */
 export interface Config {
@@ -31,21 +31,6 @@ export interface Config {
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
 }
-
-/**
- * @category model
- * @since 1.0.0
- */
-export interface ConfigError extends Data.Case {
-  readonly _tag: "ConfigError"
-  readonly message: string
-}
-
-/**
- * @category constructors
- * @since 1.0.0
- */
-export const ConfigError = Data.tagged<ConfigError>("ConfigError")
 
 /**
  * @category service
@@ -78,11 +63,13 @@ const parseJsonFile = <I, A>(
   schema: Schema.Schema<I, A>,
   path: string,
   fileSystem: FileSystem.FileSystem
-): Effect.Effect<never, ConfigError | FileSystem.ReadFileError | FileSystem.ParseJsonError, A> =>
+): Effect.Effect<never, Error, A> =>
   fileSystem.readJsonFile(path).pipe(
     Effect.flatMap((content) =>
       Schema.parse(schema)(content).pipe(
-        Effect.mapError((e) => ConfigError({ message: TreeFormatter.formatErrors(e.errors) }))
+        Effect.mapError((e) =>
+          new Error(`[Config] Invalid config:\n${TreeFormatter.formatErrors(e.errors)}`)
+        )
       )
     )
   )
@@ -107,7 +94,7 @@ const loadConfig = (
   fileSystem: FileSystem.FileSystem
 ): Effect.Effect<
   never,
-  ConfigError | FileSystem.ReadFileError | FileSystem.ParseJsonError,
+  Error,
   Option.Option<Schema.Schema.To<typeof PartialConfigSchema>>
 > =>
   Effect.if(fileSystem.pathExists(path), {
@@ -174,7 +161,7 @@ function resolveCompilerOptions(
   >["parseCompilerOptions" | "examplesCompilerOptions"]
 ): Effect.Effect<
   never,
-  ConfigError,
+  Error,
   {
     readonly [x: string]: unknown
   }
@@ -187,6 +174,6 @@ function resolveCompilerOptions(
       tsconfck.parse(NodePath.resolve(cwd, options)).then(({ tsconfig }) =>
         tsconfig.compilerOptions ?? {}
       ),
-    catch: (e) => ConfigError({ message: `Failed to resolve ${options}: ${e}` })
+    catch: (error) => new Error(`[Config] Failed to resolve ${options}: ${String(error)}`)
   })
 }

@@ -10,13 +10,15 @@ describe.concurrent("FileSystem", () => {
         FileSystem.FileSystem,
         (fileSystem) => fileSystem.readFile("non-existent.txt")
       ).pipe(
-        Effect.mapError(({ error }) => error.message),
+        Effect.mapError((error) => error.message),
         Effect.provide(FileSystem.FileSystemLive),
         Effect.provide(PlatformFileSystem.layer)
       )
       assert.deepStrictEqual(
         await Effect.runPromiseExit(program),
-        Exit.fail("ENOENT: no such file or directory, open 'non-existent.txt'")
+        Exit.fail(
+          `[FileSystem] Unable to read file from 'non-existent.txt': ENOENT: no such file or directory, open 'non-existent.txt'`
+        )
       )
     })
   })

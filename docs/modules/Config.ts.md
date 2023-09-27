@@ -12,30 +12,24 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [constructors](#constructors)
-  - [ConfigError](#configerror)
-- [model](#model)
-  - [Config (interface)](#config-interface)
-  - [ConfigError (interface)](#configerror-interface)
 - [service](#service)
   - [Config](#config)
+  - [Config (interface)](#config-interface)
   - [ConfigLive](#configlive)
 
 ---
 
-# constructors
+# service
 
-## ConfigError
+## Config
 
 **Signature**
 
 ```ts
-export declare const ConfigError: Data.Case.Constructor<ConfigError, '_tag'>
+export declare const Config: Context.Tag<Config, Config>
 ```
 
 Added in v1.0.0
-
-# model
 
 ## Config (interface)
 
@@ -60,41 +54,12 @@ export interface Config {
 
 Added in v1.0.0
 
-## ConfigError (interface)
-
-**Signature**
-
-```ts
-export interface ConfigError extends Data.Case {
-  readonly _tag: 'ConfigError'
-  readonly message: string
-}
-```
-
-Added in v1.0.0
-
-# service
-
-## Config
-
-**Signature**
-
-```ts
-export declare const Config: Context.Tag<Config, Config>
-```
-
-Added in v1.0.0
-
 ## ConfigLive
 
 **Signature**
 
 ```ts
-export declare const ConfigLive: Layer.Layer<
-  Process.Process | FileSystem.FileSystem,
-  FileSystem.ReadFileError | FileSystem.ParseJsonError | ConfigError,
-  Config
->
+export declare const ConfigLive: Layer.Layer<Process.Process | FileSystem.FileSystem, Error, Config>
 ```
 
 Added in v1.0.0

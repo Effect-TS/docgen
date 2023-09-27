@@ -4,7 +4,7 @@
 
 import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import chalk from "chalk"
-import { Data, Effect, Layer, Logger, LogLevel, pipe, ReadonlyArray, String } from "effect"
+import { Effect, Layer, Logger, LogLevel, pipe, ReadonlyArray, String } from "effect"
 import * as NodePath from "path"
 import * as ChildProcess from "./ChildProcess"
 import * as Config from "./Config"
@@ -29,7 +29,7 @@ const readFiles = Effect.all([Config.Config, FileSystem.FileSystem]).pipe(
         Effect.forEach((path) =>
           Effect.map(
             fileSystem.readFile(path),
-            (content) => FileSystem.makeFile(path, content, false)
+            (content) => FileSystem.createFile(path, content, false)
           ), { concurrency: "inherit" })
       )
     )
@@ -38,11 +38,7 @@ const readFiles = Effect.all([Config.Config, FileSystem.FileSystem]).pipe(
 
 const writeFile = (
   file: FileSystem.File
-): Effect.Effect<
-  Config.Config | FileSystem.FileSystem | Process.Process,
-  FileSystem.ReadFileError | FileSystem.WriteFileError,
-  void
-> =>
+): Effect.Effect<Config.Config | FileSystem.FileSystem | Process.Process, Error, void> =>
   Effect.all([Config.Config, FileSystem.FileSystem, Process.Process]).pipe(
     Effect.flatMap(([config, fileSystem, process]) =>
       process.cwd.pipe(
@@ -60,7 +56,7 @@ const writeFile = (
           const write = fileSystem.writeFile(file.path, file.content)
 
           return Effect.if(fileSystem.pathExists(file.path), {
-            onTrue: file.overwrite ? overwrite : skip,
+            onTrue: file.isOverwriteable ? overwrite : skip,
             onFalse: write
           })
         })
@@ -72,31 +68,14 @@ const writeFile = (
 // parse
 // -------------------------------------------------------------------------------------
 
-/**
- * Represents errors that occurred during parsing of TypeScript source files.
- *
- * @category model
- * @since 1.0.0
- */
-export interface ParseError extends Data.Case {
-  readonly _tag: "ParseError"
-  readonly message: string
-}
-
-/**
- * @category constructors
- * @since 1.0.0
- */
-export const ParseError = Data.tagged<ParseError>("ParseError")
-
 const getModules = (files: ReadonlyArray<FileSystem.File>) =>
   Parser.parseFiles(files).pipe(
     Effect.mapError((errors) =>
-      ParseError({
-        message: errors
-          .map((errors) => errors.join("\n"))
-          .join("\n")
-      })
+      new Error(
+        `The following error(s) occurred while parsing the TypeScript source files:\n${
+          errors.map((errors) => errors.join("\n")).join("\n")
+        }`
+      )
     )
   )
 
@@ -131,7 +110,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         ReadonlyArray.map(
           documentable.examples,
           (content, i) =>
-            FileSystem.makeFile(
+            FileSystem.createFile(
               join(
                 config.outDir,
                 "examples",
@@ -206,7 +185,7 @@ const handleImports = (files: ReadonlyArray<FileSystem.File>) =>
   Effect.forEach(files, (file) =>
     replaceProjectName(file.content).pipe(
       Effect.map(addAssertImport),
-      Effect.map((content) => FileSystem.makeFile(file.path, content, file.overwrite))
+      Effect.map((content) => FileSystem.createFile(file.path, content, file.isOverwriteable))
     ))
 
 const getExampleIndex = (examples: ReadonlyArray<FileSystem.File>) => {
@@ -218,7 +197,7 @@ const getExampleIndex = (examples: ReadonlyArray<FileSystem.File>) => {
     ReadonlyArray.join("\n")
   )
   return Effect.map(Config.Config, (config) =>
-    FileSystem.makeFile(
+    FileSystem.createFile(
       join(config.outDir, "examples", "index.ts"),
       `${content}\n`,
       true
@@ -260,7 +239,7 @@ const writeTsConfigJson = Effect.logDebug("Writing examples tsconfig...").pipe(
     process.cwd.pipe(
       Effect.flatMap((cwd) =>
         writeFile(
-          FileSystem.makeFile(
+          FileSystem.createFile(
             join(cwd, config.outDir, "examples", "tsconfig.json"),
             JSON.stringify({ compilerOptions: config.examplesCompilerOptions }, null, 2),
             true
@@ -292,7 +271,7 @@ const getHome = Effect.all([Config.Config, Process.Process]).pipe(
   Effect.flatMap(([config, process]) =>
     process.cwd.pipe(
       Effect.map((cwd) =>
-        FileSystem.makeFile(
+        FileSystem.createFile(
           join(cwd, config.outDir, "index.md"),
           String.stripMargin(
             `|---
@@ -313,7 +292,7 @@ const getModulesIndex = Effect.all([Config.Config, Process.Process]).pipe(
     process.cwd
       .pipe(
         Effect.map((cwd) =>
-          FileSystem.makeFile(
+          FileSystem.createFile(
             join(cwd, config.outDir, "modules", "index.md"),
             String.stripMargin(
               `|---
@@ -366,14 +345,14 @@ const getConfigYML = Effect.all([Config.Config, FileSystem.FileSystem, Process.P
             ? Effect.map(
               fileSystem.readFile(filePath),
               (content) =>
-                FileSystem.makeFile(
+                FileSystem.createFile(
                   filePath,
                   resolveConfigYML(content, config),
                   true
                 )
             )
             : Effect.succeed(
-              FileSystem.makeFile(
+              FileSystem.createFile(
                 filePath,
                 String.stripMargin(
                   `|remote_theme: ${config.theme}
@@ -409,7 +388,7 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
       .pipe(
         Effect.bind("outputPath", () => getMarkdownOutputPath(module)),
         Effect.bind("content", () => Effect.succeed(printModule(module, order + 1))),
-        Effect.map(({ content, outputPath }) => FileSystem.makeFile(outputPath, content, true))
+        Effect.map(({ content, outputPath }) => FileSystem.createFile(outputPath, content, true))
       ))
 
 // -------------------------------------------------------------------------------------
@@ -430,15 +409,15 @@ const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
   })
 
 const program = Effect.gen(function*(_) {
-  yield* _(Effect.logInfo("reading modules..."))
+  yield* _(Effect.logInfo("Reading modules..."))
   const sourceFiles = yield* _(readFiles)
-  yield* _(Effect.logInfo("parsing modules..."))
+  yield* _(Effect.logInfo("Parsing modules..."))
   const modules = yield* _(getModules(sourceFiles))
-  yield* _(Effect.logInfo("typechecking examples..."))
+  yield* _(Effect.logInfo("Typechecking examples..."))
   yield* _(typeCheckExamples(modules))
-  yield* _(Effect.logInfo("creating markdown files..."))
+  yield* _(Effect.logInfo("Creating markdown files..."))
   const outputFiles = yield* _(getMarkdown(modules))
-  yield* _(Effect.logInfo("writing markdown files..."))
+  yield* _(Effect.logInfo("Writing markdown files..."))
   yield* _(writeMarkdown(outputFiles))
   yield* _(Effect.logInfo(chalk.bold.green("Docs generation succeeded!")))
 }).pipe(Logger.withMinimumLogLevel(LogLevel.Debug))
@@ -460,31 +439,5 @@ const runnable = program.pipe(Effect.provide(MainLayer))
  * @since 1.0.0
  */
 export const main: Effect.Effect<never, never, void> = runnable.pipe(
-  Effect.catchTags({
-    // Configuration errors
-    ConfigError: ({ message }) => Effect.dieMessage(message),
-    // File system errors
-    ReadFileError: ({ path }) => Effect.dieMessage(`Unable to read file from: '${path}'`),
-    WriteFileError: ({ path }) => Effect.dieMessage(`Unable to write file to: '${path}'`),
-    RemoveFileError: ({ path }) => Effect.dieMessage(`Unable to remove file from: '${path}'`),
-    GlobError: ({ exclude, pattern }) =>
-      Effect.dieMessage(
-        `Unable to execute glob pattern '${pattern}' excluding files matching '${exclude}'`
-      ),
-    // Child process errors
-    ExecutionError: ({ command, stderr }) =>
-      Effect.dieMessage(
-        `During execution of '${command}', the following error occurred:\n${stderr}`
-      ),
-    SpawnError: ({ args, command, error }) =>
-      Effect.dieMessage(
-        `Unable to spawn child process for command: '${command} ${args.join(" ")}'\n${error}`
-      ),
-    // Parsing errors
-    ParseJsonError: ({ content }) => Effect.dieMessage(`Unable to parse JSON: ${content}`),
-    ParseError: ({ message }) =>
-      Effect.dieMessage(
-        `The following error(s) occurred while parsing the TypeScript source files:\n${message}`
-      )
-  })
+  Effect.catchAll((error) => Effect.dieMessage(error.message))
 )

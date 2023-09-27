@@ -1319,7 +1319,7 @@ export const foo = 'foo'`,
 
     describe.concurrent("parseFile", () => {
       it("should not parse a non-existent file", async () => {
-        const file = FileSystem.makeFile("non-existent.ts", "")
+        const file = FileSystem.createFile("non-existent.ts", "")
         const project = new ast.Project({ useInMemoryFileSystem: true })
 
         assert.deepStrictEqual(
