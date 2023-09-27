@@ -5,7 +5,7 @@
 import chalk from "chalk"
 import { Effect, Layer, Logger, LogLevel, pipe, ReadonlyArray, String } from "effect"
 import * as NodePath from "path"
-import * as ChildProcess from "./ChildProcess"
+import * as ChildProcess from "./CommandExecutor"
 import * as Config from "./Config"
 import type * as Domain from "./Domain"
 import * as FileSystem from "./FileSystem"
@@ -209,7 +209,7 @@ const cleanExamples = Effect.flatMap(
 )
 
 const spawnTsNode = Effect.logDebug("Type checking examples...").pipe(
-  Effect.flatMap(() => Effect.all([ChildProcess.ChildProcess, Config.Config, Process.Process])),
+  Effect.flatMap(() => Effect.all([ChildProcess.CommandExecutor, Config.Config, Process.Process])),
   Effect.flatMap(([childProcess, config, process]) =>
     Effect.all([process.cwd, process.platform]).pipe(
       Effect.flatMap(([cwd, platform]) => {
@@ -423,7 +423,7 @@ const program = Effect.gen(function*(_) {
 
 const MainLayer = Layer.mergeAll(
   Logger.replace(Logger.defaultLogger, SimpleLogger),
-  ChildProcess.ChildProcessLive,
+  ChildProcess.CommandExecutorLive,
   FileSystem.FileSystemLive,
   Process.ProcessLive
 ).pipe(

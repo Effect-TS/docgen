@@ -16,32 +16,32 @@ export interface FileSystem {
   /**
    * Read a file from the file system at the specified `path`.
    */
-  readFile(path: string): Effect.Effect<never, Error, string>
+  readonly readFile: (path: string) => Effect.Effect<never, Error, string>
   /**
    * Read a `.json` file from the file system at the specified `path` and parse
    * the contents.
    */
-  readJsonFile(path: string): Effect.Effect<never, Error, unknown>
+  readonly readJsonFile: (path: string) => Effect.Effect<never, Error, unknown>
   /**
    * Write a file to the specified `path` containing the specified `content`.
    */
-  writeFile(path: string, content: string): Effect.Effect<never, Error, void>
+  readonly writeFile: (path: string, content: string) => Effect.Effect<never, Error, void>
   /**
    * Removes a file from the file system at the specified `path`.
    */
-  removeFile(path: string): Effect.Effect<never, Error, void>
+  readonly removeFile: (path: string) => Effect.Effect<never, Error, void>
   /**
    * Checks if the specified `path` exists on the file system.
    */
-  pathExists(path: string): Effect.Effect<never, Error, boolean>
+  readonly pathExists: (path: string) => Effect.Effect<never, Error, boolean>
   /**
    * Find all files matching the specified `glob` pattern, optionally excluding
    * files matching the provided `exclude` patterns.
    */
-  glob(
+  readonly glob: (
     pattern: string,
     exclude?: ReadonlyArray<string>
-  ): Effect.Effect<never, Error, Array<string>>
+  ) => Effect.Effect<never, Error, Array<string>>
 }
 
 /**
@@ -119,10 +119,10 @@ export const FileSystemLive = Layer.effect(
 
     const glob = (
       pattern: string,
-      exclude: Array<string> = []
+      exclude: ReadonlyArray<string> = []
     ): Effect.Effect<never, Error, Array<string>> =>
       Effect.tryPromise({
-        try: () => Glob.glob(pattern, { ignore: exclude, withFileTypes: false }),
+        try: () => Glob.glob(pattern, { ignore: exclude.slice(), withFileTypes: false }),
         catch: (error) =>
           new Error(
             `[FileSystem] Unable to execute glob pattern '${pattern}' excluding files matching '${exclude}': ${
