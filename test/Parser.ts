@@ -82,7 +82,7 @@ describe.concurrent("Parser", () => {
         ])
       })
 
-      const documentableA = Domain.createDocumentable(
+      const documentableA = Domain.createNamedDoc(
         "A",
         Option.none(),
         Option.some("1.0.0"),
@@ -138,7 +138,7 @@ describe.concurrent("Parser", () => {
         })
 
         it("should parse an interface", () => {
-          const documentableB = Domain.createDocumentable(
+          const documentableB = Domain.createNamedDoc(
             "B",
             Option.none(),
             Option.some("1.0.1"),
@@ -209,7 +209,7 @@ describe.concurrent("Parser", () => {
         })
 
         it("should parse a type alias", () => {
-          const documentableB = Domain.createDocumentable(
+          const documentableB = Domain.createNamedDoc(
             "B",
             Option.none(),
             Option.some("1.0.1"),
@@ -270,7 +270,7 @@ describe.concurrent("Parser", () => {
         })
 
         it("should parse a namespace", () => {
-          const documentableB = Domain.createDocumentable(
+          const documentableB = Domain.createNamedDoc(
             "B",
             Option.none(),
             Option.some("1.0.1"),
@@ -278,7 +278,7 @@ describe.concurrent("Parser", () => {
             [],
             Option.none()
           )
-          const documentableC = Domain.createDocumentable(
+          const documentableC = Domain.createNamedDoc(
             "C",
             Option.none(),
             Option.some("1.0.2"),

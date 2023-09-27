@@ -103,51 +103,51 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
     ReadonlyArray.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
-      const getDocumentableExamples = (id: string) =>
+      const getDocExamples = (id: string) =>
       (
-        documentable: Domain.Documentable
+        doc: Domain.NamedDoc
       ): ReadonlyArray<FileSystem.File> =>
         ReadonlyArray.map(
-          documentable.examples,
+          doc.examples,
           (content, i) =>
             FileSystem.createFile(
               join(
                 config.outDir,
                 "examples",
-                `${prefix}-${id}-${documentable.name}-${i}.ts`
+                `${prefix}-${id}-${doc.name}-${i}.ts`
               ),
               `${content}\n`,
               true
             )
         )
 
-      const moduleExamples = getDocumentableExamples("module")(module)
+      const moduleExamples = getDocExamples("module")(module)
       const methods = ReadonlyArray.flatMap(module.classes, (c) =>
         ReadonlyArray.flatten([
           ReadonlyArray.flatMap(
             c.methods,
-            getDocumentableExamples(`${c.name}-method`)
+            getDocExamples(`${c.name}-method`)
           ),
           ReadonlyArray.flatMap(
             c.staticMethods,
-            getDocumentableExamples(`${c.name}-staticmethod`)
+            getDocExamples(`${c.name}-staticmethod`)
           )
         ]))
       const interfaces = ReadonlyArray.flatMap(
         module.interfaces,
-        getDocumentableExamples("interface")
+        getDocExamples("interface")
       )
       const typeAliases = ReadonlyArray.flatMap(
         module.typeAliases,
-        getDocumentableExamples("typealias")
+        getDocExamples("typealias")
       )
       const constants = ReadonlyArray.flatMap(
         module.constants,
-        getDocumentableExamples("constant")
+        getDocExamples("constant")
       )
       const functions = ReadonlyArray.flatMap(
         module.functions,
-        getDocumentableExamples("function")
+        getDocExamples("function")
       )
 
       return ReadonlyArray.flatten([

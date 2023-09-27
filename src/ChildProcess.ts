@@ -33,7 +33,7 @@ export interface ChildProcess {
 export const ChildProcess = Context.Tag<ChildProcess>()
 
 /**
- * @category service
+ * @category layer
  * @since 1.0.0
  */
 export const ChildProcessLive = Layer.succeed(

@@ -92,26 +92,19 @@ const getDefaultConfig = (projectName: string, projectHomepage: string): Config 
 const loadConfig = (
   path: string,
   fileSystem: FileSystem.FileSystem
-): Effect.Effect<
-  never,
-  Error,
-  Option.Option<Schema.Schema.To<typeof PartialConfigSchema>>
-> =>
+): Effect.Effect<never, Error, Option.Option<Schema.Schema.To<typeof PartialConfigSchema>>> =>
   Effect.if(fileSystem.pathExists(path), {
     onTrue: Effect.logInfo(chalk.bold("Configuration file found")).pipe(
-      Effect.zipRight(parseJsonFile(PartialConfigSchema, path, fileSystem)),
+      Effect.flatMap(() => parseJsonFile(PartialConfigSchema, path, fileSystem)),
       Effect.asSome
     ),
-    onFalse: Effect.as(
-      Effect.logInfo(
-        chalk.bold("No configuration file detected, using default configuration")
-      ),
-      Option.none()
-    )
+    onFalse: Effect.logInfo(
+      chalk.bold("No configuration file detected, using default configuration")
+    ).pipe(Effect.as(Option.none()))
   })
 
 /**
- * @category service
+ * @category layer
  * @since 1.0.0
  */
 export const ConfigLive = Layer.effect(

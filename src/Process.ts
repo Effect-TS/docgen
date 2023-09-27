@@ -22,7 +22,7 @@ export interface Process {
 export const Process = Context.Tag<Process>()
 
 /**
- * @category service
+ * @category layer
  * @since 1.0.0
  */
 export const ProcessLive = Layer.succeed(

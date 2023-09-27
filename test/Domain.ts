@@ -3,7 +3,7 @@ import { Option, ReadonlyArray } from "effect"
 import * as Domain from "../src/Domain"
 
 const documentable = (name: string) =>
-  Domain.createDocumentable(
+  Domain.createNamedDoc(
     name,
     Option.none(),
     Option.some("1.0.0"),
@@ -173,7 +173,7 @@ describe.concurrent("Domain", () => {
         []
       )
 
-      const sorted = ReadonlyArray.sort([m2, m1], Domain.Order)
+      const sorted = ReadonlyArray.sort([m2, m1], Domain.ByPath)
 
       assert.deepStrictEqual(sorted, [m1, m2])
     })

@@ -12,12 +12,25 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [layer](#layer)
+  - [ConfigLive](#configlive)
 - [service](#service)
   - [Config](#config)
   - [Config (interface)](#config-interface)
-  - [ConfigLive](#configlive)
 
 ---
+
+# layer
+
+## ConfigLive
+
+**Signature**
+
+```ts
+export declare const ConfigLive: Layer.Layer<Process.Process | FileSystem.FileSystem, Error, Config>
+```
+
+Added in v1.0.0
 
 # service
 
@@ -50,16 +63,6 @@ export interface Config {
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
 }
-```
-
-Added in v1.0.0
-
-## ConfigLive
-
-**Signature**
-
-```ts
-export declare const ConfigLive: Layer.Layer<Process.Process | FileSystem.FileSystem, Error, Config>
 ```
 
 Added in v1.0.0

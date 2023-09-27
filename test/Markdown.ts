@@ -4,12 +4,12 @@ import { flow } from "effect/Function"
 import {
   createClass,
   createConstant,
-  createDocumentable,
   createExport,
   createFunction,
   createInterface,
   createMethod,
   createModule,
+  createNamedDoc,
   createNamespace,
   createProperty,
   createTypeAlias
@@ -18,7 +18,7 @@ import * as _ from "../src/Markdown"
 
 const testCases = {
   class: createClass(
-    createDocumentable(
+    createNamedDoc(
       "A",
       Option.some("a class"),
       Option.some("1.0.0"),
@@ -29,7 +29,7 @@ const testCases = {
     "declare class A { constructor() }",
     [
       createMethod(
-        createDocumentable(
+        createNamedDoc(
           "hasOwnProperty",
           Option.none(),
           Option.some("1.0.0"),
@@ -42,7 +42,7 @@ const testCases = {
     ],
     [
       createMethod(
-        createDocumentable(
+        createNamedDoc(
           "staticTest",
           Option.none(),
           Option.some("1.0.0"),
@@ -55,7 +55,7 @@ const testCases = {
     ],
     [
       createProperty(
-        createDocumentable(
+        createNamedDoc(
           "foo",
           Option.none(),
           Option.some("1.0.0"),
@@ -68,7 +68,7 @@ const testCases = {
     ]
   ),
   constant: createConstant(
-    createDocumentable(
+    createNamedDoc(
       "test",
       Option.some("the test"),
       Option.some("1.0.0"),
@@ -79,7 +79,7 @@ const testCases = {
     "declare const test: string"
   ),
   export: createExport(
-    createDocumentable(
+    createNamedDoc(
       "test",
       Option.none(),
       Option.some("1.0.0"),
@@ -90,7 +90,7 @@ const testCases = {
     "export declare const test: typeof test"
   ),
   function: createFunction(
-    createDocumentable(
+    createNamedDoc(
       "func",
       Option.some("a function"),
       Option.some("1.0.0"),
@@ -101,7 +101,7 @@ const testCases = {
     ["declare const func: (test: string) => string"]
   ),
   interface: createInterface(
-    createDocumentable(
+    createNamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -112,7 +112,7 @@ const testCases = {
     "export interface A extends Record<string, unknown> {}"
   ),
   typeAlias: createTypeAlias(
-    createDocumentable(
+    createNamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -129,7 +129,7 @@ describe.concurrent("Markdown", () => {
 
   it("fromNamespace", () => {
     const namespace = createNamespace(
-      createDocumentable(
+      createNamedDoc(
         "A",
         Option.none(),
         Option.some("1.0.0"),
@@ -140,7 +140,7 @@ describe.concurrent("Markdown", () => {
       [],
       [
         createTypeAlias(
-          createDocumentable(
+          createNamedDoc(
             "B",
             Option.none(),
             Option.some("1.0.1"),
@@ -153,7 +153,7 @@ describe.concurrent("Markdown", () => {
       ],
       [
         createNamespace(
-          createDocumentable(
+          createNamedDoc(
             "C",
             Option.none(),
             Option.some("1.0.2"),
@@ -164,7 +164,7 @@ describe.concurrent("Markdown", () => {
           [],
           [
             createTypeAlias(
-              createDocumentable(
+              createNamedDoc(
                 "D",
                 Option.none(),
                 Option.some("1.0.3"),
@@ -371,7 +371,7 @@ export type A = number
   })
 
   it("printModule", () => {
-    const documentation = createDocumentable(
+    const documentation = createNamedDoc(
       "tests",
       Option.none(),
       Option.some("1.0.0"),

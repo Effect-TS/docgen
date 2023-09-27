@@ -12,12 +12,25 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [layer](#layer)
+  - [ChildProcessLive](#childprocesslive)
 - [service](#service)
   - [ChildProcess](#childprocess)
   - [ChildProcess (interface)](#childprocess-interface)
-  - [ChildProcessLive](#childprocesslive)
 
 ---
+
+# layer
+
+## ChildProcessLive
+
+**Signature**
+
+```ts
+export declare const ChildProcessLive: Layer.Layer<never, never, ChildProcess>
+```
+
+Added in v1.0.0
 
 # service
 
@@ -51,15 +64,5 @@ export interface ChildProcess {
   spawn(command: string, executable: string): Effect.Effect<never, Error, void>
 }
 ````
-
-Added in v1.0.0
-
-## ChildProcessLive
-
-**Signature**
-
-```ts
-export declare const ChildProcessLive: Layer.Layer<never, never, ChildProcess>
-```
 
 Added in v1.0.0
