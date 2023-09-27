@@ -180,7 +180,7 @@ const getExamples = (name: string, comment: Comment, isModule: boolean) =>
 /**
  * @internal
  */
-export const getCommentInfo = (name: string, isModule = false) => (text: string) =>
+export const getDoc = (name: string, isModule = false) => (text: string) =>
   pipe(
     Effect.Do,
     Effect.let("comment", () => parseComment(text)),
@@ -236,7 +236,7 @@ export const parseComment = (text: string): Comment => {
 const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
   pipe(
     getJSDocText(id.getJsDocs()),
-    getCommentInfo(id.getName()),
+    getDoc(id.getName()),
     Effect.map((info) =>
       Domain.createInterface(
         Domain.createNamedDoc(
@@ -324,7 +324,7 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
     Effect.flatMap((name) =>
       pipe(
         getJSDocText(getFunctionDeclarationJSDocs(fd)),
-        getCommentInfo(name),
+        getDoc(name),
         Effect.map((info) => {
           const signatures = pipe(
             fd.getOverloads(),
@@ -358,7 +358,7 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) => {
   const name = vd.getName()
   return pipe(
     getJSDocText(vs.getJsDocs()),
-    getCommentInfo(name),
+    getDoc(name),
     Effect.map((info) => {
       const signature = `export declare const ${name}: ${
         stripImportTypes(
@@ -466,7 +466,7 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
     Effect.flatMap((name) =>
       pipe(
         getJSDocText(ta.getJsDocs()),
-        getCommentInfo(name),
+        getDoc(name),
         Effect.map((info) =>
           Domain.createTypeAlias(
             Domain.createNamedDoc(
@@ -519,7 +519,7 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) => {
   const name = vd.getName()
   return pipe(
     getJSDocText(vs.getJsDocs()),
-    getCommentInfo(name),
+    getDoc(name),
     Effect.map((info) => {
       const type = stripImportTypes(vd.getType().getText(vd))
       const signature = `export declare const ${name}: ${type}`
@@ -608,7 +608,7 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
           Effect.mapError(
             () => `Missing ${name} documentation in ${source.path.join("/")}`
           ),
-          Effect.flatMap((commentRange) => pipe(commentRange.getText(), getCommentInfo(name))),
+          Effect.flatMap((commentRange) => pipe(commentRange.getText(), getDoc(name))),
           Effect.map((info) =>
             Domain.createExport(
               Domain.createNamedDoc(
@@ -639,7 +639,7 @@ const parseExportStar = (
       Effect.mapError(
         () => `Missing ${signature} documentation in ${source.path.join("/")}`
       ),
-      Effect.flatMap((commentRange) => pipe(commentRange.getText(), getCommentInfo(name))),
+      Effect.flatMap((commentRange) => pipe(commentRange.getText(), getDoc(name))),
       Effect.map((info) =>
         Domain.createExport(
           Domain.createNamedDoc(
@@ -696,7 +696,7 @@ const parseModuleDeclaration = (
     const name = ed.getName()
     const getInfo = pipe(
       getJSDocText(ed.getJsDocs()),
-      getCommentInfo(name),
+      getDoc(name),
       Effect.mapError((e) => [e])
     )
     const getInterfaces = parseInterfaces_(ed.getInterfaces())
@@ -795,7 +795,7 @@ const parseMethod = (md: ast.MethodDeclaration) =>
         ? Effect.succeed(Option.none())
         : pipe(
           getJSDocText(jsdocs),
-          getCommentInfo(name),
+          getDoc(name),
           Effect.map((info) => {
             const signatures = pipe(
               overloads,
@@ -830,7 +830,7 @@ const parseProperty = (classname: string) => (pd: ast.PropertyDeclaration) => {
   const name = pd.getName()
   return pipe(
     getJSDocText(pd.getJsDocs()),
-    getCommentInfo(`${classname}#${name}`),
+    getDoc(`${classname}#${name}`),
     Effect.map((info) => {
       const type = stripImportTypes(pd.getType().getText(pd))
       const readonly = pipe(
@@ -905,7 +905,7 @@ const getClassName = (c: ast.ClassDeclaration) =>
     ))
 
 const getClassCommentInfo = (name: string, c: ast.ClassDeclaration) =>
-  pipe(c.getJsDocs(), getJSDocText, getCommentInfo(name))
+  pipe(c.getJsDocs(), getJSDocText, getDoc(name))
 
 const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
   pipe(
@@ -1033,7 +1033,7 @@ export const parseModuleDocumentation = pipe(
           onEmpty: onMissingDocumentation,
           onNonEmpty: (commentRange) =>
             pipe(
-              getCommentInfo(name, true)(commentRange.getText()),
+              getDoc("<module fileoverview>", true)(commentRange.getText()),
               Effect.map((info) =>
                 Domain.createNamedDoc(
                   name,

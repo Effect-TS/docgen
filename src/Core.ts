@@ -3,7 +3,7 @@
  */
 
 import chalk from "chalk"
-import { Effect, Layer, Logger, LogLevel, pipe, ReadonlyArray, String } from "effect"
+import { Console, Effect, Layer, Logger, LogLevel, pipe, ReadonlyArray, String } from "effect"
 import * as NodePath from "path"
 import * as ChildProcess from "./CommandExecutor"
 import * as Config from "./Config"
@@ -437,5 +437,5 @@ const runnable = program.pipe(Effect.provide(MainLayer))
  * @since 1.0.0
  */
 export const main: Effect.Effect<never, never, void> = runnable.pipe(
-  Effect.catchAll((error) => Effect.dieMessage(error.message))
+  Effect.catchAll((error) => Console.error(chalk.bold.red("Error:"), error.message))
 )

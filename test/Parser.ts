@@ -1334,7 +1334,7 @@ export const foo = 'foo'`,
   })
 
   describe.concurrent("utils", () => {
-    describe.concurrent("getCommentInfo", () => {
+    describe.concurrent("getDoc", () => {
       it("should parse comment information", () => {
         const text = String.stripMargin(
           `|/**
@@ -1343,7 +1343,7 @@ export const foo = 'foo'`,
            | * @since 1.0.0
            | */`
         )
-        expectSuccess("", Parser.getCommentInfo("name")(text), {
+        expectSuccess("", Parser.getDoc("name")(text), {
           description: Option.some("description"),
           since: Option.some("1.0.0"),
           category: Option.some("instances"),
@@ -1361,7 +1361,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getCommentInfo("name")(text),
+          Parser.getDoc("name")(text),
           `Missing ${chalk.bold("@category")} tag in ${chalk.bold("test#name")} documentation`
         )
       })
@@ -1375,7 +1375,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getCommentInfo("name")(text),
+          Parser.getDoc("name")(text),
           `Missing ${chalk.bold("description")} in ${chalk.bold("test#name")} documentation`,
           {
             enforceDescriptions: true
@@ -1393,7 +1393,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getCommentInfo("name")(text),
+          Parser.getDoc("name")(text),
           `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
           {
             enforceExamples: true
@@ -1412,7 +1412,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getCommentInfo("name")(text),
+          Parser.getDoc("name")(text),
           `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
           {
             enforceExamples: true
@@ -1428,7 +1428,7 @@ export const foo = 'foo'`,
 
         expectSuccess(
           "",
-          Parser.getCommentInfo("name")(text),
+          Parser.getDoc("name")(text),
           {
             description: Option.some("description"),
             since: Option.none(),
