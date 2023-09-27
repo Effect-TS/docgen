@@ -3,6 +3,9 @@
 /**
  * CLI
  *
+ * @example
+ * assert.deepStrictEqual(1, 1)
+ *
  * @since 1.0.0
  */
 

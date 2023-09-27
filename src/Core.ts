@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 
-import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import chalk from "chalk"
 import { Effect, Layer, Logger, LogLevel, pipe, ReadonlyArray, String } from "effect"
 import * as NodePath from "path"
@@ -428,8 +427,7 @@ const MainLayer = Layer.mergeAll(
   FileSystem.FileSystemLive,
   Process.ProcessLive
 ).pipe(
-  Layer.provideMerge(Config.ConfigLive),
-  Layer.use(PlatformFileSystem.layer)
+  Layer.provideMerge(Config.ConfigLive)
 )
 
 const runnable = program.pipe(Effect.provide(MainLayer))

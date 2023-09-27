@@ -47,7 +47,7 @@ A layer that provides a live implementation of the FileSystem interface using th
 **Signature**
 
 ```ts
-export declare const FileSystemLive: Layer.Layer<PlatformFileSystem.FileSystem, never, FileSystem>
+export declare const FileSystemLive: Layer.Layer<never, never, FileSystem>
 ```
 
 Added in v1.0.0

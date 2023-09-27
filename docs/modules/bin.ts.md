@@ -8,6 +8,12 @@ parent: Modules
 
 CLI
 
+**Example**
+
+```ts
+assert.deepStrictEqual(1, 1)
+```
+
 Added in v1.0.0
 
 ---

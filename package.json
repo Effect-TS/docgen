@@ -20,7 +20,8 @@
     "clean": "rimraf rm -rf dist/*",
     "build": "tsup && pnpm copy-package-json",
     "copy-package-json": "ts-node scripts/copy-package-json.ts",
-    "docs": "pnpm build && node -e \"require('./dist/bin')\"",
+    "docs": "pnpm build && pnpm docs-run",
+    "docs-run": "node -e \"require('./dist/bin')\"",
     "docs-update": "git add --force --all docs/modules || true"
   },
   "repository": {
