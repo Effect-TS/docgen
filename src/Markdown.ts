@@ -4,7 +4,6 @@
 import { Option, Order, pipe, ReadonlyArray, ReadonlyRecord, String } from "effect"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain"
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const toc = require("markdown-toc")
 
@@ -17,34 +16,29 @@ type Printable =
   | Domain.TypeAlias
   | Domain.Namespace
 
-const bold = (s: string) => `**${s}**`
-
-const fence = (language: string, content: string) =>
-  "```" + language + "\n" + content + "\n" + "```\n\n"
-
-const paragraph = (...content: ReadonlyArray<string>) => "\n" + content.join("") + "\n\n"
-
-const strikethrough = (content: string) => `~~${content}~~`
-
 const createHeader = (level: number) => (content: string): string =>
   "#".repeat(level) + " " + content + "\n\n"
 
-const h1 = createHeader(1)
-
-const h2 = createHeader(2)
-
-const h3 = createHeader(3)
-
-const h4 = createHeader(4)
+const Renderer = {
+  bold: (s: string) => `**${s}**`,
+  fence: (language: string, content: string) =>
+    "```" + language + "\n" + content + "\n" + "```\n\n",
+  paragraph: (...content: ReadonlyArray<string>) => "\n" + content.join("") + "\n\n",
+  strikethrough: (content: string) => `~~${content}~~`,
+  h1: createHeader(1),
+  h2: createHeader(2),
+  h3: createHeader(3),
+  h4: createHeader(4)
+}
 
 const getSince: (v: Option.Option<string>) => string = Option.match({
   onNone: () => "",
-  onSome: (v) => paragraph(`Added in v${v}`)
+  onSome: (v) => Renderer.paragraph(`Added in v${v}`)
 })
 
 const getTitle = (s: string, deprecated: boolean, type?: string): string => {
   const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
-  const title = deprecated ? strikethrough(name) : name
+  const title = deprecated ? Renderer.strikethrough(name) : name
   return Option.fromNullable(type).pipe(
     Option.match({
       onNone: () => title,
@@ -54,21 +48,25 @@ const getTitle = (s: string, deprecated: boolean, type?: string): string => {
 }
 
 const getDescription = (d: Option.Option<string>): string =>
-  paragraph(Option.getOrElse(d, () => ""))
+  Renderer.paragraph(Option.getOrElse(d, () => ""))
 
-const getSignature = (s: string): string => paragraph(bold("Signature")) + paragraph(fence("ts", s))
+const getSignature = (s: string): string =>
+  Renderer.paragraph(Renderer.bold("Signature")) + Renderer.paragraph(Renderer.fence("ts", s))
 
 const getSignatures = (ss: ReadonlyArray<string>): string =>
-  paragraph(bold("Signature")) + paragraph(fence("ts", ss.join("\n")))
+  Renderer.paragraph(Renderer.bold("Signature")) +
+  Renderer.paragraph(Renderer.fence("ts", ss.join("\n")))
 
 const getExamples = (es: ReadonlyArray<string>): string =>
   es
-    .map((code) => paragraph(bold("Example")) + paragraph(fence("ts", code)))
+    .map((code) =>
+      Renderer.paragraph(Renderer.bold("Example")) + Renderer.paragraph(Renderer.fence("ts", code))
+    )
     .join("\n\n")
 
 const getStaticMethod = (m: Domain.Method): string =>
-  paragraph(
-    h3(getTitle(m.name, m.deprecated, "(static method)")),
+  Renderer.paragraph(
+    Renderer.h3(getTitle(m.name, m.deprecated, "(static method)")),
     getDescription(m.description),
     getSignatures(m.signatures),
     getExamples(m.examples),
@@ -76,8 +74,8 @@ const getStaticMethod = (m: Domain.Method): string =>
   )
 
 const getMethod = (m: Domain.Method): string =>
-  paragraph(
-    h3(getTitle(m.name, m.deprecated, "(method)")),
+  Renderer.paragraph(
+    Renderer.h3(getTitle(m.name, m.deprecated, "(method)")),
     getDescription(m.description),
     getSignatures(m.signatures),
     getExamples(m.examples),
@@ -85,8 +83,8 @@ const getMethod = (m: Domain.Method): string =>
   )
 
 const getProperty = (p: Domain.Property): string =>
-  paragraph(
-    h3(getTitle(p.name, p.deprecated, "(property)")),
+  Renderer.paragraph(
+    Renderer.h3(getTitle(p.name, p.deprecated, "(property)")),
     getDescription(p.description),
     getSignature(p.signature),
     getExamples(p.examples),
@@ -106,15 +104,15 @@ const getProperties = (properties: ReadonlyArray<Domain.Property>): string =>
   ).join("")
 
 const getModuleDescription = (module: Domain.Module): string =>
-  paragraph(
-    h2(getTitle(module.name, module.deprecated, "overview")),
+  Renderer.paragraph(
+    Renderer.h2(getTitle(module.name, module.deprecated, "overview")),
     getDescription(module.description),
     getExamples(module.examples),
     getSince(module.since)
   )
 
 const getMeta = (title: string, order: number): string =>
-  paragraph(
+  Renderer.paragraph(
     "---",
     `\n`,
     `title: ${title}`,
@@ -127,9 +125,9 @@ const getMeta = (title: string, order: number): string =>
   )
 
 const fromClass = (c: Domain.Class): string =>
-  paragraph(
-    paragraph(
-      h2(getTitle(c.name, c.deprecated, "(class)")),
+  Renderer.paragraph(
+    Renderer.paragraph(
+      Renderer.h2(getTitle(c.name, c.deprecated, "(class)")),
       getDescription(c.description),
       getSignature(c.signature),
       getExamples(c.examples),
@@ -141,8 +139,8 @@ const fromClass = (c: Domain.Class): string =>
   )
 
 const fromConstant = (c: Domain.Constant): string =>
-  paragraph(
-    h2(getTitle(c.name, c.deprecated)),
+  Renderer.paragraph(
+    Renderer.h2(getTitle(c.name, c.deprecated)),
     getDescription(c.description),
     getSignature(c.signature),
     getExamples(c.examples),
@@ -150,8 +148,8 @@ const fromConstant = (c: Domain.Constant): string =>
   )
 
 const fromExport = (e: Domain.Export): string =>
-  paragraph(
-    h2(getTitle(e.name, e.deprecated)),
+  Renderer.paragraph(
+    Renderer.h2(getTitle(e.name, e.deprecated)),
     getDescription(e.description),
     getSignature(e.signature),
     getExamples(e.examples),
@@ -159,8 +157,8 @@ const fromExport = (e: Domain.Export): string =>
   )
 
 const fromFunction = (f: Domain.Function): string =>
-  paragraph(
-    h2(getTitle(f.name, f.deprecated)),
+  Renderer.paragraph(
+    Renderer.h2(getTitle(f.name, f.deprecated)),
     getDescription(f.description),
     getSignatures(f.signatures),
     getExamples(f.examples),
@@ -168,7 +166,7 @@ const fromFunction = (f: Domain.Function): string =>
   )
 
 const fromInterface = (i: Domain.Interface, indentation: number): string =>
-  paragraph(
+  Renderer.paragraph(
     getHeaderByIndentation(indentation)(getTitle(i.name, i.deprecated, "(interface)")),
     getDescription(i.description),
     getSignature(i.signature),
@@ -177,7 +175,7 @@ const fromInterface = (i: Domain.Interface, indentation: number): string =>
   )
 
 const fromTypeAlias = (ta: Domain.TypeAlias, indentation: number): string =>
-  paragraph(
+  Renderer.paragraph(
     getHeaderByIndentation(indentation)(getTitle(ta.name, ta.deprecated, "(type alias)")),
     getDescription(ta.description),
     getSignature(ta.signature),
@@ -188,18 +186,18 @@ const fromTypeAlias = (ta: Domain.TypeAlias, indentation: number): string =>
 const getHeaderByIndentation = (indentation: number) => {
   switch (indentation) {
     case 0:
-      return h2
+      return Renderer.h2
     case 1:
-      return h3
+      return Renderer.h3
     case 2:
-      return h4
+      return Renderer.h4
   }
   throw new Error(`[Markdown] Unsupported namespace nesting: ${indentation + 1}`)
 }
 
 const fromNamespace = (ns: Domain.Namespace, indentation: number): string =>
-  paragraph(
-    paragraph(
+  Renderer.paragraph(
+    Renderer.paragraph(
       getHeaderByIndentation(indentation)(getTitle(ns.name, ns.deprecated, "(namespace)")),
       getDescription(ns.description),
       getExamples(ns.examples),
@@ -252,7 +250,7 @@ const DEFAULT_CATEGORY = "utils"
 export const printModule = (module: Domain.Module, order: number): string => {
   const header = getMeta(module.path.slice(1).join("/"), order)
 
-  const description = paragraph(getModuleDescription(module))
+  const description = Renderer.paragraph(getModuleDescription(module))
 
   const content = pipe(
     getPrintables(module),
@@ -263,7 +261,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
     ),
     ReadonlyArray.map(([category, printables]) =>
       [
-        h1(category),
+        Renderer.h1(category),
         ...pipe(
           printables,
           ReadonlyArray.sort(
