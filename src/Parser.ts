@@ -632,8 +632,10 @@ const parseExportStar = (
   ed: ast.ExportDeclaration
 ): Effect.Effect<Source | Config.Config, string, Domain.Export> => {
   const es = ed.getModuleSpecifier()!
+  const namespace = ed.getNamespaceExport()?.getName()
+
   const name = es.getText()
-  const signature = `export * from ${name}`
+  const signature = `export *${namespace === undefined ? "" : ` as ${namespace}`} from ${name}`
   return Effect.flatMap(Source, (source) => {
     return pipe(
       ed.getLeadingCommentRanges(),
@@ -647,14 +649,16 @@ const parseExportStar = (
           Domain.createDocumentable(
             `From ${name}`,
             info.description.pipe(Option.orElse(() =>
-              Option.some(`Re-exports all named exports from the ${name} module.`)
+              Option.some(
+                `Re-exports all named exports from the ${name} module${
+                  namespace === undefined ? "" : ` as "${namespace}"`
+                }.`
+              )
             )),
             info.since,
             info.deprecated,
             info.examples,
-            info.category.pipe(Option.orElse(() =>
-              Option.some("exports")
-            ))
+            info.category.pipe(Option.orElse(() => Option.some("exports")))
           ),
           signature
         )
