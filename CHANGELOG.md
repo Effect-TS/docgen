@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.1.8
+
+### Patch Changes
+
+- 5411c71: Support for parsing "export \* as namespace"
+
 ## 0.1.7
 
 ### Patch Changes
