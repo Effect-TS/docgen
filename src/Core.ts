@@ -257,14 +257,14 @@ const createExamplesTsConfigJson = Effect.gen(function*(_) {
 
 const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*(_) {
-    const home = yield* _(getMarkdownHome)
-    const entryPoint = yield* _(getMarkdownEntryPoint)
+    const homepage = yield* _(getMarkdownHomepage)
+    const index = yield* _(getMarkdownIndex)
     const yml = yield* _(getMarkdownConfigYML)
-    const files = yield* _(getModuleMarkdownFiles(modules))
-    return [home, entryPoint, yml, ...files]
+    const moduleFiles = yield* _(getModuleMarkdownFiles(modules))
+    return [homepage, index, yml, ...moduleFiles]
   })
 
-const getMarkdownHome = Effect.gen(function*(_) {
+const getMarkdownHomepage = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const process = yield* _(Process.Process)
   const cwd = yield* _(process.cwd)
@@ -281,7 +281,7 @@ const getMarkdownHome = Effect.gen(function*(_) {
   )
 })
 
-const getMarkdownEntryPoint = Effect.gen(function*(_) {
+const getMarkdownIndex = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const process = yield* _(Process.Process)
   const cwd = yield* _(process.cwd)
@@ -300,17 +300,19 @@ const getMarkdownEntryPoint = Effect.gen(function*(_) {
   )
 })
 
-const resolveConfigYML = (
-  previousContent: string,
-  config: Config.Config
-): string =>
-  previousContent.replace(/^remote_theme:.*$/m, `remote_theme: ${config.theme}`).replace(
-    /^search_enabled:.*$/m,
-    `search_enabled: ${config.enableSearch}`
-  ).replace(
-    /^ {2}'\S* on GitHub':\n {4}- '.*'/m,
-    `  '${config.projectName} on GitHub':\n    - '${config.projectHomepage}'`
-  )
+const resolveConfigYML = (content: string) =>
+  Effect.gen(function*(_) {
+    const config = yield* _(Config.Config)
+    return content
+      .replace(/^remote_theme:.*$/m, `remote_theme: ${config.theme}`)
+      .replace(
+        /^search_enabled:.*$/m,
+        `search_enabled: ${config.enableSearch}`
+      ).replace(
+        /^ {2}'\S* on GitHub':\n {4}- '.*'/m,
+        `  '${config.projectName} on GitHub':\n    - '${config.projectHomepage}'`
+      )
+  })
 
 const getHomepageNavigationHeader = (config: Config.Config): string => {
   const isGitHub = config.projectHomepage.toLowerCase().includes("github")
@@ -322,18 +324,15 @@ const getMarkdownConfigYML = Effect.gen(function*(_) {
   const process = yield* _(Process.Process)
   const fs = yield* _(FileSystem.FileSystem)
   const cwd = yield* _(process.cwd)
-  const filePath = join(cwd, config.outDir, "_config.yml")
-  const exists = yield* _(fs.pathExists(filePath))
+  const configPath = join(cwd, config.outDir, "_config.yml")
+  const exists = yield* _(fs.pathExists(configPath))
   if (exists) {
-    const content = yield* _(fs.readFile(filePath))
-    return FileSystem.createFile(
-      filePath,
-      resolveConfigYML(content, config),
-      true
-    )
+    const content = yield* _(fs.readFile(configPath))
+    const resolved = yield* _(resolveConfigYML(content))
+    return FileSystem.createFile(configPath, resolved, true)
   } else {
     return FileSystem.createFile(
-      filePath,
+      configPath,
       String.stripMargin(
         `|remote_theme: ${config.theme}
          |

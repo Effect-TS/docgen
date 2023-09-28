@@ -392,7 +392,7 @@ describe.concurrent("Parser", () => {
         expectFailure(
           `export function(a: number, b: number): number { return a + b }`,
           Parser.parseFunctions,
-          ["Missing function name in module test"]
+          [`Missing ${chalk.bold("function name")} in module ${chalk.bold("test")}`]
         )
       })
 
@@ -747,7 +747,7 @@ describe.concurrent("Parser", () => {
     describe.concurrent("parseClasses", () => {
       it("should raise an error if the class is anonymous", () => {
         expectFailure(`export class {}`, Parser.parseClasses, [
-          "Missing class name in module test"
+          `Missing ${chalk.bold("class name")} in module ${chalk.bold("test")}`
         ])
       })
 
@@ -1121,7 +1121,7 @@ describe.concurrent("Parser", () => {
         expectFailure(
           "export const a: number = 1",
           Parser.parseModuleDocumentation,
-          "Missing documentation in test module"
+          [`Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`]
         )
       })
 
@@ -1214,7 +1214,7 @@ describe.concurrent("Parser", () => {
 
       it("should raise an error if `@since` tag is missing in export", () => {
         expectFailure("export { a }", Parser.parseExports, [
-          "Missing a documentation in test"
+          `Missing ${chalk.bold("a")} documentation in ${chalk.bold("test")}`
         ])
       })
 
@@ -1259,7 +1259,7 @@ describe.concurrent("Parser", () => {
     describe.concurrent("parseModule", () => {
       it("should raise an error if `@since` tag is missing", async () => {
         expectFailure(`import * as assert from 'assert'`, Parser.parseModule, [
-          "Missing documentation in test module"
+          `Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`
         ])
       })
 
@@ -1343,7 +1343,7 @@ export const foo = 'foo'`,
            | * @since 1.0.0
            | */`
         )
-        expectSuccess("", Parser.getDoc("name")(text), {
+        expectSuccess("", Parser.getDoc("name", text), {
           description: Option.some("description"),
           since: Option.some("1.0.0"),
           category: Option.some("instances"),
@@ -1361,7 +1361,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getDoc("name")(text),
+          Parser.getDoc("name", text),
           `Missing ${chalk.bold("@category")} tag in ${chalk.bold("test#name")} documentation`
         )
       })
@@ -1375,7 +1375,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getDoc("name")(text),
+          Parser.getDoc("name", text),
           `Missing ${chalk.bold("description")} in ${chalk.bold("test#name")} documentation`,
           {
             enforceDescriptions: true
@@ -1393,7 +1393,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getDoc("name")(text),
+          Parser.getDoc("name", text),
           `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
           {
             enforceExamples: true
@@ -1412,7 +1412,7 @@ export const foo = 'foo'`,
         )
         expectFailure(
           "",
-          Parser.getDoc("name")(text),
+          Parser.getDoc("name", text),
           `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
           {
             enforceExamples: true
@@ -1428,7 +1428,7 @@ export const foo = 'foo'`,
 
         expectSuccess(
           "",
-          Parser.getDoc("name")(text),
+          Parser.getDoc("name", text),
           {
             description: Option.some("description"),
             since: Option.none(),
