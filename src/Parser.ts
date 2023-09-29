@@ -3,16 +3,7 @@
  */
 import chalk from "chalk"
 import * as doctrine from "doctrine"
-import {
-  Context,
-  Effect,
-  Option,
-  Order,
-  Predicate,
-  ReadonlyArray,
-  ReadonlyRecord,
-  String
-} from "effect"
+import { Context, Effect, Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
 import { flow, pipe } from "effect/Function"
 import * as NodePath from "node:path"
 import * as ast from "ts-morph"
@@ -64,8 +55,6 @@ const hasInternalTag = hasTag("internal")
 
 const hasIgnoreTag = hasTag("ignore")
 
-const shouldIgnore: Predicate.Predicate<Comment> = Predicate.some([hasInternalTag, hasIgnoreTag])
-
 /**
  * @internal
  */
@@ -92,7 +81,10 @@ export const parseComment = (text: string): Comment => {
   return { description, tags }
 }
 
-const shouldNotIgnore = Predicate.not(flow(getJSDocText, parseComment, shouldIgnore))
+const shouldNotIgnore = (jsdocs: ReadonlyArray<ast.JSDoc>): boolean => {
+  const comment = parseComment(getJSDocText(jsdocs))
+  return !hasInternalTag(comment) && !hasIgnoreTag(comment)
+}
 
 const isVariableDeclarationList = (
   u: ast.VariableDeclarationList | ast.CatchClause
@@ -215,18 +207,15 @@ const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
     )
   })
 
-const parseInterfaces_ = (interfaces: ReadonlyArray<ast.InterfaceDeclaration>) =>
-  pipe(
+const parseInterfaceDeclarations = (interfaces: ReadonlyArray<ast.InterfaceDeclaration>) => {
+  const exportedInterfaces = ReadonlyArray.filter(
     interfaces,
-    ReadonlyArray.filter(
-      Predicate.every<ast.InterfaceDeclaration>([
-        (id) => id.isExported(),
-        (id) => pipe(id.getJsDocs(), shouldNotIgnore)
-      ])
-    ),
-    Effect.validateAll(parseInterfaceDeclaration),
+    (id) => id.isExported() && shouldNotIgnore(id.getJsDocs())
+  )
+  return Effect.validateAll(exportedInterfaces, parseInterfaceDeclaration).pipe(
     Effect.map(sortByName)
   )
+}
 
 /**
  * @category parsers
@@ -234,7 +223,7 @@ const parseInterfaces_ = (interfaces: ReadonlyArray<ast.InterfaceDeclaration>) =
  */
 export const parseInterfaces = Effect.flatMap(
   Source,
-  (source) => parseInterfaces_(source.sourceFile.getInterfaces())
+  (source) => parseInterfaceDeclarations(source.sourceFile.getInterfaces())
 )
 
 const getFunctionDeclarationSignature = (
@@ -327,50 +316,32 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
     )
   })
 
-const getFunctionDeclarations = pipe(
-  Effect.map(Source, (source) => ({
-    functions: pipe(
-      source.sourceFile.getFunctions(),
-      ReadonlyArray.filter(
-        Predicate.every<ast.FunctionDeclaration>([
-          (fd) => fd.isExported(),
-          (fd) => pipe(getFunctionDeclarationJSDocs(fd), shouldNotIgnore)
-        ])
-      )
-    ),
-    arrows: pipe(
+const getFunctionDeclarations = Effect.gen(function*(_) {
+  const source = yield* _(Source)
+  const functions = ReadonlyArray.filter(
+    source.sourceFile.getFunctions(),
+    (fd) => fd.isExported() && shouldNotIgnore(getFunctionDeclarationJSDocs(fd))
+  )
+  const arrows = pipe(
+    ReadonlyArray.filter(
       source.sourceFile.getVariableDeclarations(),
-      ReadonlyArray.filter(
-        Predicate.every<ast.VariableDeclaration>([
-          (vd) => isVariableDeclarationList(vd.getParent()),
-          (vd) => isVariableStatement(vd.getParent().getParent() as any),
-          (vd) =>
-            pipe(
-              vd.getInitializer(),
-              Predicate.every([
-                flow(
-                  Option.fromNullable,
-                  Option.flatMap(
-                    Option.liftPredicate(ast.Node.isFunctionLikeDeclaration)
-                  ),
-                  Option.isSome
-                ),
-                () =>
-                  pipe(
-                    (vd.getParent().getParent() as ast.VariableStatement).getJsDocs(),
-                    shouldNotIgnore
-                  ),
-                () =>
-                  (
-                    vd.getParent().getParent() as ast.VariableStatement
-                  ).isExported()
-              ])
-            )
-        ])
-      )
+      (vd) => {
+        if (isVariableDeclarationList(vd.getParent())) {
+          const vs: any = vd.getParent().getParent()
+          if (isVariableStatement(vs)) {
+            return vs.isExported() && shouldNotIgnore(vs.getJsDocs()) &&
+              Option.fromNullable(vd.getInitializer()).pipe(
+                Option.filter((expr) => ast.Node.isFunctionLikeDeclaration(expr)),
+                Option.isSome
+              )
+          }
+        }
+        return false
+      }
     )
-  }))
-)
+  )
+  return { functions, arrows }
+})
 
 /**
  * @category parsers
@@ -404,18 +375,15 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
     )
   })
 
-const parseTypeAliases_ = (typeAliases: ReadonlyArray<ast.TypeAliasDeclaration>) =>
-  pipe(
+const parseTypeAliasDeclarations = (typeAliases: ReadonlyArray<ast.TypeAliasDeclaration>) => {
+  const exportedTypeAliases = ReadonlyArray.filter(
     typeAliases,
-    ReadonlyArray.filter(
-      Predicate.every<ast.TypeAliasDeclaration>([
-        (alias) => alias.isExported(),
-        (alias) => pipe(alias.getJsDocs(), shouldNotIgnore)
-      ])
-    ),
-    Effect.validateAll(parseTypeAliasDeclaration),
+    (tad) => tad.isExported() && shouldNotIgnore(tad.getJsDocs())
+  )
+  return Effect.validateAll(exportedTypeAliases, parseTypeAliasDeclaration).pipe(
     Effect.map(sortByName)
   )
+}
 
 /**
  * @category parsers
@@ -423,7 +391,7 @@ const parseTypeAliases_ = (typeAliases: ReadonlyArray<ast.TypeAliasDeclaration>)
  */
 export const parseTypeAliases = Effect.flatMap(
   Source,
-  (source) => parseTypeAliases_(source.sourceFile.getTypeAliases())
+  (source) => parseTypeAliasDeclarations(source.sourceFile.getTypeAliases())
 )
 
 const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
@@ -451,48 +419,28 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
  * @category parsers
  * @since 1.0.0
  */
-export const parseConstants = pipe(
-  Effect.map(Source, (source) =>
-    pipe(
+export const parseConstants = Effect.gen(function*(_) {
+  const source = yield* _(Source)
+  const variableDeclarations = pipe(
+    ReadonlyArray.filter(
       source.sourceFile.getVariableDeclarations(),
-      ReadonlyArray.filter(
-        Predicate.every<ast.VariableDeclaration>([
-          (vd) => isVariableDeclarationList(vd.getParent()),
-          (vd) => isVariableStatement(vd.getParent().getParent() as any),
-          (vd) =>
-            pipe(
-              vd.getInitializer(),
-              Predicate.every([
-                flow(
-                  Option.fromNullable,
-                  Option.flatMap(
-                    Option.liftPredicate(
-                      Predicate.not(ast.Node.isFunctionLikeDeclaration)
-                    )
-                  ),
-                  Option.isSome
-                ),
-                () =>
-                  pipe(
-                    (vd.getParent().getParent() as ast.VariableStatement).getJsDocs(),
-                    shouldNotIgnore
-                  ),
-                () =>
-                  (
-                    vd.getParent().getParent() as ast.VariableStatement
-                  ).isExported()
-              ])
-            )
-        ])
-      )
-    )),
-  Effect.flatMap((variableDeclarations) =>
-    pipe(
-      variableDeclarations,
-      Effect.validateAll(parseConstantVariableDeclaration)
+      (vd) => {
+        if (isVariableDeclarationList(vd.getParent())) {
+          const vs: any = vd.getParent().getParent()
+          if (isVariableStatement(vs)) {
+            return vs.isExported() && shouldNotIgnore(vs.getJsDocs()) &&
+              Option.fromNullable(vd.getInitializer()).pipe(
+                Option.filter((expr) => !ast.Node.isFunctionLikeDeclaration(expr)),
+                Option.isSome
+              )
+          }
+        }
+        return false
+      }
     )
   )
-)
+  return yield* _(Effect.validateAll(variableDeclarations, parseConstantVariableDeclaration))
+})
 
 const parseExportSpecifier = (es: ast.ExportSpecifier) =>
   Effect.gen(function*(_) {
@@ -599,11 +547,11 @@ const parseModuleDeclaration = (
       getDoc(name, text),
       Effect.mapError((e) => [e])
     )
-    const getInterfaces = parseInterfaces_(ed.getInterfaces())
-    const getTypeAliases = parseTypeAliases_(
+    const getInterfaces = parseInterfaceDeclarations(ed.getInterfaces())
+    const getTypeAliases = parseTypeAliasDeclarations(
       ed.getTypeAliases()
     )
-    const getNamespaces = parseNamespaces_(ed.getModules())
+    const getNamespaces = parseModuleDeclarations(ed.getModules())
     return Effect.gen(function*(_) {
       const info = yield* _(getInfo)
       const interfaces = yield* _(getInterfaces)
@@ -625,21 +573,18 @@ const parseModuleDeclaration = (
     })
   })
 
-const parseNamespaces_ = (namespaces: ReadonlyArray<ast.ModuleDeclaration>) =>
-  pipe(
+const parseModuleDeclarations = (namespaces: ReadonlyArray<ast.ModuleDeclaration>) => {
+  const exportedNamespaces = ReadonlyArray.filter(
     namespaces,
-    ReadonlyArray.filter(
-      Predicate.every<ast.ModuleDeclaration>([
-        (module) => module.isExported(),
-        (module) => pipe(module.getJsDocs(), shouldNotIgnore)
-      ])
-    ),
-    Effect.validateAll(parseModuleDeclaration),
+    (md) => md.isExported() && shouldNotIgnore(md.getJsDocs())
+  )
+  return Effect.validateAll(exportedNamespaces, parseModuleDeclaration).pipe(
     Effect.mapBoth({
       onFailure: ReadonlyArray.flatten,
       onSuccess: sortByName
     })
   )
+}
 
 /**
  * @category parsers
@@ -649,7 +594,7 @@ export const parseNamespaces: Effect.Effect<
   Source | Config.Config,
   Array<string>,
   Array<Domain.Namespace>
-> = Effect.flatMap(Source, (source) => parseNamespaces_(source.sourceFile.getModules()))
+> = Effect.flatMap(Source, (source) => parseModuleDeclarations(source.sourceFile.getModules()))
 
 const getTypeParameters = (
   tps: ReadonlyArray<ast.TypeParameterDeclaration>
@@ -678,35 +623,35 @@ const parseMethod = (md: ast.MethodDeclaration) =>
         onNonEmpty: (x) => x.getJsDocs()
       })
     )
-    if (shouldIgnore(parseComment(getJSDocText(jsdocs)))) {
-      return Option.none()
-    }
-    const text = getJSDocText(jsdocs)
-    const doc = yield* _(getDoc(name, text))
-    const signatures = pipe(
-      overloads,
-      ReadonlyArray.matchRight({
-        onEmpty: () => [getMethodSignature(md)],
-        onNonEmpty: (init, last) =>
-          pipe(
-            init.map((md) => md.getText()),
-            ReadonlyArray.append(getMethodSignature(last))
-          )
-      })
-    )
-    return Option.some(
-      Domain.createMethod(
-        Domain.createNamedDoc(
-          name,
-          doc.description,
-          doc.since,
-          doc.deprecated,
-          doc.examples,
-          doc.category
-        ),
-        signatures
+    if (shouldNotIgnore(jsdocs)) {
+      const text = getJSDocText(jsdocs)
+      const doc = yield* _(getDoc(name, text))
+      const signatures = pipe(
+        overloads,
+        ReadonlyArray.matchRight({
+          onEmpty: () => [getMethodSignature(md)],
+          onNonEmpty: (init, last) =>
+            pipe(
+              init.map((md) => md.getText()),
+              ReadonlyArray.append(getMethodSignature(last))
+            )
+        })
       )
-    )
+      return Option.some(
+        Domain.createMethod(
+          Domain.createNamedDoc(
+            name,
+            doc.description,
+            doc.since,
+            doc.deprecated,
+            doc.examples,
+            doc.category
+          ),
+          signatures
+        )
+      )
+    }
+    return Option.none()
   })
 
 const parseProperty = (classname: string) => (pd: ast.PropertyDeclaration) =>
@@ -738,23 +683,18 @@ const parseProperty = (classname: string) => (pd: ast.PropertyDeclaration) =>
     )
   })
 
-const parseProperties = (name: string, c: ast.ClassDeclaration) =>
-  pipe(
+const parseProperties = (name: string, c: ast.ClassDeclaration) => {
+  const properties = ReadonlyArray.filter(
     c.getProperties(),
-    ReadonlyArray.filter(
-      Predicate.every<ast.PropertyDeclaration>([
-        (prop) => !prop.isStatic(),
-        (prop) =>
-          pipe(
-            prop.getFirstModifierByKind(ast.ts.SyntaxKind.PrivateKeyword),
-            Option.fromNullable,
-            Option.isNone
-          ),
-        (prop) => pipe(prop.getJsDocs(), shouldNotIgnore)
-      ])
-    ),
-    (propertyDeclarations) => pipe(propertyDeclarations, Effect.validateAll(parseProperty(name)))
+    (pd) =>
+      !pd.isStatic() && shouldNotIgnore(pd.getJsDocs()) && pipe(
+        pd.getFirstModifierByKind(ast.ts.SyntaxKind.PrivateKeyword),
+        Option.fromNullable,
+        Option.isNone
+      )
   )
+  return Effect.validateAll(properties, parseProperty(name))
+}
 
 /**
  * @internal
@@ -842,21 +782,18 @@ const parseClass = (c: ast.ClassDeclaration) =>
  */
 export const parseClasses = Effect.gen(function*(_) {
   const source = yield* _(Source)
-  const classDeclarations = pipe(
+  const exportedClasses = ReadonlyArray.filter(
     source.sourceFile.getClasses(),
-    ReadonlyArray.filter(Predicate.every<ast.ClassDeclaration>([
-      (id) => id.isExported(),
-      (id) => pipe(id.getJsDocs(), shouldNotIgnore)
-    ]))
+    (cd) => cd.isExported() && shouldNotIgnore(cd.getJsDocs())
   )
-  return yield* _(pipe(
-    classDeclarations,
-    Effect.validateAll(parseClass),
-    Effect.mapBoth({
-      onFailure: ReadonlyArray.flatten,
-      onSuccess: sortByName
-    })
-  ))
+  return yield* _(
+    Effect.validateAll(exportedClasses, parseClass).pipe(
+      Effect.mapBoth({
+        onFailure: ReadonlyArray.flatten,
+        onSuccess: sortByName
+      })
+    )
+  )
 })
 
 const getModuleName = (
