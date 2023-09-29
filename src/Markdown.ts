@@ -1,7 +1,8 @@
 /**
  * @since 1.0.0
  */
-import { Option, Order, pipe, ReadonlyArray, ReadonlyRecord, String } from "effect"
+import { Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
+import { pipe } from "effect/Function"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain"
 // eslint-disable-next-line @typescript-eslint/no-var-requires

@@ -8,13 +8,12 @@ import {
   Effect,
   Option,
   Order,
-  pipe,
   Predicate,
   ReadonlyArray,
   ReadonlyRecord,
   String
 } from "effect"
-import { flow } from "effect/Function"
+import { flow, pipe } from "effect/Function"
 import * as NodePath from "node:path"
 import * as ast from "ts-morph"
 import * as Config from "./Config"
