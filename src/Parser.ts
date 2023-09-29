@@ -532,7 +532,8 @@ const parseExportStar = (
     const source = yield* _(Source)
     const es = ed.getModuleSpecifier()!
     const name = es.getText()
-    const signature = `export * from ${name}`
+    const namespace = ed.getNamespaceExport()?.getName()
+    const signature = `export *${namespace === undefined ? "" : ` as ${namespace}`} from ${name}`
     const ocommentRange = ReadonlyArray.head(ed.getLeadingCommentRanges())
     if (Option.isNone(ocommentRange)) {
       return yield* _(
@@ -548,7 +549,13 @@ const parseExportStar = (
       Domain.createNamedDoc(
         `From ${name}`,
         doc.description.pipe(
-          Option.orElse(() => Option.some(`Re-exports all named exports from the ${name} module.`))
+          Option.orElse(() =>
+            Option.some(
+              `Re-exports all named exports from the ${name} module${
+                namespace === undefined ? "" : ` as "${namespace}"`
+              }.`
+            )
+          )
         ),
         doc.since,
         doc.deprecated,

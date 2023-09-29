@@ -1254,6 +1254,84 @@ describe.concurrent("Parser", () => {
           ])
         )
       })
+
+      it("parses export *", () => {
+        project.createSourceFile("example.ts", `export const a = 1`, { overwrite: true })
+
+        const sourceFile = project.createSourceFile(
+          "export-all.ts",
+          `
+           /**
+            * @since 1.0.0
+            */
+           export * from './example'
+          `
+        )
+
+        const actual = Parser.parseExports.pipe(
+          Effect.provideService(Parser.Source, {
+            path: ["test"],
+            sourceFile
+          }),
+          Effect.provideService(Config.Config, defaultConfig),
+          Effect.runSyncExit
+        )
+
+        expect(actual).toEqual(
+          Exit.succeed([
+            {
+              _tag: "Export",
+              name: "From './example'",
+              description: Option.some("Re-exports all named exports from the './example' module."),
+              since: Option.some("1.0.0"),
+              deprecated: false,
+              signature: "export * from './example'",
+              category: Option.some("exports"),
+              examples: []
+            }
+          ])
+        )
+      })
+
+      it("parse export * as", () => {
+        project.createSourceFile("example.ts", `export const a = 1`, { overwrite: true })
+
+        const sourceFile = project.createSourceFile(
+          "export-all-namespace.ts",
+          `
+            /**
+             * @since 1.0.0
+             */
+            export * as example from './example'
+          `
+        )
+
+        const actual = Parser.parseExports.pipe(
+          Effect.provideService(Parser.Source, {
+            path: ["test"],
+            sourceFile
+          }),
+          Effect.provideService(Config.Config, defaultConfig),
+          Effect.runSyncExit
+        )
+
+        expect(actual).toEqual(
+          Exit.succeed([
+            {
+              _tag: "Export",
+              name: "From './example'",
+              description: Option.some(
+                `Re-exports all named exports from the './example' module as "example".`
+              ),
+              since: Option.some("1.0.0"),
+              deprecated: false,
+              signature: "export * as example from './example'",
+              category: Option.some("exports"),
+              examples: []
+            }
+          ])
+        )
+      })
     })
 
     describe.concurrent("parseModule", () => {
