@@ -551,7 +551,7 @@ const parseExportStar = (
           Option.orElse(() =>
             Option.some(
               `Re-exports all named exports from the ${name} module${
-                namespace === undefined ? "" : ` as "${namespace}"`
+                namespace === undefined ? "" : ` as \`${namespace}\``
               }.`
             )
           )

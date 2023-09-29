@@ -1321,7 +1321,7 @@ describe.concurrent("Parser", () => {
               _tag: "Export",
               name: "From './example'",
               description: Option.some(
-                `Re-exports all named exports from the './example' module as "example".`
+                "Re-exports all named exports from the './example' module as `example`."
               ),
               since: Option.some("1.0.0"),
               deprecated: false,
