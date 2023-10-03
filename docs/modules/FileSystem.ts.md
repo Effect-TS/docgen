@@ -21,6 +21,8 @@ Added in v1.0.0
 - [service](#service)
   - [FileSystem](#filesystem)
   - [FileSystem (interface)](#filesystem-interface)
+- [utils](#utils)
+  - [readJsonFile](#readjsonfile)
 
 ---
 
@@ -98,11 +100,6 @@ export interface FileSystem {
    */
   readonly readFile: (path: string) => Effect.Effect<never, Error, string>
   /**
-   * Read a `.json` file from the file system at the specified `path` and parse
-   * the contents.
-   */
-  readonly readJsonFile: (path: string) => Effect.Effect<never, Error, unknown>
-  /**
    * Write a file to the specified `path` containing the specified `content`.
    */
   readonly writeFile: (path: string, content: string) => Effect.Effect<never, Error, void>
@@ -120,6 +117,21 @@ export interface FileSystem {
    */
   readonly glob: (pattern: string, exclude?: ReadonlyArray<string>) => Effect.Effect<never, Error, Array<string>>
 }
+```
+
+Added in v1.0.0
+
+# utils
+
+## readJsonFile
+
+Read a `.json` file from the file system at the specified `path` and parse
+the contents.
+
+**Signature**
+
+```ts
+export declare const readJsonFile: (path: string) => Effect.Effect<FileSystem, Error, unknown>
 ```
 
 Added in v1.0.0

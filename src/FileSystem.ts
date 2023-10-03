@@ -18,11 +18,6 @@ export interface FileSystem {
    */
   readonly readFile: (path: string) => Effect.Effect<never, Error, string>
   /**
-   * Read a `.json` file from the file system at the specified `path` and parse
-   * the contents.
-   */
-  readonly readJsonFile: (path: string) => Effect.Effect<never, Error, unknown>
-  /**
    * Write a file to the specified `path` containing the specified `content`.
    */
   readonly writeFile: (path: string, content: string) => Effect.Effect<never, Error, void>
@@ -53,6 +48,27 @@ export interface FileSystem {
 export const FileSystem = Context.Tag<FileSystem>()
 
 /**
+ * Read a `.json` file from the file system at the specified `path` and parse
+ * the contents.
+ *
+ * @since 1.0.0
+ */
+export const readJsonFile = (
+  path: string
+): Effect.Effect<FileSystem, Error, unknown> =>
+  Effect.gen(function*(_) {
+    const fs = yield* _(FileSystem)
+    const content = yield* _(fs.readFile(path))
+    return yield* _(Effect.try({
+      try: () => JSON.parse(content),
+      catch: (error) =>
+        new Error(
+          `[FileSystem] Unable to read and parse JSON file from '${path}': ${String(error)}`
+        )
+    }))
+  })
+
+/**
  * A layer that provides a live implementation of the FileSystem interface using the PlatformFileSystem implementation.
  *
  * @category layer
@@ -60,25 +76,15 @@ export const FileSystem = Context.Tag<FileSystem>()
  */
 export const FileSystemLive = Layer.effect(
   FileSystem,
-  Effect.map(PlatformFileSystem.FileSystem, (fs) => {
+  Effect.gen(function*(_) {
+    const fs = yield* _(PlatformFileSystem.FileSystem)
+
     const readFile = (path: string): Effect.Effect<never, Error, string> =>
       fs.readFileString(path, "utf8").pipe(
         Effect.mapError((error) =>
           new Error(`[FileSystem] Unable to read file from '${path}': ${error.message}`)
         )
       )
-
-    const readJsonFile = (
-      path: string
-    ): Effect.Effect<never, Error, unknown> =>
-      Effect.flatMap(readFile(path), (content) =>
-        Effect.try({
-          try: () => JSON.parse(content),
-          catch: (error) =>
-            new Error(
-              `[FileSystem] Unable to read and parse JSON file from '${path}': ${String(error)}`
-            )
-        }))
 
     const writeFile = (path: string, content: string): Effect.Effect<never, Error, void> =>
       Effect.async((resume) =>
@@ -133,7 +139,6 @@ export const FileSystemLive = Layer.effect(
 
     return FileSystem.of({
       readFile,
-      readJsonFile,
       writeFile,
       removeFile,
       pathExists,

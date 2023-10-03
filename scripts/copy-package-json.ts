@@ -12,7 +12,7 @@ const pathTo = path.join("dist", "package.json")
 const program = Effect.gen(function*(_) {
   console.log(`[Build] Copying package.json to ${pathTo}...`)
   const fs = yield* _(FileSystem.FileSystem)
-  const json: any = yield* _(fs.readJsonFile("package.json"))
+  const json: any = yield* _(FileSystem.readJsonFile("package.json"))
   const pkg = {
     name: json.name,
     version: json.version,

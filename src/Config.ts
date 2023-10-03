@@ -64,8 +64,7 @@ const validateJsonFile = <I, A>(
   path: string
 ): Effect.Effect<FileSystem.FileSystem, Error, A> =>
   Effect.gen(function*(_) {
-    const fs = yield* _(FileSystem.FileSystem)
-    const content = yield* _(fs.readJsonFile(path))
+    const content = yield* _(FileSystem.readJsonFile(path))
     return yield* _(
       Schema.parse(schema)(content),
       Effect.mapError((e) =>
@@ -74,9 +73,10 @@ const validateJsonFile = <I, A>(
     )
   })
 
-const getDefaultConfig = (projectName: string, projectHomepage: string): Config => ({
-  projectName,
-  projectHomepage,
+/** @internal */
+export const getDefaultConfig = (name: string, homepage: string): Config => ({
+  projectName: name,
+  projectHomepage: homepage,
   srcDir: "src",
   outDir: "docs",
   theme: "pmarsceill/just-the-docs",
