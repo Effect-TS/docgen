@@ -28,24 +28,23 @@ export const CommandExecutorLive = Layer.succeed(
   CommandExecutor,
   CommandExecutor.of({
     spawn: (command, ...args) =>
-      Effect.try({
-        try: () => NodeChildProcess.spawnSync(command, args, { stdio: "pipe", encoding: "utf8" }),
-        catch: (error) =>
-          new Error(
-            `[CommandExecutor] Unable to spawn command: '${command} ${String(args)}':\n${
-              String(error)
-            }`
-          )
-      }).pipe(
-        Effect.flatMap(({ status, stderr }) =>
-          status === 0
-            ? Effect.unit
-            : Effect.fail(
-              new Error(
-                `[CommandExecutor] During execution of '${command}', the following error(s) occurred:\n${stderr}`
-              )
+      Effect.gen(function*(_) {
+        const { status, stderr } = yield* _(Effect.try({
+          try: () => NodeChildProcess.spawnSync(command, args, { stdio: "pipe", encoding: "utf8" }),
+          catch: (error) =>
+            new Error(
+              `[CommandExecutor] Unable to spawn command: '${command} ${String(args)}':\n${
+                String(error)
+              }`
             )
-        )
-      )
+        }))
+        if (status !== 0) {
+          return yield* _(Effect.fail(
+            new Error(
+              `[CommandExecutor] During execution of '${command}', the following error(s) occurred:\n${stderr}`
+            )
+          ))
+        }
+      })
   })
 )

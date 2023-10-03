@@ -84,10 +84,14 @@ const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*(_) {
     const files = yield* _(getExampleFiles(modules))
     const examples = yield* _(handleImports(files))
-    if (examples.length > 0) {
+    const len = examples.length
+    if (len > 0) {
+      yield* _(Effect.logInfo(`${len} example(s) found`))
       yield* _(writeExamplesToOutDir(examples))
       yield* _(createExamplesTsConfigJson)
       yield* _(runTsNodeOnExamples)
+    } else {
+      yield* _(Effect.logInfo("No examples found."))
     }
     yield* _(cleanupExamples)
   })

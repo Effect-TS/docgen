@@ -17,29 +17,29 @@ type Printable =
   | Domain.TypeAlias
   | Domain.Namespace
 
-const createHeader = (level: number) => (content: string): string =>
+const createHeaderPrinter = (level: number) => (content: string): string =>
   "#".repeat(level) + " " + content + "\n\n"
 
-const Renderer = {
+const MarkdownPrinter = {
   bold: (s: string) => `**${s}**`,
   fence: (language: string, content: string) =>
     "```" + language + "\n" + content + "\n" + "```\n\n",
   paragraph: (...content: ReadonlyArray<string>) => "\n" + content.join("") + "\n\n",
   strikethrough: (content: string) => `~~${content}~~`,
-  h1: createHeader(1),
-  h2: createHeader(2),
-  h3: createHeader(3),
-  h4: createHeader(4)
+  h1: createHeaderPrinter(1),
+  h2: createHeaderPrinter(2),
+  h3: createHeaderPrinter(3),
+  h4: createHeaderPrinter(4)
 }
 
-const getSince: (v: Option.Option<string>) => string = Option.match({
+const printSince: (v: Option.Option<string>) => string = Option.match({
   onNone: () => "",
-  onSome: (v) => Renderer.paragraph(`Added in v${v}`)
+  onSome: (v) => MarkdownPrinter.paragraph(`Added in v${v}`)
 })
 
-const getTitle = (s: string, deprecated: boolean, type?: string): string => {
+const printTitle = (s: string, deprecated: boolean, type?: string): string => {
   const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
-  const title = deprecated ? Renderer.strikethrough(name) : name
+  const title = deprecated ? MarkdownPrinter.strikethrough(name) : name
   return Option.fromNullable(type).pipe(
     Option.match({
       onNone: () => title,
@@ -48,72 +48,74 @@ const getTitle = (s: string, deprecated: boolean, type?: string): string => {
   )
 }
 
-const getDescription = (d: Option.Option<string>): string =>
-  Renderer.paragraph(Option.getOrElse(d, () => ""))
+const printDescription = (d: Option.Option<string>): string =>
+  MarkdownPrinter.paragraph(Option.getOrElse(d, () => ""))
 
-const getSignature = (s: string): string =>
-  Renderer.paragraph(Renderer.bold("Signature")) + Renderer.paragraph(Renderer.fence("ts", s))
+const printSignature = (s: string): string =>
+  MarkdownPrinter.paragraph(MarkdownPrinter.bold("Signature")) +
+  MarkdownPrinter.paragraph(MarkdownPrinter.fence("ts", s))
 
-const getSignatures = (ss: ReadonlyArray<string>): string =>
-  Renderer.paragraph(Renderer.bold("Signature")) +
-  Renderer.paragraph(Renderer.fence("ts", ss.join("\n")))
+const printSignatures = (ss: ReadonlyArray<string>): string =>
+  MarkdownPrinter.paragraph(MarkdownPrinter.bold("Signature")) +
+  MarkdownPrinter.paragraph(MarkdownPrinter.fence("ts", ss.join("\n")))
 
-const getExamples = (es: ReadonlyArray<string>): string =>
+const printExamples = (es: ReadonlyArray<string>): string =>
   es
     .map((code) =>
-      Renderer.paragraph(Renderer.bold("Example")) + Renderer.paragraph(Renderer.fence("ts", code))
+      MarkdownPrinter.paragraph(MarkdownPrinter.bold("Example")) +
+      MarkdownPrinter.paragraph(MarkdownPrinter.fence("ts", code))
     )
     .join("\n\n")
 
-const getStaticMethod = (m: Domain.Method): string =>
-  Renderer.paragraph(
-    Renderer.h3(getTitle(m.name, m.deprecated, "(static method)")),
-    getDescription(m.description),
-    getSignatures(m.signatures),
-    getExamples(m.examples),
-    getSince(m.since)
+const printStaticMethod = (m: Domain.Method): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.h3(printTitle(m.name, m.deprecated, "(static method)")),
+    printDescription(m.description),
+    printSignatures(m.signatures),
+    printExamples(m.examples),
+    printSince(m.since)
   )
 
-const getMethod = (m: Domain.Method): string =>
-  Renderer.paragraph(
-    Renderer.h3(getTitle(m.name, m.deprecated, "(method)")),
-    getDescription(m.description),
-    getSignatures(m.signatures),
-    getExamples(m.examples),
-    getSince(m.since)
+const printMethod = (m: Domain.Method): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.h3(printTitle(m.name, m.deprecated, "(method)")),
+    printDescription(m.description),
+    printSignatures(m.signatures),
+    printExamples(m.examples),
+    printSince(m.since)
   )
 
-const getProperty = (p: Domain.Property): string =>
-  Renderer.paragraph(
-    Renderer.h3(getTitle(p.name, p.deprecated, "(property)")),
-    getDescription(p.description),
-    getSignature(p.signature),
-    getExamples(p.examples),
-    getSince(p.since)
+const printProperty = (p: Domain.Property): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.h3(printTitle(p.name, p.deprecated, "(property)")),
+    printDescription(p.description),
+    printSignature(p.signature),
+    printExamples(p.examples),
+    printSince(p.since)
   )
 
-const getStaticMethods = (methods: ReadonlyArray<Domain.Method>): string =>
-  ReadonlyArray.map(methods, (method) => getStaticMethod(method) + "\n\n").join("")
+const printStaticMethods = (methods: ReadonlyArray<Domain.Method>): string =>
+  ReadonlyArray.map(methods, (method) => printStaticMethod(method) + "\n\n").join("")
 
-const getMethods = (methods: ReadonlyArray<Domain.Method>): string =>
-  ReadonlyArray.map(methods, (method) => getMethod(method) + "\n\n").join("")
+const printMethods = (methods: ReadonlyArray<Domain.Method>): string =>
+  ReadonlyArray.map(methods, (method) => printMethod(method) + "\n\n").join("")
 
-const getProperties = (properties: ReadonlyArray<Domain.Property>): string =>
+const printProperties = (properties: ReadonlyArray<Domain.Property>): string =>
   ReadonlyArray.map(
     properties,
-    (property) => getProperty(property) + "\n\n"
+    (property) => printProperty(property) + "\n\n"
   ).join("")
 
-const getModuleDescription = (module: Domain.Module): string =>
-  Renderer.paragraph(
-    Renderer.h2(getTitle(module.name, module.deprecated, "overview")),
-    getDescription(module.description),
-    getExamples(module.examples),
-    getSince(module.since)
+const printModuleDescription = (module: Domain.Module): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.h2(printTitle(module.name, module.deprecated, "overview")),
+    printDescription(module.description),
+    printExamples(module.examples),
+    printSince(module.since)
   )
 
-const getMeta = (title: string, order: number): string =>
-  Renderer.paragraph(
+const printMeta = (title: string, order: number): string =>
+  MarkdownPrinter.paragraph(
     "---",
     `\n`,
     `title: ${title}`,
@@ -125,109 +127,120 @@ const getMeta = (title: string, order: number): string =>
     "---"
   )
 
-const fromClass = (c: Domain.Class): string =>
-  Renderer.paragraph(
-    Renderer.paragraph(
-      Renderer.h2(getTitle(c.name, c.deprecated, "(class)")),
-      getDescription(c.description),
-      getSignature(c.signature),
-      getExamples(c.examples),
-      getSince(c.since)
+/** @internal */
+export const printClass = (model: Domain.Class): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.paragraph(
+      MarkdownPrinter.h2(printTitle(model.name, model.deprecated, "(class)")),
+      printDescription(model.description),
+      printSignature(model.signature),
+      printExamples(model.examples),
+      printSince(model.since)
     ),
-    getStaticMethods(c.staticMethods),
-    getMethods(c.methods),
-    getProperties(c.properties)
+    printStaticMethods(model.staticMethods),
+    printMethods(model.methods),
+    printProperties(model.properties)
   )
 
-const fromConstant = (c: Domain.Constant): string =>
-  Renderer.paragraph(
-    Renderer.h2(getTitle(c.name, c.deprecated)),
-    getDescription(c.description),
-    getSignature(c.signature),
-    getExamples(c.examples),
-    getSince(c.since)
+/** @internal */
+export const printConstant = (model: Domain.Constant): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.h2(printTitle(model.name, model.deprecated)),
+    printDescription(model.description),
+    printSignature(model.signature),
+    printExamples(model.examples),
+    printSince(model.since)
   )
 
-const fromExport = (e: Domain.Export): string =>
-  Renderer.paragraph(
-    Renderer.h2(getTitle(e.name, e.deprecated)),
-    getDescription(e.description),
-    getSignature(e.signature),
-    getExamples(e.examples),
-    getSince(e.since)
+/** @internal */
+export const printExport = (model: Domain.Export): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.h2(printTitle(model.name, model.deprecated)),
+    printDescription(model.description),
+    printSignature(model.signature),
+    printExamples(model.examples),
+    printSince(model.since)
   )
 
-const fromFunction = (f: Domain.Function): string =>
-  Renderer.paragraph(
-    Renderer.h2(getTitle(f.name, f.deprecated)),
-    getDescription(f.description),
-    getSignatures(f.signatures),
-    getExamples(f.examples),
-    getSince(f.since)
+/** @internal */
+export const printFunction = (model: Domain.Function): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.h2(printTitle(model.name, model.deprecated)),
+    printDescription(model.description),
+    printSignatures(model.signatures),
+    printExamples(model.examples),
+    printSince(model.since)
   )
 
-const fromInterface = (i: Domain.Interface, indentation: number): string =>
-  Renderer.paragraph(
-    getHeaderByIndentation(indentation)(getTitle(i.name, i.deprecated, "(interface)")),
-    getDescription(i.description),
-    getSignature(i.signature),
-    getExamples(i.examples),
-    getSince(i.since)
+/** @internal */
+export const printInterface = (model: Domain.Interface, indentation: number): string =>
+  MarkdownPrinter.paragraph(
+    getHeaderByIndentation(indentation)(printTitle(model.name, model.deprecated, "(interface)")),
+    printDescription(model.description),
+    printSignature(model.signature),
+    printExamples(model.examples),
+    printSince(model.since)
   )
 
-const fromTypeAlias = (ta: Domain.TypeAlias, indentation: number): string =>
-  Renderer.paragraph(
-    getHeaderByIndentation(indentation)(getTitle(ta.name, ta.deprecated, "(type alias)")),
-    getDescription(ta.description),
-    getSignature(ta.signature),
-    getExamples(ta.examples),
-    getSince(ta.since)
+/** @internal */
+export const printTypeAlias = (model: Domain.TypeAlias, indentation: number): string =>
+  MarkdownPrinter.paragraph(
+    getHeaderByIndentation(indentation)(printTitle(model.name, model.deprecated, "(type alias)")),
+    printDescription(model.description),
+    printSignature(model.signature),
+    printExamples(model.examples),
+    printSince(model.since)
   )
 
 const getHeaderByIndentation = (indentation: number) => {
   switch (indentation) {
     case 0:
-      return Renderer.h2
+      return MarkdownPrinter.h2
     case 1:
-      return Renderer.h3
+      return MarkdownPrinter.h3
     case 2:
-      return Renderer.h4
+      return MarkdownPrinter.h4
   }
   throw new Error(`[Markdown] Unsupported namespace nesting: ${indentation + 1}`)
 }
 
-const fromNamespace = (ns: Domain.Namespace, indentation: number): string =>
-  Renderer.paragraph(
-    Renderer.paragraph(
-      getHeaderByIndentation(indentation)(getTitle(ns.name, ns.deprecated, "(namespace)")),
-      getDescription(ns.description),
-      getExamples(ns.examples),
-      getSince(ns.since)
+/** @internal */
+export const printNamespace = (ns: Domain.Namespace, indentation: number): string =>
+  MarkdownPrinter.paragraph(
+    MarkdownPrinter.paragraph(
+      getHeaderByIndentation(indentation)(printTitle(ns.name, ns.deprecated, "(namespace)")),
+      printDescription(ns.description),
+      printExamples(ns.examples),
+      printSince(ns.since)
     ),
-    ReadonlyArray.map(ns.interfaces, (i) => fromInterface(i, indentation + 1) + "\n\n").join(""),
-    ReadonlyArray.map(ns.typeAliases, (typeAlias) =>
-      fromTypeAlias(typeAlias, indentation + 1) + "\n\n").join(""),
-    ReadonlyArray.map(ns.namespaces, (namespace) =>
-      fromNamespace(namespace, indentation + 1) + "\n\n").join("")
+    ReadonlyArray.map(ns.interfaces, (i) => printInterface(i, indentation + 1) + "\n\n").join(""),
+    ReadonlyArray.map(
+      ns.typeAliases,
+      (typeAlias) => printTypeAlias(typeAlias, indentation + 1) + "\n\n"
+    ).join(""),
+    ReadonlyArray.map(
+      ns.namespaces,
+      (namespace) => printNamespace(namespace, indentation + 1) + "\n\n"
+    ).join("")
   )
 
 /** @internal */
-export const fromPrintable = (p: Printable): string => {
+export const print = (p: Printable): string => {
   switch (p._tag) {
     case "Class":
-      return fromClass(p)
+      return printClass(p)
     case "Constant":
-      return fromConstant(p)
+      return printConstant(p)
     case "Export":
-      return fromExport(p)
+      return printExport(p)
     case "Function":
-      return fromFunction(p)
+      return printFunction(p)
     case "Interface":
-      return fromInterface(p, 0)
+      return printInterface(p, 0)
     case "TypeAlias":
-      return fromTypeAlias(p, 0)
+      return printTypeAlias(p, 0)
     case "Namespace":
-      return fromNamespace(p, 0)
+      return printNamespace(p, 0)
   }
 }
 
@@ -244,25 +257,37 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
 
 const DEFAULT_CATEGORY = "utils"
 
+const byCategory = Order.mapInput(
+  String.Order,
+  ([category]: [string, ...Array<unknown>]) => category
+)
+
 /**
+ * @example
+ * import * as Markdown from "@effect/docgen/Markdown"
+ * import * as Domain from "@effect/docgen/Domain"
+ * import { Option } from "effect"
+ *
+ * const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
+ * const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
+ * console.log(Markdown.printModule(m, 0))
+ *
  * @category printers
  * @since 1.0.0
  */
 export const printModule = (module: Domain.Module, order: number): string => {
-  const header = getMeta(module.path.slice(1).join("/"), order)
+  const header = printMeta(module.path.slice(1).join("/"), order)
 
-  const description = Renderer.paragraph(getModuleDescription(module))
+  const description = MarkdownPrinter.paragraph(printModuleDescription(module))
 
   const content = pipe(
     getPrintables(module),
     ReadonlyArray.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
     ReadonlyRecord.toEntries,
-    ReadonlyArray.sort(
-      Order.mapInput(String.Order, ([category]: [string, unknown]) => category)
-    ),
+    ReadonlyArray.sort(byCategory),
     ReadonlyArray.map(([category, printables]) =>
       [
-        Renderer.h1(category),
+        MarkdownPrinter.h1(category),
         ...pipe(
           printables,
           ReadonlyArray.sort(
@@ -271,7 +296,7 @@ export const printModule = (module: Domain.Module, order: number): string => {
               (printable: Printable) => printable.name
             )
           ),
-          ReadonlyArray.map(fromPrintable)
+          ReadonlyArray.map(print)
         )
       ].join("\n")
     )

@@ -121,66 +121,65 @@ const testCases = {
       Option.none()
     ),
     "export type A = number"
+  ),
+  namespace: createNamespace(
+    createNamedDoc(
+      "A",
+      Option.none(),
+      Option.some("1.0.0"),
+      false,
+      [],
+      Option.none()
+    ),
+    [],
+    [
+      createTypeAlias(
+        createNamedDoc(
+          "B",
+          Option.none(),
+          Option.some("1.0.1"),
+          false,
+          [],
+          Option.none()
+        ),
+        "export type B = string"
+      )
+    ],
+    [
+      createNamespace(
+        createNamedDoc(
+          "C",
+          Option.none(),
+          Option.some("1.0.2"),
+          false,
+          [],
+          Option.none()
+        ),
+        [],
+        [
+          createTypeAlias(
+            createNamedDoc(
+              "D",
+              Option.none(),
+              Option.some("1.0.3"),
+              false,
+              [],
+              Option.none()
+            ),
+            "export type D = number"
+          )
+        ],
+        []
+      )
+    ]
   )
 }
 
 describe.concurrent("Markdown", () => {
-  const print = flow(_.fromPrintable, _.prettify)
-
-  it("fromNamespace", () => {
-    const namespace = createNamespace(
-      createNamedDoc(
-        "A",
-        Option.none(),
-        Option.some("1.0.0"),
-        false,
-        [],
-        Option.none()
-      ),
-      [],
-      [
-        createTypeAlias(
-          createNamedDoc(
-            "B",
-            Option.none(),
-            Option.some("1.0.1"),
-            false,
-            [],
-            Option.none()
-          ),
-          "export type B = string"
-        )
-      ],
-      [
-        createNamespace(
-          createNamedDoc(
-            "C",
-            Option.none(),
-            Option.some("1.0.2"),
-            false,
-            [],
-            Option.none()
-          ),
-          [],
-          [
-            createTypeAlias(
-              createNamedDoc(
-                "D",
-                Option.none(),
-                Option.some("1.0.3"),
-                false,
-                [],
-                Option.none()
-              ),
-              "export type D = number"
-            )
-          ],
-          []
-        )
-      ]
-    )
+  it("printNamespace", () => {
+    const print = flow(_.printNamespace, _.prettify)
     assert.strictEqual(
-      print(namespace),
+      print(testCases.namespace, 0),
       `## A (namespace)
 
 Added in v1.0.0
@@ -212,7 +211,8 @@ Added in v1.0.3
     )
   })
 
-  it("fromClass", () => {
+  it("printClass", () => {
+    const print = flow(_.printClass, _.prettify)
     assert.strictEqual(
       print(testCases.class),
       `## A (class)
@@ -269,6 +269,7 @@ Added in v1.0.0
   })
 
   it("printConstant", () => {
+    const print = flow(_.printConstant, _.prettify)
     assert.strictEqual(
       print(testCases.constant),
       `## test
@@ -287,6 +288,7 @@ Added in v1.0.0
   })
 
   it("printExport", () => {
+    const print = flow(_.printExport, _.prettify)
     assert.strictEqual(
       print(testCases.export),
       `## test
@@ -303,6 +305,7 @@ Added in v1.0.0
   })
 
   it("printFunction", () => {
+    const print = flow(_.printFunction, _.prettify)
     assert.strictEqual(
       print(testCases.function),
       `## ~~func~~
@@ -327,8 +330,9 @@ Added in v1.0.0
   })
 
   it("printInterface", () => {
+    const print = flow(_.printInterface, _.prettify)
     assert.strictEqual(
-      print(testCases.interface),
+      print(testCases.interface, 0),
       `## A (interface)
 
 **Signature**
@@ -343,8 +347,9 @@ Added in v1.0.0
   })
 
   it("printTypeAlias", () => {
+    const print = flow(_.printTypeAlias, _.prettify)
     assert.strictEqual(
-      print(testCases.typeAlias),
+      print(testCases.typeAlias, 0),
       `## A (type alias)
 
 **Signature**
@@ -358,7 +363,7 @@ Added in v1.0.0
     )
 
     assert.strictEqual(
-      print({ ...testCases.typeAlias, since: Option.none() }),
+      print({ ...testCases.typeAlias, since: Option.none() }, 0),
       `## A (type alias)
 
 **Signature**
@@ -371,7 +376,7 @@ export type A = number
   })
 
   it("printModule", () => {
-    const documentation = createNamedDoc(
+    const doc = createNamedDoc(
       "tests",
       Option.none(),
       Option.some("1.0.0"),
@@ -382,7 +387,7 @@ export type A = number
     assert.strictEqual(
       _.printModule(
         createModule(
-          documentation,
+          doc,
           ["src", "tests.ts"],
           [testCases.class],
           [testCases.interface],
@@ -390,7 +395,7 @@ export type A = number
           [testCases.typeAlias],
           [testCases.constant],
           [testCases.export],
-          []
+          [testCases.namespace]
         ),
         1
       ),
@@ -418,6 +423,10 @@ Added in v1.0.0
 - [utils](#utils)
   - [A (interface)](#a-interface)
   - [A (type alias)](#a-type-alias)
+  - [A (namespace)](#a-namespace)
+    - [B (type alias)](#b-type-alias)
+    - [C (namespace)](#c-namespace)
+      - [D (type alias)](#d-type-alias)
   - [~~func~~](#func)
   - [test](#test-1)
 
@@ -511,6 +520,34 @@ export type A = number
 
 Added in v1.0.0
 
+## A (namespace)
+
+Added in v1.0.0
+
+### B (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type B = string
+\`\`\`
+
+Added in v1.0.1
+
+### C (namespace)
+
+Added in v1.0.2
+
+#### D (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type D = number
+\`\`\`
+
+Added in v1.0.3
+
 ## ~~func~~
 
 a function
@@ -541,17 +578,7 @@ Added in v1.0.0
 `
     )
 
-    const empty = createModule(
-      documentation,
-      ["src", "tests.ts"],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-      []
-    )
+    const empty = createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 
     assert.strictEqual(
       _.printModule(empty, 1),

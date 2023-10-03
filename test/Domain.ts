@@ -2,7 +2,7 @@ import * as assert from "assert"
 import { Option, ReadonlyArray } from "effect"
 import * as Domain from "../src/Domain"
 
-const documentable = (name: string) =>
+const createDefaultNamedDoc = (name: string) =>
   Domain.createNamedDoc(
     name,
     Option.none(),
@@ -14,8 +14,8 @@ const documentable = (name: string) =>
 
 describe.concurrent("Domain", () => {
   describe.concurrent("constructors", () => {
-    it("Documentable", () => {
-      assert.deepStrictEqual(documentable("A"), {
+    it("createNamedDoc", () => {
+      assert.deepStrictEqual(createDefaultNamedDoc("A"), {
         name: "A",
         description: Option.none(),
         since: Option.some("1.0.0"),
@@ -25,9 +25,9 @@ describe.concurrent("Domain", () => {
       })
     })
 
-    it("Module", () => {
-      const m = Domain.createModule(
-        documentable("test"),
+    it("createModule", () => {
+      const model = Domain.createModule(
+        createDefaultNamedDoc("test"),
         ["src", "index.ts"],
         [],
         [],
@@ -38,8 +38,8 @@ describe.concurrent("Domain", () => {
         []
       )
 
-      assert.deepStrictEqual(m, {
-        ...documentable("test"),
+      assert.deepStrictEqual(model, {
+        ...createDefaultNamedDoc("test"),
         path: ["src", "index.ts"],
         classes: [],
         interfaces: [],
@@ -51,18 +51,18 @@ describe.concurrent("Domain", () => {
       })
     })
 
-    it("Class", () => {
-      const c = Domain.createClass(
-        documentable("A"),
+    it("createClass", () => {
+      const model = Domain.createClass(
+        createDefaultNamedDoc("A"),
         "declare class A { constructor() }",
         [],
         [],
         []
       )
 
-      assert.deepStrictEqual(c, {
+      assert.deepStrictEqual(model, {
         _tag: "Class",
-        ...documentable("A"),
+        ...createDefaultNamedDoc("A"),
         signature: "declare class A { constructor() }",
         methods: [],
         staticMethods: [],
@@ -70,112 +70,110 @@ describe.concurrent("Domain", () => {
       })
     })
 
-    it("Constant", () => {
-      const c = Domain.createConstant(
-        documentable("foo"),
+    it("createConstant", () => {
+      const model = Domain.createConstant(
+        createDefaultNamedDoc("foo"),
         "declare const foo: string"
       )
 
-      assert.deepStrictEqual(c, {
+      assert.deepStrictEqual(model, {
         _tag: "Constant",
-        ...documentable("foo"),
+        ...createDefaultNamedDoc("foo"),
         signature: "declare const foo: string"
       })
     })
 
-    it("Method", () => {
-      const m = Domain.createMethod(documentable("foo"), ["foo(): string"])
+    it("createMethod", () => {
+      const model = Domain.createMethod(createDefaultNamedDoc("foo"), ["foo(): string"])
 
-      assert.deepStrictEqual(m, {
-        ...documentable("foo"),
+      assert.deepStrictEqual(model, {
+        ...createDefaultNamedDoc("foo"),
         signatures: ["foo(): string"]
       })
     })
 
-    it("Property", () => {
-      const p = Domain.createProperty(documentable("foo"), "foo: string")
+    it("createProperty", () => {
+      const model = Domain.createProperty(createDefaultNamedDoc("foo"), "foo: string")
 
-      assert.deepStrictEqual(p, {
-        ...documentable("foo"),
+      assert.deepStrictEqual(model, {
+        ...createDefaultNamedDoc("foo"),
         signature: "foo: string"
       })
     })
 
-    it("Interface", () => {
-      const i = Domain.createInterface(documentable("A"), "interface A {}")
+    it("createInterface", () => {
+      const model = Domain.createInterface(createDefaultNamedDoc("A"), "interface A {}")
 
-      assert.deepStrictEqual(i, {
+      assert.deepStrictEqual(model, {
         _tag: "Interface",
-        ...documentable("A"),
+        ...createDefaultNamedDoc("A"),
         signature: "interface A {}"
       })
     })
 
-    it("Function", () => {
-      const f = Domain.createFunction(documentable("func"), [
+    it("createFunction", () => {
+      const model = Domain.createFunction(createDefaultNamedDoc("func"), [
         "declare function func(): string"
       ])
 
-      assert.deepStrictEqual(f, {
+      assert.deepStrictEqual(model, {
         _tag: "Function",
-        ...documentable("func"),
+        ...createDefaultNamedDoc("func"),
         signatures: ["declare function func(): string"]
       })
     })
 
-    it("TypeAlias", () => {
-      const ta = Domain.createTypeAlias(documentable("A"), "type A = string")
+    it("createTypeAlias", () => {
+      const model = Domain.createTypeAlias(createDefaultNamedDoc("A"), "type A = string")
 
-      assert.deepStrictEqual(ta, {
+      assert.deepStrictEqual(model, {
         _tag: "TypeAlias",
-        ...documentable("A"),
+        ...createDefaultNamedDoc("A"),
         signature: "type A = string"
       })
     })
 
-    it("Export", () => {
-      const e = Domain.createExport(
-        documentable("foo"),
+    it("createExport", () => {
+      const model = Domain.createExport(
+        createDefaultNamedDoc("foo"),
         "export declare const foo: string"
       )
 
-      assert.deepStrictEqual(e, {
+      assert.deepStrictEqual(model, {
         _tag: "Export",
-        ...documentable("foo"),
+        ...createDefaultNamedDoc("foo"),
         signature: "export declare const foo: string"
       })
     })
   })
 
-  describe.concurrent("instances", () => {
-    it("ordModule", () => {
-      const m1 = Domain.createModule(
-        documentable("test1"),
-        ["src", "test1.ts"],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-      )
+  it("ByPath", () => {
+    const m1 = Domain.createModule(
+      createDefaultNamedDoc("test1"),
+      ["src", "test1.ts"],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    )
 
-      const m2 = Domain.createModule(
-        documentable("test1"),
-        ["src", "test1.ts"],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-      )
+    const m2 = Domain.createModule(
+      createDefaultNamedDoc("test1"),
+      ["src", "test1.ts"],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    )
 
-      const sorted = ReadonlyArray.sort([m2, m1], Domain.ByPath)
+    const sorted = ReadonlyArray.sort([m2, m1], Domain.ByPath)
 
-      assert.deepStrictEqual(sorted, [m1, m2])
-    })
+    assert.deepStrictEqual(sorted, [m1, m2])
   })
 })
