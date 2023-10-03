@@ -1,7 +1,7 @@
+import * as FileSystem from "@effect/docgen/FileSystem"
 import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import * as assert from "assert"
 import { Effect, Exit } from "effect"
-import * as FileSystem from "../src/FileSystem"
 
 describe.concurrent("FileSystem", () => {
   describe.concurrent("readFile", () => {

@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+import path from "path"
 import { defineConfig } from "vite"
 
 export default defineConfig({
@@ -8,6 +9,12 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: "v8"
+    }
+  },
+  resolve: {
+    alias: {
+      "@effect/docgen/test": path.resolve(__dirname, "/test"),
+      "@effect/docgen": path.resolve(__dirname, "/src")
     }
   }
 })

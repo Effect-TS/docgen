@@ -1,6 +1,6 @@
+import * as Domain from "@effect/docgen/Domain"
 import * as assert from "assert"
 import { Option, ReadonlyArray } from "effect"
-import * as Domain from "../src/Domain"
 
 const createDefaultNamedDoc = (name: string) =>
   Domain.createNamedDoc(

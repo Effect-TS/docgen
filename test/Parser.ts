@@ -1,11 +1,11 @@
+import * as Config from "@effect/docgen/Config"
+import * as Domain from "@effect/docgen/Domain"
+import * as FileSystem from "@effect/docgen/FileSystem"
+import * as Parser from "@effect/docgen/Parser"
 import * as assert from "assert"
 import chalk from "chalk"
 import { Effect, Exit, Option, String } from "effect"
 import * as ast from "ts-morph"
-import * as Config from "../src/Config"
-import * as Domain from "../src/Domain"
-import * as FileSystem from "../src/FileSystem"
-import * as Parser from "../src/Parser"
 
 let testCounter = 0
 

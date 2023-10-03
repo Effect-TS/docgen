@@ -1,24 +1,12 @@
+import * as Domain from "@effect/docgen/Domain"
+import * as _ from "@effect/docgen/Markdown"
 import * as assert from "assert"
 import { Option } from "effect"
 import { flow } from "effect/Function"
-import {
-  createClass,
-  createConstant,
-  createExport,
-  createFunction,
-  createInterface,
-  createMethod,
-  createModule,
-  createNamedDoc,
-  createNamespace,
-  createProperty,
-  createTypeAlias
-} from "../src/Domain"
-import * as _ from "../src/Markdown"
 
 const testCases = {
-  class: createClass(
-    createNamedDoc(
+  class: Domain.createClass(
+    Domain.createNamedDoc(
       "A",
       Option.some("a class"),
       Option.some("1.0.0"),
@@ -28,8 +16,8 @@ const testCases = {
     ),
     "declare class A { constructor() }",
     [
-      createMethod(
-        createNamedDoc(
+      Domain.createMethod(
+        Domain.createNamedDoc(
           "hasOwnProperty",
           Option.none(),
           Option.some("1.0.0"),
@@ -41,8 +29,8 @@ const testCases = {
       )
     ],
     [
-      createMethod(
-        createNamedDoc(
+      Domain.createMethod(
+        Domain.createNamedDoc(
           "staticTest",
           Option.none(),
           Option.some("1.0.0"),
@@ -54,8 +42,8 @@ const testCases = {
       )
     ],
     [
-      createProperty(
-        createNamedDoc(
+      Domain.createProperty(
+        Domain.createNamedDoc(
           "foo",
           Option.none(),
           Option.some("1.0.0"),
@@ -67,8 +55,8 @@ const testCases = {
       )
     ]
   ),
-  constant: createConstant(
-    createNamedDoc(
+  constant: Domain.createConstant(
+    Domain.createNamedDoc(
       "test",
       Option.some("the test"),
       Option.some("1.0.0"),
@@ -78,8 +66,8 @@ const testCases = {
     ),
     "declare const test: string"
   ),
-  export: createExport(
-    createNamedDoc(
+  export: Domain.createExport(
+    Domain.createNamedDoc(
       "test",
       Option.none(),
       Option.some("1.0.0"),
@@ -89,8 +77,8 @@ const testCases = {
     ),
     "export declare const test: typeof test"
   ),
-  function: createFunction(
-    createNamedDoc(
+  function: Domain.createFunction(
+    Domain.createNamedDoc(
       "func",
       Option.some("a function"),
       Option.some("1.0.0"),
@@ -100,8 +88,8 @@ const testCases = {
     ),
     ["declare const func: (test: string) => string"]
   ),
-  interface: createInterface(
-    createNamedDoc(
+  interface: Domain.createInterface(
+    Domain.createNamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -111,8 +99,8 @@ const testCases = {
     ),
     "export interface A extends Record<string, unknown> {}"
   ),
-  typeAlias: createTypeAlias(
-    createNamedDoc(
+  typeAlias: Domain.createTypeAlias(
+    Domain.createNamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -122,8 +110,8 @@ const testCases = {
     ),
     "export type A = number"
   ),
-  namespace: createNamespace(
-    createNamedDoc(
+  namespace: Domain.createNamespace(
+    Domain.createNamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -133,8 +121,8 @@ const testCases = {
     ),
     [],
     [
-      createTypeAlias(
-        createNamedDoc(
+      Domain.createTypeAlias(
+        Domain.createNamedDoc(
           "B",
           Option.none(),
           Option.some("1.0.1"),
@@ -146,8 +134,8 @@ const testCases = {
       )
     ],
     [
-      createNamespace(
-        createNamedDoc(
+      Domain.createNamespace(
+        Domain.createNamedDoc(
           "C",
           Option.none(),
           Option.some("1.0.2"),
@@ -157,8 +145,8 @@ const testCases = {
         ),
         [],
         [
-          createTypeAlias(
-            createNamedDoc(
+          Domain.createTypeAlias(
+            Domain.createNamedDoc(
               "D",
               Option.none(),
               Option.some("1.0.3"),
@@ -376,7 +364,7 @@ export type A = number
   })
 
   it("printModule", () => {
-    const doc = createNamedDoc(
+    const doc = Domain.createNamedDoc(
       "tests",
       Option.none(),
       Option.some("1.0.0"),
@@ -386,7 +374,7 @@ export type A = number
     )
     assert.strictEqual(
       _.printModule(
-        createModule(
+        Domain.createModule(
           doc,
           ["src", "tests.ts"],
           [testCases.class],
@@ -578,7 +566,7 @@ Added in v1.0.0
 `
     )
 
-    const empty = createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
+    const empty = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 
     assert.strictEqual(
       _.printModule(empty, 1),
