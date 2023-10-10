@@ -47,7 +47,7 @@ const writeFileToOutDir = (file: FileSystem.File) =>
     const cwd = yield* _(process.cwd)
     const fileName = NodePath.relative(NodePath.join(cwd, config.outDir), file.path)
 
-    const exists = yield* _(fs.pathExists(file.path))
+    const exists = yield* _(fs.exists(file.path))
     if (exists) {
       if (file.isOverwriteable) {
         yield* _(Effect.logDebug(`Overwriting file ${chalk.black(fileName)}...`))
@@ -329,7 +329,7 @@ const getMarkdownConfigYML = Effect.gen(function*(_) {
   const fs = yield* _(FileSystem.FileSystem)
   const cwd = yield* _(process.cwd)
   const configPath = join(cwd, config.outDir, "_config.yml")
-  const exists = yield* _(fs.pathExists(configPath))
+  const exists = yield* _(fs.exists(configPath))
   if (exists) {
     const content = yield* _(fs.readFile(configPath))
     const resolved = yield* _(resolveConfigYML(content))

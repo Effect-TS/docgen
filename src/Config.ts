@@ -98,7 +98,7 @@ const loadConfig = (
 > =>
   Effect.gen(function*(_) {
     const fs = yield* _(FileSystem.FileSystem)
-    const exists = yield* _(fs.pathExists(path))
+    const exists = yield* _(fs.exists(path))
     if (exists) {
       const config = yield* _(validateJsonFile(PartialConfigSchema, path))
       return Option.some(config)

@@ -110,7 +110,7 @@ export interface FileSystem {
   /**
    * Checks if the specified `path` exists on the file system.
    */
-  readonly pathExists: (path: string) => Effect.Effect<never, Error, boolean>
+  readonly exists: (path: string) => Effect.Effect<never, Error, boolean>
   /**
    * Find all files matching the specified `glob` pattern, optionally excluding
    * files matching the provided `exclude` patterns.

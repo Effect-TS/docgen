@@ -23,7 +23,7 @@ describe.concurrent("Config", () => {
         readFile: () => Effect.succeed(JSON.stringify(fakePackageJson)),
         writeFile: hole,
         removeFile: hole,
-        pathExists: () => Effect.succeed(false),
+        exists: () => Effect.succeed(false),
         glob: hole
       })
     )
@@ -62,7 +62,7 @@ describe.concurrent("Config", () => {
         },
         writeFile: hole,
         removeFile: hole,
-        pathExists: (path) => {
+        exists: (path) => {
           return Effect.succeed(NodePath.basename(path) === "docgen.json")
         },
         glob: hole
@@ -95,7 +95,7 @@ describe.concurrent("Config", () => {
         },
         writeFile: hole,
         removeFile: hole,
-        pathExists: (path) => {
+        exists: (path) => {
           return Effect.succeed(NodePath.basename(path) === "docgen.json")
         },
         glob: hole

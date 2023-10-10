@@ -28,7 +28,7 @@ export interface FileSystem {
   /**
    * Checks if the specified `path` exists on the file system.
    */
-  readonly pathExists: (path: string) => Effect.Effect<never, Error, boolean>
+  readonly exists: (path: string) => Effect.Effect<never, Error, boolean>
   /**
    * Find all files matching the specified `glob` pattern, optionally excluding
    * files matching the provided `exclude` patterns.
@@ -105,7 +105,7 @@ export const FileSystemLive = Layer.effect(
       path: string
     ): Effect.Effect<never, Error, void> =>
       Effect.if(
-        pathExists(path),
+        exists(path),
         {
           onTrue: fs.remove(path, { recursive: true }).pipe(
             Effect.mapError((error) =>
@@ -116,7 +116,7 @@ export const FileSystemLive = Layer.effect(
         }
       )
 
-    const pathExists = (path: string): Effect.Effect<never, Error, boolean> =>
+    const exists = (path: string): Effect.Effect<never, Error, boolean> =>
       fs.exists(path).pipe(
         Effect.mapError((error) =>
           new Error(`[FileSystem] Unable to read file from '${path}': ${error.message}`)
@@ -141,7 +141,7 @@ export const FileSystemLive = Layer.effect(
       readFile,
       writeFile,
       removeFile,
-      pathExists,
+      exists,
       glob
     })
   })
