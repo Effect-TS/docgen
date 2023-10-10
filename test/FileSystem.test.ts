@@ -3,8 +3,10 @@ import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import * as assert from "assert"
 import { Effect, Exit } from "effect"
 
-describe.concurrent("FileSystem", () => {
-  describe.concurrent("readFile", () => {
+const isBun = "Bun" in globalThis
+
+describe("FileSystem", () => {
+  describe("readFile", () => {
     it("should error out on non existing files", async () => {
       const program = Effect.flatMap(
         FileSystem.FileSystem,
@@ -17,7 +19,9 @@ describe.concurrent("FileSystem", () => {
       assert.deepStrictEqual(
         await Effect.runPromiseExit(program),
         Exit.fail(
-          `[FileSystem] Unable to read file from 'non-existent.txt': ENOENT: no such file or directory, open 'non-existent.txt'`
+          isBun ?
+            `[FileSystem] Unable to read file from 'non-existent.txt': No such file or directory` :
+            `[FileSystem] Unable to read file from 'non-existent.txt': ENOENT: no such file or directory, open 'non-existent.txt'`
         )
       )
     })

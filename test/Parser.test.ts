@@ -65,9 +65,9 @@ const expectSuccess = <E, A>(
   ).toEqual(Exit.succeed(a))
 }
 
-describe.concurrent("Parser", () => {
-  describe.concurrent("parsers", () => {
-    describe.concurrent("parseNamespaces", () => {
+describe("Parser", () => {
+  describe("parsers", () => {
+    describe("parseNamespaces", () => {
       it("should return no `Namespaces`s if the file is empty", () => {
         expectSuccess("", Parser.parseNamespaces, [])
       })
@@ -106,7 +106,7 @@ describe.concurrent("Parser", () => {
         )
       })
 
-      describe.concurrent("interfaces", () => {
+      describe("interfaces", () => {
         it("should ignore not exported interfaces", () => {
           expectSuccess(
             `
@@ -177,7 +177,7 @@ describe.concurrent("Parser", () => {
         })
       })
 
-      describe.concurrent("type aliases", () => {
+      describe("type aliases", () => {
         it("should ignore not exported type alias", () => {
           expectSuccess(
             `
@@ -238,7 +238,7 @@ describe.concurrent("Parser", () => {
         })
       })
 
-      describe.concurrent("nested namespaces", () => {
+      describe("nested namespaces", () => {
         it("should ignore not exported namespaces", () => {
           expectSuccess(
             `
@@ -315,7 +315,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseInterfaces", () => {
+    describe("parseInterfaces", () => {
       it("should return no `Interface`s if the file is empty", () => {
         expectSuccess("", Parser.parseInterfaces, [])
       })
@@ -387,7 +387,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseFunctions", () => {
+    describe("parseFunctions", () => {
       it("should raise an error if the function is anonymous", () => {
         expectFailure(
           `export function(a: number, b: number): number { return a + b }`,
@@ -606,7 +606,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseTypeAlias", () => {
+    describe("parseTypeAlias", () => {
       it("should return a `TypeAlias`", () => {
         expectSuccess(
           `/**
@@ -632,7 +632,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseConstants", () => {
+    describe("parseConstants", () => {
       it("should handle a constant value", () => {
         expectSuccess(
           `/**
@@ -744,7 +744,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseClasses", () => {
+    describe("parseClasses", () => {
       it("should raise an error if the class is anonymous", () => {
         expectFailure(`export class {}`, Parser.parseClasses, [
           `Missing ${chalk.bold("class name")} in module ${chalk.bold("test")}`
@@ -1091,7 +1091,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseModuleDocumentation", () => {
+    describe("parseModuleDocumentation", () => {
       it("should return a description field and a deprecated field", () => {
         expectSuccess(
           `/**
@@ -1142,7 +1142,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseExports", () => {
+    describe("parseExports", () => {
       it("should return no `Export`s if the file is empty", () => {
         expectSuccess("", Parser.parseExports, [])
       })
@@ -1334,7 +1334,7 @@ describe.concurrent("Parser", () => {
       })
     })
 
-    describe.concurrent("parseModule", () => {
+    describe("parseModule", () => {
       it("should raise an error if `@since` tag is missing", async () => {
         expectFailure(`import * as assert from 'assert'`, Parser.parseModule, [
           `Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`
@@ -1395,7 +1395,7 @@ export const foo = 'foo'`,
       })
     })
 
-    describe.concurrent("parseFile", () => {
+    describe("parseFile", () => {
       it("should not parse a non-existent file", async () => {
         const file = FileSystem.createFile("non-existent.ts", "")
         const project = new ast.Project({ useInMemoryFileSystem: true })
@@ -1411,8 +1411,8 @@ export const foo = 'foo'`,
     })
   })
 
-  describe.concurrent("utils", () => {
-    describe.concurrent("getDoc", () => {
+  describe("utils", () => {
+    describe("getDoc", () => {
       it("should parse comment information", () => {
         const text = String.stripMargin(
           `|/**

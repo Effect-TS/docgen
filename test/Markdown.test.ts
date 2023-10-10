@@ -163,7 +163,7 @@ const testCases = {
   )
 }
 
-describe.concurrent("Markdown", () => {
+describe("Markdown", () => {
   it("printNamespace", () => {
     const print = flow(_.printNamespace, _.prettify)
     assert.strictEqual(

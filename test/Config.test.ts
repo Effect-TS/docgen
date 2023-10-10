@@ -5,7 +5,7 @@ import * as assert from "assert"
 import { Effect, Either, hole, Layer } from "effect"
 import NodePath from "node:path"
 
-describe.concurrent("Config", () => {
+describe("Config", () => {
   const fakePackageJson = { name: "name", homepage: "homepage" }
 
   it(`should return the default config if docgen.json doesn't exists`, () => {
