@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.2.0
+
+### Minor Changes
+
+- ecd00a5: update effect and add effect/platform-node dependency
+
 ## 0.1.8
 
 ### Patch Changes
