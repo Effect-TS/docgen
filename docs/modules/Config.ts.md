@@ -12,30 +12,37 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [constructors](#constructors)
-  - [ConfigError](#configerror)
-- [model](#model)
-  - [Config (interface)](#config-interface)
-  - [ConfigError (interface)](#configerror-interface)
+- [layer](#layer)
+  - [ConfigLive](#configlive)
 - [service](#service)
   - [Config](#config)
-  - [ConfigLive](#configlive)
+  - [Config (interface)](#config-interface)
 
 ---
 
-# constructors
+# layer
 
-## ConfigError
+## ConfigLive
 
 **Signature**
 
 ```ts
-export declare const ConfigError: Data.Case.Constructor<ConfigError, '_tag'>
+export declare const ConfigLive: Layer.Layer<Process.Process | FileSystem.FileSystem, Error, Config>
 ```
 
 Added in v1.0.0
 
-# model
+# service
+
+## Config
+
+**Signature**
+
+```ts
+export declare const Config: Context.Tag<Config, Config>
+```
+
+Added in v1.0.0
 
 ## Config (interface)
 
@@ -56,45 +63,6 @@ export interface Config {
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
 }
-```
-
-Added in v1.0.0
-
-## ConfigError (interface)
-
-**Signature**
-
-```ts
-export interface ConfigError extends Data.Case {
-  readonly _tag: 'ConfigError'
-  readonly message: string
-}
-```
-
-Added in v1.0.0
-
-# service
-
-## Config
-
-**Signature**
-
-```ts
-export declare const Config: Context.Tag<Config, Config>
-```
-
-Added in v1.0.0
-
-## ConfigLive
-
-**Signature**
-
-```ts
-export declare const ConfigLive: Layer.Layer<
-  Process.Process | FileSystem.FileSystem,
-  FileSystem.ReadFileError | FileSystem.ParseJsonError | ConfigError,
-  Config
->
 ```
 
 Added in v1.0.0

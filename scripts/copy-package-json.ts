@@ -4,18 +4,16 @@ import * as FileSystem from "../src/FileSystem"
 
 const excludedPrefixes = ["@effect", "effect", "chalk"]
 
-const excludeEffectPackages = (
-  deps: Record<string, string>
-): Record<string, string> => {
-  return ReadonlyRecord.filter(
-    deps,
-    (_, k) => !excludedPrefixes.some((_) => k.startsWith(_))
-  )
-}
+const excludeEffectPackages = (deps: Record<string, string>): Record<string, string> =>
+  ReadonlyRecord.filter(deps, (_, k) => !excludedPrefixes.some((_) => k.startsWith(_)))
 
-const read = FileSystem.FileSystem.pipe(
-  Effect.flatMap((fileSystem) => fileSystem.readJsonFile("package.json")),
-  Effect.map((json: any) => ({
+const pathTo = path.join("dist", "package.json")
+
+const program = Effect.gen(function*(_) {
+  console.log(`[Build] Copying package.json to ${pathTo}...`)
+  const fs = yield* _(FileSystem.FileSystem)
+  const json: any = yield* _(FileSystem.readJsonFile("package.json"))
+  const pkg = {
     name: json.name,
     version: json.version,
     description: json.description,
@@ -31,21 +29,11 @@ const read = FileSystem.FileSystem.pipe(
     homepage: json.homepage,
     tags: json.tags,
     keywords: json.keywords
-  }))
+  }
+  yield* _(fs.writeFile(pathTo, JSON.stringify(pkg, null, 2)))
+  console.log("[Build] Build completed.")
+}).pipe(
+  Effect.provide(FileSystem.FileSystemLive)
 )
 
-const pathTo = path.join("dist", "package.json")
-
-const write = (pkg: object) =>
-  Effect.flatMap(
-    FileSystem.FileSystem,
-    (fileSystem) => fileSystem.writeFile(pathTo, JSON.stringify(pkg, null, 2))
-  )
-
-const program = Effect.sync(() => console.log(`copying package.json to ${pathTo}...`)).pipe(
-  Effect.zipRight(read),
-  Effect.flatMap(write),
-  Effect.provideLayer(FileSystem.FileSystemLive)
-)
-
-Effect.runPromise(program)
+Effect.runPromise(program).catch(console.error)

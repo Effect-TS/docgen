@@ -1,14 +1,13 @@
 /**
  * @since 1.0.0
  */
-import { Order as order, String } from "effect"
-import type { Option } from "effect"
+import { type Option, Order, String } from "effect"
 
 /**
  * @category model
  * @since 1.0.0
  */
-export interface Module extends Documentable {
+export interface Module extends NamedDoc {
   readonly path: ReadonlyArray<string>
   readonly classes: ReadonlyArray<Class>
   readonly interfaces: ReadonlyArray<Interface>
@@ -29,7 +28,7 @@ export type Example = string
  * @category model
  * @since 1.0.0
  */
-export interface CommentInfo {
+export interface Doc {
   readonly description: Option.Option<string>
   readonly since: Option.Option<string>
   readonly deprecated: boolean
@@ -41,7 +40,7 @@ export interface CommentInfo {
  * @category model
  * @since 1.0.0
  */
-export interface Documentable extends CommentInfo {
+export interface NamedDoc extends Doc {
   readonly name: string
 }
 
@@ -49,7 +48,7 @@ export interface Documentable extends CommentInfo {
  * @category model
  * @since 1.0.0
  */
-export interface Class extends Documentable {
+export interface Class extends NamedDoc {
   readonly _tag: "Class"
   readonly signature: string
   readonly methods: ReadonlyArray<Method>
@@ -61,7 +60,7 @@ export interface Class extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface Method extends Documentable {
+export interface Method extends NamedDoc {
   readonly signatures: ReadonlyArray<string>
 }
 
@@ -69,7 +68,7 @@ export interface Method extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface Property extends Documentable {
+export interface Property extends NamedDoc {
   readonly signature: string
 }
 
@@ -77,7 +76,7 @@ export interface Property extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface Interface extends Documentable {
+export interface Interface extends NamedDoc {
   readonly _tag: "Interface"
   readonly signature: string
 }
@@ -86,7 +85,7 @@ export interface Interface extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface Function extends Documentable {
+export interface Function extends NamedDoc {
   readonly _tag: "Function"
   readonly signatures: ReadonlyArray<string>
 }
@@ -95,7 +94,7 @@ export interface Function extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface TypeAlias extends Documentable {
+export interface TypeAlias extends NamedDoc {
   readonly _tag: "TypeAlias"
   readonly signature: string
 }
@@ -104,7 +103,7 @@ export interface TypeAlias extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface Constant extends Documentable {
+export interface Constant extends NamedDoc {
   readonly _tag: "Constant"
   readonly signature: string
 }
@@ -123,7 +122,7 @@ export interface Constant extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface Export extends Documentable {
+export interface Export extends NamedDoc {
   readonly _tag: "Export"
   readonly signature: string
 }
@@ -132,7 +131,7 @@ export interface Export extends Documentable {
  * @category model
  * @since 1.0.0
  */
-export interface Namespace extends Documentable {
+export interface Namespace extends NamedDoc {
   readonly _tag: "Namespace"
   readonly interfaces: ReadonlyArray<Interface>
   readonly typeAliases: ReadonlyArray<TypeAlias>
@@ -147,46 +146,33 @@ export interface Namespace extends Documentable {
  * @category constructors
  * @since 1.0.0
  */
-export const createCommentInfo = (
+export const createDoc = (
   description: Option.Option<string>,
   since: Option.Option<string>,
   deprecated: boolean,
   examples: ReadonlyArray<Example>,
   category: Option.Option<string>
-): CommentInfo => ({
-  description,
-  since,
-  deprecated,
-  examples,
-  category
-})
+): Doc => ({ description, since, deprecated, examples, category })
 
 /**
  * @category constructors
  * @since 1.0.0
  */
-export const createDocumentable = (
+export const createNamedDoc = (
   name: string,
   description: Option.Option<string>,
   since: Option.Option<string>,
   deprecated: boolean,
   examples: ReadonlyArray<Example>,
   category: Option.Option<string>
-): Documentable => ({
-  name,
-  description,
-  since,
-  deprecated,
-  examples,
-  category
-})
+): NamedDoc => ({ name, description, since, deprecated, examples, category })
 
 /**
  * @category constructors
  * @since 1.0.0
  */
 export const createModule = (
-  documentable: Documentable,
+  doc: NamedDoc,
   path: ReadonlyArray<string>,
   classes: ReadonlyArray<Class>,
   interfaces: ReadonlyArray<Interface>,
@@ -196,7 +182,7 @@ export const createModule = (
   exports: ReadonlyArray<Export>,
   namespaces: ReadonlyArray<Namespace>
 ): Module => ({
-  ...documentable,
+  ...doc,
   path,
   classes,
   interfaces,
@@ -212,30 +198,20 @@ export const createModule = (
  * @since 1.0.0
  */
 export const createClass = (
-  documentable: Documentable,
+  doc: NamedDoc,
   signature: string,
   methods: ReadonlyArray<Method>,
   staticMethods: ReadonlyArray<Method>,
   properties: ReadonlyArray<Property>
-): Class => ({
-  _tag: "Class",
-  ...documentable,
-  signature,
-  methods,
-  staticMethods,
-  properties
-})
+): Class => ({ _tag: "Class", ...doc, signature, methods, staticMethods, properties })
 
 /**
  * @category constructors
  * @since 1.0.0
  */
-export const createConstant = (
-  documentable: Documentable,
-  signature: string
-): Constant => ({
+export const createConstant = (doc: NamedDoc, signature: string): Constant => ({
   _tag: "Constant",
-  ...documentable,
+  ...doc,
   signature
 })
 
@@ -243,11 +219,8 @@ export const createConstant = (
  * @category constructors
  * @since 1.0.0
  */
-export const createMethod = (
-  documentable: Documentable,
-  signatures: ReadonlyArray<string>
-): Method => ({
-  ...documentable,
+export const createMethod = (doc: NamedDoc, signatures: ReadonlyArray<string>): Method => ({
+  ...doc,
   signatures
 })
 
@@ -255,11 +228,8 @@ export const createMethod = (
  * @category constructors
  * @since 1.0.0
  */
-export const createProperty = (
-  documentable: Documentable,
-  signature: string
-): Property => ({
-  ...documentable,
+export const createProperty = (doc: NamedDoc, signature: string): Property => ({
+  ...doc,
   signature
 })
 
@@ -267,12 +237,9 @@ export const createProperty = (
  * @category constructors
  * @since 1.0.0
  */
-export const createInterface = (
-  documentable: Documentable,
-  signature: string
-): Interface => ({
+export const createInterface = (doc: NamedDoc, signature: string): Interface => ({
   _tag: "Interface",
-  ...documentable,
+  ...doc,
   signature
 })
 
@@ -280,12 +247,9 @@ export const createInterface = (
  * @category constructors
  * @since 1.0.0
  */
-export const createFunction = (
-  documentable: Documentable,
-  signatures: ReadonlyArray<string>
-): Function => ({
+export const createFunction = (doc: NamedDoc, signatures: ReadonlyArray<string>): Function => ({
   _tag: "Function",
-  ...documentable,
+  ...doc,
   signatures
 })
 
@@ -293,12 +257,9 @@ export const createFunction = (
  * @category constructors
  * @since 1.0.0
  */
-export const createTypeAlias = (
-  documentable: Documentable,
-  signature: string
-): TypeAlias => ({
+export const createTypeAlias = (doc: NamedDoc, signature: string): TypeAlias => ({
   _tag: "TypeAlias",
-  ...documentable,
+  ...doc,
   signature
 })
 
@@ -306,12 +267,9 @@ export const createTypeAlias = (
  * @category constructors
  * @since 1.0.0
  */
-export const createExport = (
-  documentable: Documentable,
-  signature: string
-): Export => ({
+export const createExport = (doc: NamedDoc, signature: string): Export => ({
   _tag: "Export",
-  ...documentable,
+  ...doc,
   signature
 })
 
@@ -320,23 +278,20 @@ export const createExport = (
  * @since 1.0.0
  */
 export const createNamespace = (
-  documentable: Documentable,
+  doc: NamedDoc,
   interfaces: ReadonlyArray<Interface>,
   typeAliases: ReadonlyArray<TypeAlias>,
   namespaces: ReadonlyArray<Namespace>
-): Namespace => ({
-  _tag: "Namespace",
-  ...documentable,
-  interfaces,
-  typeAliases,
-  namespaces
-})
+): Namespace => ({ _tag: "Namespace", ...doc, interfaces, typeAliases, namespaces })
 
 /**
- * @category instances
+ * A comparator function for sorting `Module` objects by their file path, represented as a string.
+ * The file path is converted to lowercase before comparison.
+ *
+ * @category sorting
  * @since 1.0.0
  */
-export const Order: order.Order<Module> = order.mapInput(
+export const ByPath: Order.Order<Module> = Order.mapInput(
   String.Order,
   (module: Module) => module.path.join("/").toLowerCase()
 )

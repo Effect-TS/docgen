@@ -6,8 +6,6 @@ parent: Modules
 
 ## bin overview
 
-CLI
-
 Added in v1.0.0
 
 ---

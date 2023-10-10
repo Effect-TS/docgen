@@ -1,6 +1,6 @@
 ---
 title: Markdown.ts
-nav_order: 9
+nav_order: 8
 parent: Modules
 ---
 
@@ -25,6 +25,18 @@ Added in v1.0.0
 
 ```ts
 export declare const printModule: (module: Domain.Module, order: number) => string
+```
+
+**Example**
+
+```ts
+import * as Markdown from '@effect/docgen/Markdown'
+import * as Domain from '@effect/docgen/Domain'
+import { Option } from 'effect'
+
+const doc = Domain.createNamedDoc('tests', Option.none(), Option.some('1.0.0'), false, [], Option.none())
+const m = Domain.createModule(doc, ['src', 'tests.ts'], [], [], [], [], [], [], [])
+console.log(Markdown.printModule(m, 0))
 ```
 
 Added in v1.0.0

@@ -23,7 +23,15 @@
       "@effect/docgen/test/*": ["./test/*"],
       "@effect/docgen/examples/*": ["./examples/*"],
       "@effect/docgen/*": ["./src/*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": {
+          "1002": "none"
+        }
+      }
+    ]
   },
   "include": ["./src", "./test"]
 }

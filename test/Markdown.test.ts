@@ -1,24 +1,12 @@
+import * as Domain from "@effect/docgen/Domain"
+import * as _ from "@effect/docgen/Markdown"
 import * as assert from "assert"
 import { Option } from "effect"
 import { flow } from "effect/Function"
-import {
-  createClass,
-  createConstant,
-  createDocumentable,
-  createExport,
-  createFunction,
-  createInterface,
-  createMethod,
-  createModule,
-  createNamespace,
-  createProperty,
-  createTypeAlias
-} from "../src/Domain"
-import * as _ from "../src/Markdown"
 
 const testCases = {
-  class: createClass(
-    createDocumentable(
+  class: Domain.createClass(
+    Domain.createNamedDoc(
       "A",
       Option.some("a class"),
       Option.some("1.0.0"),
@@ -28,8 +16,8 @@ const testCases = {
     ),
     "declare class A { constructor() }",
     [
-      createMethod(
-        createDocumentable(
+      Domain.createMethod(
+        Domain.createNamedDoc(
           "hasOwnProperty",
           Option.none(),
           Option.some("1.0.0"),
@@ -41,8 +29,8 @@ const testCases = {
       )
     ],
     [
-      createMethod(
-        createDocumentable(
+      Domain.createMethod(
+        Domain.createNamedDoc(
           "staticTest",
           Option.none(),
           Option.some("1.0.0"),
@@ -54,8 +42,8 @@ const testCases = {
       )
     ],
     [
-      createProperty(
-        createDocumentable(
+      Domain.createProperty(
+        Domain.createNamedDoc(
           "foo",
           Option.none(),
           Option.some("1.0.0"),
@@ -67,8 +55,8 @@ const testCases = {
       )
     ]
   ),
-  constant: createConstant(
-    createDocumentable(
+  constant: Domain.createConstant(
+    Domain.createNamedDoc(
       "test",
       Option.some("the test"),
       Option.some("1.0.0"),
@@ -78,8 +66,8 @@ const testCases = {
     ),
     "declare const test: string"
   ),
-  export: createExport(
-    createDocumentable(
+  export: Domain.createExport(
+    Domain.createNamedDoc(
       "test",
       Option.none(),
       Option.some("1.0.0"),
@@ -89,8 +77,8 @@ const testCases = {
     ),
     "export declare const test: typeof test"
   ),
-  function: createFunction(
-    createDocumentable(
+  function: Domain.createFunction(
+    Domain.createNamedDoc(
       "func",
       Option.some("a function"),
       Option.some("1.0.0"),
@@ -100,8 +88,8 @@ const testCases = {
     ),
     ["declare const func: (test: string) => string"]
   ),
-  interface: createInterface(
-    createDocumentable(
+  interface: Domain.createInterface(
+    Domain.createNamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -111,8 +99,8 @@ const testCases = {
     ),
     "export interface A extends Record<string, unknown> {}"
   ),
-  typeAlias: createTypeAlias(
-    createDocumentable(
+  typeAlias: Domain.createTypeAlias(
+    Domain.createNamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -121,66 +109,65 @@ const testCases = {
       Option.none()
     ),
     "export type A = number"
+  ),
+  namespace: Domain.createNamespace(
+    Domain.createNamedDoc(
+      "A",
+      Option.none(),
+      Option.some("1.0.0"),
+      false,
+      [],
+      Option.none()
+    ),
+    [],
+    [
+      Domain.createTypeAlias(
+        Domain.createNamedDoc(
+          "B",
+          Option.none(),
+          Option.some("1.0.1"),
+          false,
+          [],
+          Option.none()
+        ),
+        "export type B = string"
+      )
+    ],
+    [
+      Domain.createNamespace(
+        Domain.createNamedDoc(
+          "C",
+          Option.none(),
+          Option.some("1.0.2"),
+          false,
+          [],
+          Option.none()
+        ),
+        [],
+        [
+          Domain.createTypeAlias(
+            Domain.createNamedDoc(
+              "D",
+              Option.none(),
+              Option.some("1.0.3"),
+              false,
+              [],
+              Option.none()
+            ),
+            "export type D = number"
+          )
+        ],
+        []
+      )
+    ]
   )
 }
 
-describe.concurrent("Markdown", () => {
-  const print = flow(_.fromPrintable, _.prettify)
-
-  it("fromNamespace", () => {
-    const namespace = createNamespace(
-      createDocumentable(
-        "A",
-        Option.none(),
-        Option.some("1.0.0"),
-        false,
-        [],
-        Option.none()
-      ),
-      [],
-      [
-        createTypeAlias(
-          createDocumentable(
-            "B",
-            Option.none(),
-            Option.some("1.0.1"),
-            false,
-            [],
-            Option.none()
-          ),
-          "export type B = string"
-        )
-      ],
-      [
-        createNamespace(
-          createDocumentable(
-            "C",
-            Option.none(),
-            Option.some("1.0.2"),
-            false,
-            [],
-            Option.none()
-          ),
-          [],
-          [
-            createTypeAlias(
-              createDocumentable(
-                "D",
-                Option.none(),
-                Option.some("1.0.3"),
-                false,
-                [],
-                Option.none()
-              ),
-              "export type D = number"
-            )
-          ],
-          []
-        )
-      ]
-    )
+describe("Markdown", () => {
+  it("printNamespace", () => {
+    const print = flow(_.printNamespace, _.prettify)
     assert.strictEqual(
-      print(namespace),
+      print(testCases.namespace, 0),
       `## A (namespace)
 
 Added in v1.0.0
@@ -212,7 +199,8 @@ Added in v1.0.3
     )
   })
 
-  it("fromClass", () => {
+  it("printClass", () => {
+    const print = flow(_.printClass, _.prettify)
     assert.strictEqual(
       print(testCases.class),
       `## A (class)
@@ -269,6 +257,7 @@ Added in v1.0.0
   })
 
   it("printConstant", () => {
+    const print = flow(_.printConstant, _.prettify)
     assert.strictEqual(
       print(testCases.constant),
       `## test
@@ -287,6 +276,7 @@ Added in v1.0.0
   })
 
   it("printExport", () => {
+    const print = flow(_.printExport, _.prettify)
     assert.strictEqual(
       print(testCases.export),
       `## test
@@ -303,6 +293,7 @@ Added in v1.0.0
   })
 
   it("printFunction", () => {
+    const print = flow(_.printFunction, _.prettify)
     assert.strictEqual(
       print(testCases.function),
       `## ~~func~~
@@ -327,8 +318,9 @@ Added in v1.0.0
   })
 
   it("printInterface", () => {
+    const print = flow(_.printInterface, _.prettify)
     assert.strictEqual(
-      print(testCases.interface),
+      print(testCases.interface, 0),
       `## A (interface)
 
 **Signature**
@@ -343,8 +335,9 @@ Added in v1.0.0
   })
 
   it("printTypeAlias", () => {
+    const print = flow(_.printTypeAlias, _.prettify)
     assert.strictEqual(
-      print(testCases.typeAlias),
+      print(testCases.typeAlias, 0),
       `## A (type alias)
 
 **Signature**
@@ -358,7 +351,7 @@ Added in v1.0.0
     )
 
     assert.strictEqual(
-      print({ ...testCases.typeAlias, since: Option.none() }),
+      print({ ...testCases.typeAlias, since: Option.none() }, 0),
       `## A (type alias)
 
 **Signature**
@@ -371,7 +364,7 @@ export type A = number
   })
 
   it("printModule", () => {
-    const documentation = createDocumentable(
+    const doc = Domain.createNamedDoc(
       "tests",
       Option.none(),
       Option.some("1.0.0"),
@@ -381,8 +374,8 @@ export type A = number
     )
     assert.strictEqual(
       _.printModule(
-        createModule(
-          documentation,
+        Domain.createModule(
+          doc,
           ["src", "tests.ts"],
           [testCases.class],
           [testCases.interface],
@@ -390,7 +383,7 @@ export type A = number
           [testCases.typeAlias],
           [testCases.constant],
           [testCases.export],
-          []
+          [testCases.namespace]
         ),
         1
       ),
@@ -418,6 +411,10 @@ Added in v1.0.0
 - [utils](#utils)
   - [A (interface)](#a-interface)
   - [A (type alias)](#a-type-alias)
+  - [A (namespace)](#a-namespace)
+    - [B (type alias)](#b-type-alias)
+    - [C (namespace)](#c-namespace)
+      - [D (type alias)](#d-type-alias)
   - [~~func~~](#func)
   - [test](#test-1)
 
@@ -511,6 +508,34 @@ export type A = number
 
 Added in v1.0.0
 
+## A (namespace)
+
+Added in v1.0.0
+
+### B (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type B = string
+\`\`\`
+
+Added in v1.0.1
+
+### C (namespace)
+
+Added in v1.0.2
+
+#### D (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type D = number
+\`\`\`
+
+Added in v1.0.3
+
 ## ~~func~~
 
 a function
@@ -541,17 +566,7 @@ Added in v1.0.0
 `
     )
 
-    const empty = createModule(
-      documentation,
-      ["src", "tests.ts"],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-      []
-    )
+    const empty = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 
     assert.strictEqual(
       _.printModule(empty, 1),

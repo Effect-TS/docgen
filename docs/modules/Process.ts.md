@@ -1,6 +1,6 @@
 ---
 title: Process.ts
-nav_order: 11
+nav_order: 10
 parent: Modules
 ---
 
@@ -12,27 +12,22 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [model](#model)
-  - [Process (interface)](#process-interface)
+- [layer](#layer)
+  - [ProcessLive](#processlive)
 - [service](#service)
   - [Process](#process)
-  - [ProcessLive](#processlive)
+  - [Process (interface)](#process-interface)
 
 ---
 
-# model
+# layer
 
-## Process (interface)
-
-Represents a handle to the currently executing process.
+## ProcessLive
 
 **Signature**
 
 ```ts
-export interface Process {
-  readonly cwd: Effect.Effect<never, never, string>
-  readonly platform: Effect.Effect<never, never, string>
-}
+export declare const ProcessLive: Layer.Layer<never, never, Process>
 ```
 
 Added in v1.0.0
@@ -49,12 +44,17 @@ export declare const Process: Context.Tag<Process, Process>
 
 Added in v1.0.0
 
-## ProcessLive
+## Process (interface)
+
+Represents a handle to the currently executing process.
 
 **Signature**
 
 ```ts
-export declare const ProcessLive: Layer.Layer<never, never, Process>
+export interface Process {
+  readonly cwd: Effect.Effect<never, never, string>
+  readonly platform: Effect.Effect<never, never, string>
+}
 ```
 
 Added in v1.0.0

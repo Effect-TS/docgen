@@ -13,86 +13,43 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
-  - [GlobError](#globerror)
-  - [ParseJsonError](#parsejsonerror)
-  - [ReadFileError](#readfileerror)
-  - [RemoveFileError](#removefileerror)
-  - [WriteFileError](#writefileerror)
-  - [makeFile](#makefile)
+  - [createFile](#createfile)
+- [layer](#layer)
+  - [FileSystemLive](#filesystemlive)
 - [model](#model)
   - [File (interface)](#file-interface)
-  - [FileSystem (interface)](#filesystem-interface)
-  - [GlobError (interface)](#globerror-interface)
-  - [ParseJsonError (interface)](#parsejsonerror-interface)
-  - [ReadFileError (interface)](#readfileerror-interface)
-  - [RemoveFileError (interface)](#removefileerror-interface)
-  - [WriteFileError (interface)](#writefileerror-interface)
 - [service](#service)
   - [FileSystem](#filesystem)
-  - [FileSystemLive](#filesystemlive)
+  - [FileSystem (interface)](#filesystem-interface)
+- [utils](#utils)
+  - [readJsonFile](#readjsonfile)
 
 ---
 
 # constructors
 
-## GlobError
+## createFile
+
+By default files are readonly (`isOverwriteable = false`).
 
 **Signature**
 
 ```ts
-export declare const GlobError: Data.Case.Constructor<GlobError, '_tag'>
+export declare const createFile: (path: string, content: string, isOverwriteable?: boolean) => File
 ```
 
 Added in v1.0.0
 
-## ParseJsonError
+# layer
+
+## FileSystemLive
+
+A layer that provides a live implementation of the FileSystem interface using the PlatformFileSystem implementation.
 
 **Signature**
 
 ```ts
-export declare const ParseJsonError: Data.Case.Constructor<ParseJsonError, '_tag'>
-```
-
-Added in v1.0.0
-
-## ReadFileError
-
-**Signature**
-
-```ts
-export declare const ReadFileError: Data.Case.Constructor<ReadFileError, '_tag'>
-```
-
-Added in v1.0.0
-
-## RemoveFileError
-
-**Signature**
-
-```ts
-export declare const RemoveFileError: Data.Case.Constructor<RemoveFileError, '_tag'>
-```
-
-Added in v1.0.0
-
-## WriteFileError
-
-**Signature**
-
-```ts
-export declare const WriteFileError: Data.Case.Constructor<WriteFileError, '_tag'>
-```
-
-Added in v1.0.0
-
-## makeFile
-
-By default files are readonly (`overwrite = false`).
-
-**Signature**
-
-```ts
-export declare const makeFile: (path: string, content: string, overwrite?: boolean) => File
+export declare const FileSystemLive: Layer.Layer<never, never, FileSystem>
 ```
 
 Added in v1.0.0
@@ -110,8 +67,22 @@ export interface File
   extends Data.Data<{
     readonly path: string
     readonly content: string
-    readonly overwrite: boolean
+    readonly isOverwriteable: boolean
   }> {}
+```
+
+Added in v1.0.0
+
+# service
+
+## FileSystem
+
+A context tag for the file system module.
+
+**Signature**
+
+```ts
+export declare const FileSystem: Context.Tag<FileSystem, FileSystem>
 ```
 
 Added in v1.0.0
@@ -127,137 +98,40 @@ export interface FileSystem {
   /**
    * Read a file from the file system at the specified `path`.
    */
-  readFile(path: string): Effect.Effect<never, ReadFileError, string>
-  /**
-   * Read a `.json` file from the file system at the specified `path` and parse
-   * the contents.
-   */
-  readJsonFile(path: string): Effect.Effect<never, ReadFileError | ParseJsonError, unknown>
+  readonly readFile: (path: string) => Effect.Effect<never, Error, string>
   /**
    * Write a file to the specified `path` containing the specified `content`.
    */
-  writeFile(path: string, content: string): Effect.Effect<never, WriteFileError, void>
+  readonly writeFile: (path: string, content: string) => Effect.Effect<never, Error, void>
   /**
    * Removes a file from the file system at the specified `path`.
    */
-  removeFile(path: string): Effect.Effect<never, RemoveFileError, void>
+  readonly removeFile: (path: string) => Effect.Effect<never, Error, void>
   /**
    * Checks if the specified `path` exists on the file system.
    */
-  pathExists(path: string): Effect.Effect<never, ReadFileError, boolean>
+  readonly exists: (path: string) => Effect.Effect<never, Error, boolean>
   /**
    * Find all files matching the specified `glob` pattern, optionally excluding
    * files matching the provided `exclude` patterns.
    */
-  glob(pattern: string, exclude?: ReadonlyArray<string>): Effect.Effect<never, GlobError, ReadonlyArray<string>>
+  readonly glob: (pattern: string, exclude?: ReadonlyArray<string>) => Effect.Effect<never, Error, Array<string>>
 }
 ```
 
 Added in v1.0.0
 
-## GlobError (interface)
+# utils
 
-Represents an error that occurs when attempting to execute a glob pattern to
-find multiple files on the file system.
+## readJsonFile
 
-**Signature**
-
-```ts
-export interface GlobError extends Data.Case {
-  readonly _tag: 'GlobError'
-  readonly pattern: string
-  readonly exclude: ReadonlyArray<string>
-  readonly error: Error
-}
-```
-
-Added in v1.0.0
-
-## ParseJsonError (interface)
-
-Represents an error that occurs when attempting to parse JSON content.
+Read a `.json` file from the file system at the specified `path` and parse
+the contents.
 
 **Signature**
 
 ```ts
-export interface ParseJsonError extends Data.Case {
-  readonly _tag: 'ParseJsonError'
-  readonly content: string
-  readonly error: Error
-}
-```
-
-Added in v1.0.0
-
-## ReadFileError (interface)
-
-Represents an error that occurs when attempting to read a file from the
-file system.
-
-**Signature**
-
-```ts
-export interface ReadFileError extends Data.Case {
-  readonly _tag: 'ReadFileError'
-  readonly path: string
-  readonly error: Error
-}
-```
-
-Added in v1.0.0
-
-## RemoveFileError (interface)
-
-Represents an error that occurs when attempting to remove a file from the
-file system.
-
-**Signature**
-
-```ts
-export interface RemoveFileError extends Data.Case {
-  readonly _tag: 'RemoveFileError'
-  readonly path: string
-  readonly error: Error
-}
-```
-
-Added in v1.0.0
-
-## WriteFileError (interface)
-
-Represents an error that occurs when attempting to write a file to the
-file system.
-
-**Signature**
-
-```ts
-export interface WriteFileError extends Data.Case {
-  readonly _tag: 'WriteFileError'
-  readonly path: string
-  readonly error: Error
-}
-```
-
-Added in v1.0.0
-
-# service
-
-## FileSystem
-
-**Signature**
-
-```ts
-export declare const FileSystem: Context.Tag<FileSystem, FileSystem>
-```
-
-Added in v1.0.0
-
-## FileSystemLive
-
-**Signature**
-
-```ts
-export declare const FileSystemLive: Layer.Layer<never, never, FileSystem>
+export declare const readJsonFile: (path: string) => Effect.Effect<FileSystem, Error, unknown>
 ```
 
 Added in v1.0.0
