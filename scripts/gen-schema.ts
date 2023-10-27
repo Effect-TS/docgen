@@ -5,8 +5,7 @@ import * as FileSystem from "../src/FileSystem"
 
 const configJsonSchema = JSONSchema.from(
   PartialConfigSchema.pipe(
-    Schema.extend(Schema.struct({ "$schema": Schema.string })),
-    Schema.partial
+    Schema.extend(Schema.struct({ "$schema": Schema.optional(Schema.string) }))
   )
 )
 
