@@ -23,6 +23,11 @@
       "description": "a boolean",
       "title": "boolean"
     },
+    "$schema": {
+      "type": "string",
+      "description": "a string",
+      "title": "string"
+    },
     "projectHomepage": {
       "type": "string",
       "description": "a string",
@@ -39,11 +44,6 @@
       "title": "string"
     },
     "theme": {
-      "type": "string",
-      "description": "a string",
-      "title": "string"
-    },
-    "$schema": {
       "type": "string",
       "description": "a string",
       "title": "string"
