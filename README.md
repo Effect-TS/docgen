@@ -16,6 +16,12 @@ pnpm add @effect/docgen -D
 
 2. (Optional) Add a `docgen.json` configuration file.
 
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/effect-ts/docgen/main/schema.json"
+}
+```
+
 3. Add the following script to your `package.json` file:
 
 ```json
