@@ -9,7 +9,6 @@ import { Schema } from "@effect/schema"
  * @since 1.0.0
  */
 export const ConfigSchema = Schema.struct({
-  "$schema": Schema.string,
   projectHomepage: Schema.string,
   srcDir: Schema.string,
   outDir: Schema.string,

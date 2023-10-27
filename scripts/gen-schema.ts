@@ -1,9 +1,14 @@
-import { JSONSchema } from "@effect/schema"
+import { JSONSchema, Schema } from "@effect/schema"
 import { Effect } from "effect"
 import { PartialConfigSchema } from "../src/ConfigSchema"
 import * as FileSystem from "../src/FileSystem"
 
-const configJsonSchema = JSONSchema.from(PartialConfigSchema)
+const configJsonSchema = JSONSchema.from(
+  PartialConfigSchema.pipe(
+    Schema.extend(Schema.struct({ "$schema": Schema.string })),
+    Schema.partial
+  )
+)
 
 const pathTo = "schema.json"
 
