@@ -18,7 +18,7 @@ pnpm add @effect/docgen -D
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/effect-ts/docgen/main/schema.json"
+  "$schema": "node_modules/@effect/docgen/schema.json"
 }
 ```
 

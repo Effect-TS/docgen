@@ -18,7 +18,7 @@
     "coverage": "vitest run --coverage",
     "test": "pnpm coverage && pnpm run docs",
     "clean": "rimraf rm -rf dist/*",
-    "build": "tsup && pnpm copy-package-json",
+    "build": "tsup && pnpm copy-package-json && pnpm gen-schema",
     "copy-package-json": "ts-node scripts/copy-package-json.ts",
     "gen-schema": "ts-node scripts/gen-schema.ts",
     "docs": "pnpm build && pnpm docs-run",

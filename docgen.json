@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/effect-ts/docgen/main/schema.json",
+  "$schema": "dist/schema.json",
   "exclude": ["src/internal_effect_untraced/**/*.ts"],
   "theme": "mikearnaldi/just-the-docs",
   "parseCompilerOptions": "./tsconfig.json",
