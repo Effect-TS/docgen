@@ -27,7 +27,6 @@ Added in v1.0.0
 ```ts
 export declare const ConfigSchema: Schema.Schema<
   {
-    readonly $schema: string
     readonly projectHomepage: string
     readonly srcDir: string
     readonly outDir: string
@@ -41,7 +40,6 @@ export declare const ConfigSchema: Schema.Schema<
     readonly examplesCompilerOptions: string | { readonly [x: string]: unknown }
   },
   {
-    readonly $schema: string
     readonly projectHomepage: string
     readonly srcDir: string
     readonly outDir: string
@@ -66,7 +64,6 @@ Added in v1.0.0
 ```ts
 export declare const PartialConfigSchema: Schema.Schema<
   {
-    readonly $schema?: string
     readonly projectHomepage?: string
     readonly srcDir?: string
     readonly outDir?: string
@@ -80,7 +77,6 @@ export declare const PartialConfigSchema: Schema.Schema<
     readonly examplesCompilerOptions?: string | { readonly [x: string]: unknown }
   },
   {
-    readonly $schema?: string
     readonly projectHomepage?: string
     readonly srcDir?: string
     readonly outDir?: string
