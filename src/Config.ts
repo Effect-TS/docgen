@@ -7,6 +7,8 @@ import chalk from "chalk"
 import { Context, Effect, Layer, Option } from "effect"
 import * as NodePath from "node:path"
 import * as tsconfck from "tsconfck"
+import type { ConfigSchema } from "./ConfigSchema"
+import { PartialConfigSchema } from "./ConfigSchema"
 import * as FileSystem from "./FileSystem"
 import * as Process from "./Process"
 
@@ -37,22 +39,6 @@ export interface Config {
  * @since 1.0.0
  */
 export const Config = Context.Tag<Config>()
-
-const ConfigSchema = Schema.struct({
-  projectHomepage: Schema.string,
-  srcDir: Schema.string,
-  outDir: Schema.string,
-  theme: Schema.string,
-  enableSearch: Schema.boolean,
-  enforceDescriptions: Schema.boolean,
-  enforceExamples: Schema.boolean,
-  enforceVersion: Schema.boolean,
-  exclude: Schema.array(Schema.string),
-  parseCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
-  examplesCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown))
-})
-
-const PartialConfigSchema = Schema.partial(ConfigSchema)
 
 const PackageJsonSchema = Schema.struct({
   name: Schema.string,

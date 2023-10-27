@@ -54,6 +54,7 @@ describe("FileSystem", () => {
         Exit.succeed([
           "src/CommandExecutor.ts",
           "src/Config.ts",
+          "src/ConfigSchema.ts",
           "src/Core.ts",
           "src/Domain.ts",
           "src/FileSystem.ts",
@@ -77,6 +78,7 @@ describe("FileSystem", () => {
         Exit.succeed([
           "src/CommandExecutor.ts",
           "src/Config.ts",
+          "src/ConfigSchema.ts",
           "src/Core.ts",
           "src/Domain.ts",
           "src/FileSystem.ts",

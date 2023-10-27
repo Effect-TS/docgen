@@ -66,7 +66,7 @@ export const parseComment = (text: string): Comment => {
     annotation.tags,
     ReadonlyArray.groupBy((tag) => tag.title),
     ReadonlyRecord.map(
-      ReadonlyArray.mapNonEmpty((tag) =>
+      ReadonlyArray.map((tag) =>
         pipe(
           Option.fromNullable(tag.description),
           Option.filter(String.isNonEmpty)
