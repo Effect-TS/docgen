@@ -19,8 +19,8 @@
     "test": "pnpm coverage && pnpm run docs",
     "clean": "rimraf rm -rf dist/*",
     "build": "tsup && pnpm copy-package-json && pnpm gen-schema",
-    "copy-package-json": "ts-node scripts/copy-package-json.ts",
-    "gen-schema": "ts-node scripts/gen-schema.ts",
+    "copy-package-json": "tsx scripts/copy-package-json.ts",
+    "gen-schema": "tsx scripts/gen-schema.ts",
     "docs": "pnpm build && pnpm docs-run",
     "docs-run": "node -e \"require('./dist/bin')\"",
     "docs-update": "git add --force --all docs/modules || true"
@@ -47,7 +47,8 @@
     "prettier": "^2.8.8",
     "ts-morph": "^19.0.0",
     "ts-node": "^10.9.1",
-    "tsconfck": "^2.1.2"
+    "tsconfck": "^2.1.2",
+    "tsx": "^3.14.0"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",
