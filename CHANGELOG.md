@@ -1,5 +1,12 @@
 # @effect/docgen
 
+## 0.2.1
+
+### Patch Changes
+
+- 2677b9d: updated effect
+- 743ce06: change theme default
+
 ## 0.2.0
 
 ### Minor Changes
