@@ -1,12 +1,10 @@
 import { JSONSchema } from "@effect/schema"
 import { Effect } from "effect"
 import * as path from "node:path"
-import { PartialConfigSchema } from "../src/Config"
+import { ConfigSchema } from "../src/Config"
 import * as FileSystem from "../src/FileSystem"
 
-const configJsonSchema = JSONSchema.from(
-  PartialConfigSchema
-)
+const configJsonSchema = JSONSchema.to(ConfigSchema)
 
 const pathTo = path.join("dist", "schema.json")
 
