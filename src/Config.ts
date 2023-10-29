@@ -18,25 +18,52 @@ const CONFIG_FILE_NAME = "docgen.json"
  * @since 1.0.0
  */
 export const ConfigSchema = Schema.struct({
-  "$schema": Schema.string,
-  projectHomepage: Schema.string,
-  srcDir: Schema.string,
-  outDir: Schema.string,
-  theme: Schema.string,
-  enableSearch: Schema.boolean,
-  enforceDescriptions: Schema.boolean,
-  enforceExamples: Schema.boolean,
-  enforceVersion: Schema.boolean,
-  exclude: Schema.array(Schema.string),
-  parseCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
-  examplesCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown))
+  "$schema": Schema.optional(Schema.string),
+  projectHomepage: Schema.optional(Schema.string, {
+    description:
+      "Will link to the project homepage from the Auxiliary Links of the generated documentation."
+  }),
+  srcDir: Schema.optional(Schema.string, {
+    description: "The directory in which docgen will search for TypeScript files to parse."
+  }),
+  outDir: Schema.optional(Schema.string, {
+    description: "The directory to which docgen will generate its output markdown documents."
+  }),
+  theme: Schema.optional(Schema.string, {
+    description:
+      "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file."
+  }),
+  enableSearch: Schema.optional(Schema.boolean, {
+    description:
+      "Whether or search should be enabled for GitHub Docs in the generated _config.yml file."
+  }),
+  enforceDescriptions: Schema.optional(Schema.boolean, {
+    description: "Whether or not descriptions for each module export should be required."
+  }),
+  enforceExamples: Schema.optional(Schema.boolean, {
+    description:
+      "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)"
+  }),
+  enforceVersion: Schema.optional(Schema.boolean, {
+    description: "Whether or not @since tags for each module export should be required."
+  }),
+  exclude: Schema.optional(Schema.array(Schema.string), {
+    description:
+      "An array of glob strings specifying files that should be excluded from the documentation."
+  }),
+  parseCompilerOptions: Schema.optional(
+    Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
+    {
+      description: "tsconfig for parsing options (or path to a tsconfig)"
+    }
+  ),
+  examplesCompilerOptions: Schema.optional(
+    Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
+    {
+      description: "tsconfig for the examples options (or path to a tsconfig)"
+    }
+  )
 })
-
-/**
- * @category service
- * @since 1.0.0
- */
-export const PartialConfigSchema = Schema.partial(ConfigSchema)
 
 /**
  * @category service
@@ -88,7 +115,7 @@ export const getDefaultConfig = (name: string, homepage: string): Config => ({
   projectHomepage: homepage,
   srcDir: "src",
   outDir: "docs",
-  theme: "pmarsceill/just-the-docs",
+  theme: "mikearnaldi/just-the-docs",
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,
@@ -103,13 +130,13 @@ const loadConfig = (
 ): Effect.Effect<
   FileSystem.FileSystem,
   Error,
-  Option.Option<Schema.Schema.To<typeof PartialConfigSchema>>
+  Option.Option<Schema.Schema.To<typeof ConfigSchema>>
 > =>
   Effect.gen(function*(_) {
     const fs = yield* _(FileSystem.FileSystem)
     const exists = yield* _(fs.exists(path))
     if (exists) {
-      const config = yield* _(validateJsonFile(PartialConfigSchema, path))
+      const config = yield* _(validateJsonFile(ConfigSchema, path))
       return Option.some(config)
     } else {
       return Option.none()
@@ -166,9 +193,7 @@ export const ConfigLive = Layer.effect(
 
 function resolveCompilerOptions(
   cwd: string,
-  options?: Schema.Schema.To<
-    typeof ConfigSchema
-  >["parseCompilerOptions" | "examplesCompilerOptions"]
+  options?: string | Record<string, unknown>
 ): Effect.Effect<
   never,
   Error,
