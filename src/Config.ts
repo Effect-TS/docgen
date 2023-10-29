@@ -115,7 +115,7 @@ export const getDefaultConfig = (name: string, homepage: string): Config => ({
   projectHomepage: homepage,
   srcDir: "src",
   outDir: "docs",
-  theme: "pmarsceill/just-the-docs",
+  theme: "mikearnaldi/just-the-docs",
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,
