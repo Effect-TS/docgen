@@ -16,6 +16,12 @@ pnpm add @effect/docgen -D
 
 2. (Optional) Add a `docgen.json` configuration file.
 
+```json
+{
+  "$schema": "node_modules/@effect/docgen/schema.json"
+}
+```
+
 3. Add the following script to your `package.json` file:
 
 ```json

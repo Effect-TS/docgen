@@ -18,8 +18,9 @@
     "coverage": "vitest run --coverage",
     "test": "pnpm coverage && pnpm run docs",
     "clean": "rimraf rm -rf dist/*",
-    "build": "tsup && pnpm copy-package-json",
-    "copy-package-json": "ts-node scripts/copy-package-json.ts",
+    "build": "tsup && pnpm copy-package-json && pnpm gen-schema",
+    "copy-package-json": "tsx scripts/copy-package-json.ts",
+    "gen-schema": "tsx scripts/gen-schema.ts",
     "docs": "pnpm build && pnpm docs-run",
     "docs-run": "node -e \"require('./dist/bin')\"",
     "docs-update": "git add --force --all docs/modules || true"
@@ -35,18 +36,19 @@
   },
   "homepage": "https://github.com/effect-ts/docgen",
   "dependencies": {
-    "@effect/platform-node": "^0.22.0",
-    "@effect/schema": "^0.43.0",
+    "@effect/platform-node": "^0.27.0",
+    "@effect/schema": "^0.46.1",
     "chalk": "^5.3.0",
     "doctrine": "^3.0.0",
-    "effect": "2.0.0-next.48",
+    "effect": "2.0.0-next.52",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.3",
     "markdown-toc": "github:effect-ts/markdown-toc",
     "prettier": "^2.8.8",
     "ts-morph": "^19.0.0",
     "ts-node": "^10.9.1",
-    "tsconfck": "^2.1.2"
+    "tsconfck": "^2.1.2",
+    "tsx": "^3.14.0"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",

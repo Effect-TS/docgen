@@ -17,6 +17,31 @@ const CONFIG_FILE_NAME = "docgen.json"
  * @category service
  * @since 1.0.0
  */
+export const ConfigSchema = Schema.struct({
+  "$schema": Schema.string,
+  projectHomepage: Schema.string,
+  srcDir: Schema.string,
+  outDir: Schema.string,
+  theme: Schema.string,
+  enableSearch: Schema.boolean,
+  enforceDescriptions: Schema.boolean,
+  enforceExamples: Schema.boolean,
+  enforceVersion: Schema.boolean,
+  exclude: Schema.array(Schema.string),
+  parseCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
+  examplesCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown))
+})
+
+/**
+ * @category service
+ * @since 1.0.0
+ */
+export const PartialConfigSchema = Schema.partial(ConfigSchema)
+
+/**
+ * @category service
+ * @since 1.0.0
+ */
 export interface Config {
   readonly projectName: string
   readonly projectHomepage: string
@@ -37,22 +62,6 @@ export interface Config {
  * @since 1.0.0
  */
 export const Config = Context.Tag<Config>()
-
-const ConfigSchema = Schema.struct({
-  projectHomepage: Schema.string,
-  srcDir: Schema.string,
-  outDir: Schema.string,
-  theme: Schema.string,
-  enableSearch: Schema.boolean,
-  enforceDescriptions: Schema.boolean,
-  enforceExamples: Schema.boolean,
-  enforceVersion: Schema.boolean,
-  exclude: Schema.array(Schema.string),
-  parseCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
-  examplesCompilerOptions: Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown))
-})
-
-const PartialConfigSchema = Schema.partial(ConfigSchema)
 
 const PackageJsonSchema = Schema.struct({
   name: Schema.string,
