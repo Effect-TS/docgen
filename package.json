@@ -2,6 +2,7 @@
   "name": "@effect/docgen",
   "version": "0.2.1",
   "type": "module",
+  "packageManager": "pnpm@8.10.0",
   "publishConfig": {
     "access": "public"
   },
@@ -35,7 +36,7 @@
     "clean": "rimraf dist coverage .tsbuildinfo",
     "build": "tsc -b tsconfig.build.json",
     "schema": "tsx scripts/gen-schema.ts",
-    "docgen": "pnpm build && node dist/bin"
+    "docgen": "node dist/bin"
   },
   "dependencies": {
     "@effect/platform-node": "^0.28.2",
