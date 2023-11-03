@@ -35,17 +35,6 @@ pnpm add @effect/docgen -D
 > **Warning**
 > To use "@effect/docgen", Node.js v18 or above is required.
 
-## Example Configuration
-
-The `docgen.json` configuration file allows you to customize `docgen`'s behavior. Here's an example configuration:
-
-```json
-{
-  "exclude": ["internal/**/*.ts"],
-  "theme": "mikearnaldi/just-the-docs"
-}
-```
-
 # Supported JSDoc Tags
 
 | Tag           | Description                                                                                                                                                                                                                                            | Default   |
