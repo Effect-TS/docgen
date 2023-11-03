@@ -366,7 +366,7 @@ const program = Effect.gen(function*(_) {
   yield* _(Effect.logInfo("Writing markdown files..."))
   yield* _(writeMarkdown(outputFiles))
   yield* _(Effect.logInfo(chalk.bold.green("Docs generation succeeded!")))
-}).pipe(Logger.withMinimumLogLevel(LogLevel.Debug))
+}).pipe(Logger.withMinimumLogLevel(LogLevel.Info))
 
 const MainLayer = Layer.mergeAll(
   Logger.replace(Logger.defaultLogger, SimpleLogger),
