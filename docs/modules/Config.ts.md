@@ -1,5 +1,5 @@
 ---
-title:
+title: Config.ts
 nav_order: 2
 parent: Modules
 ---

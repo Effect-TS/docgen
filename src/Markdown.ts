@@ -280,7 +280,7 @@ export const printModule = (
   module: Domain.Module,
   order: number
 ): Effect.Effect<never, never, string> => {
-  const header = printMeta(module.path.slice(1).join("/"), order)
+  const header = printMeta(module.path.join("/"), order)
 
   const description = MarkdownPrinter.paragraph(printModuleDescription(module))
 

@@ -1,5 +1,5 @@
 ---
-title:
+title: Domain.ts
 nav_order: 4
 parent: Modules
 ---

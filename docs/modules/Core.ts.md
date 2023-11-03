@@ -1,5 +1,5 @@
 ---
-title:
+title: Core.ts
 nav_order: 3
 parent: Modules
 ---
