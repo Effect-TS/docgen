@@ -375,7 +375,7 @@ export type A = number
       await Effect.runPromise(_.printModule(
         Domain.createModule(
           doc,
-          ["src", "tests.ts"],
+          ["tests.ts"],
           [testCases.class],
           [testCases.interface],
           [testCases.function],
@@ -565,7 +565,7 @@ Added in v1.0.0
 `
     )
 
-    const empty = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
+    const empty = Domain.createModule(doc, ["tests.ts"], [], [], [], [], [], [], [])
 
     assert.strictEqual(
       await Effect.runPromise(_.printModule(empty, 1)),
