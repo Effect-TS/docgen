@@ -71,7 +71,6 @@ const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
     } else {
       yield* _(Effect.logInfo("No examples found."))
     }
-    yield* _(cleanupExamples)
   })
 
 /**
@@ -225,7 +224,10 @@ const createExamplesTsConfigJson = Effect.gen(function*(_) {
     extends: baseConfig,
     include: ["."],
     references: [{ path: sourceConfig }],
-    compilerOptions: { noEmit: true }
+    compilerOptions: {
+      noEmit: true,
+      noUnusedLocals: false
+    }
   })
   yield* _(writeFileToOutDir(FileSystem.createFile(examplesConfig, configJson, true)))
 })
@@ -359,8 +361,12 @@ const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
 const program = Effect.gen(function*(_) {
   yield* _(Effect.logInfo("Parsing modules..."))
   const modules = yield* _(parseModules())
+  yield* _(Effect.logInfo("Cleaning up examples..."))
+  yield* _(cleanupExamples)
   yield* _(Effect.logInfo("Typechecking examples..."))
   yield* _(typeCheckAndRunExamples(modules))
+  yield* _(Effect.logInfo("Cleaning up examples..."))
+  yield* _(cleanupExamples)
   yield* _(Effect.logInfo("Creating markdown files..."))
   const outputFiles = yield* _(getMarkdown(modules))
   yield* _(Effect.logInfo("Writing markdown files..."))
