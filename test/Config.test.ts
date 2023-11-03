@@ -43,7 +43,6 @@ describe("Config", () => {
 
     const program = Effect.gen(function*(_) {
       const config = yield* _(Config.Config)
-      console.log(config)
       assert.deepStrictEqual(config, {
         ...Config.getDefaultConfig(fakePackageJson.name, fakePackageJson.homepage),
         ...docgen

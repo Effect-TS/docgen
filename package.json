@@ -48,7 +48,8 @@
     "markdown-toc": "github:effect-ts/markdown-toc",
     "minimatch": "^9.0.3",
     "prettier": "^3.0.3",
-    "ts-morph": "^20.0.0"
+    "ts-morph": "^20.0.0",
+    "tsx": "^3.14.0"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",
@@ -78,7 +79,6 @@
     "prettier": "^3.0.3",
     "rimraf": "^5.0.5",
     "ts-morph": "^20.0.0",
-    "tsx": "^3.14.0",
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
     "vitest": "^0.34.6"
