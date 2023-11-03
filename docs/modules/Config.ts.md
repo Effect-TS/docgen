@@ -53,15 +53,15 @@ Added in v1.0.0
 export interface Config {
   readonly projectName: string
   readonly projectHomepage: string
-  readonly outDir: string
+  readonly docsOutDir: string
+  readonly examplesOutFile: string
   readonly theme: string
   readonly enableSearch: boolean
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
   readonly exclude: ReadonlyArray<string>
-  readonly sourceTsConfig: string
-  readonly baseTsConfig: string
+  readonly tsConfig: string
 }
 ```
 
@@ -76,28 +76,28 @@ export declare const ConfigSchema: Schema.Schema<
   {
     readonly $schema?: string | undefined
     readonly projectHomepage?: string | undefined
-    readonly outDir?: string | undefined
+    readonly docsOutDir?: string | undefined
+    readonly examplesOutFile?: string | undefined
     readonly theme?: string | undefined
     readonly enableSearch?: boolean | undefined
     readonly enforceDescriptions?: boolean | undefined
     readonly exclude?: readonly string[] | undefined
     readonly enforceExamples?: boolean | undefined
     readonly enforceVersion?: boolean | undefined
-    readonly sourceTsConfig?: string | undefined
-    readonly baseTsConfig?: string | undefined
+    readonly tsConfig?: string | undefined
   },
   {
     readonly $schema?: string | undefined
     readonly projectHomepage?: string | undefined
-    readonly outDir?: string | undefined
+    readonly docsOutDir?: string | undefined
+    readonly examplesOutFile?: string | undefined
     readonly theme?: string | undefined
     readonly enableSearch?: boolean | undefined
     readonly enforceDescriptions?: boolean | undefined
     readonly exclude?: readonly string[] | undefined
     readonly enforceExamples?: boolean | undefined
     readonly enforceVersion?: boolean | undefined
-    readonly sourceTsConfig?: string | undefined
-    readonly baseTsConfig?: string | undefined
+    readonly tsConfig?: string | undefined
   }
 >
 ```

@@ -17,14 +17,14 @@ const project = new ast.Project({
 const defaultConfig: Config.Config = {
   projectName: "docgen",
   projectHomepage: "https://github.com/effect-ts/docgen",
-  outDir: "docs",
+  docsOutDir: "docs",
   theme: "pmarsceill/just-the-docs",
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,
   enforceVersion: true,
   exclude: [],
-  sourceTsConfig: "tsconfig.build.json",
+  tsConfig: "tsconfig.build.json",
   baseTsConfig: "tsconfig.base.json"
 }
 

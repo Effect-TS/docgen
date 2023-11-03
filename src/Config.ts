@@ -21,8 +21,11 @@ export const ConfigSchema = Schema.struct({
     description:
       "Will link to the project homepage from the Auxiliary Links of the generated documentation."
   }),
-  outDir: Schema.optional(Schema.string, {
+  docsOutDir: Schema.optional(Schema.string, {
     description: "The directory to which docgen will generate its output markdown documents."
+  }),
+  examplesOutFile: Schema.optional(Schema.string, {
+    description: "The file to which docgen will generate its output examples tests."
   }),
   theme: Schema.optional(Schema.string, {
     description:
@@ -46,11 +49,8 @@ export const ConfigSchema = Schema.struct({
   enforceVersion: Schema.optional(Schema.boolean, {
     description: "Whether or not @since tags for each module export should be required."
   }),
-  sourceTsConfig: Schema.optional(Schema.string, {
+  tsConfig: Schema.optional(Schema.string, {
     description: "The path to the source tsconfig.json file for the project."
-  }),
-  baseTsConfig: Schema.optional(Schema.string, {
-    description: "The path to the base tsconfig.json file for the project."
   })
 })
 
@@ -61,15 +61,15 @@ export const ConfigSchema = Schema.struct({
 export interface Config {
   readonly projectName: string
   readonly projectHomepage: string
-  readonly outDir: string
+  readonly docsOutDir: string
+  readonly examplesOutFile: string
   readonly theme: string
   readonly enableSearch: boolean
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
   readonly exclude: ReadonlyArray<string>
-  readonly sourceTsConfig: string
-  readonly baseTsConfig: string
+  readonly tsConfig: string
 }
 
 /**
@@ -101,15 +101,15 @@ const validateJsonFile = <I, A>(
 export const getDefaultConfig = (name: string, homepage: string): Config => ({
   projectName: name,
   projectHomepage: homepage,
-  outDir: "docs",
+  docsOutDir: "docs",
+  examplesOutFile: "test/Examples.ts",
   theme: "mikearnaldi/just-the-docs",
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,
   enforceVersion: true,
   exclude: [],
-  sourceTsConfig: "tsconfig.build.json",
-  baseTsConfig: "tsconfig.base.json"
+  tsConfig: "tsconfig.build.json"
 })
 
 const loadConfig = (

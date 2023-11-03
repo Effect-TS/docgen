@@ -1,5 +1,4 @@
 {
   "$schema": "./schema.json",
-  "exclude": ["bin.ts"],
-  "sourceTsConfig": "./tsconfig.build.json"
+  "exclude": ["bin.ts"]
 }

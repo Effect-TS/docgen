@@ -908,7 +908,7 @@ export const parseProject = () =>
     const process = yield* _(Process.Process)
     const cwd = yield* _(process.cwd)
     const project = new ast.Project({
-      tsConfigFilePath: path.join(cwd, config.sourceTsConfig)
+      tsConfigFilePath: path.join(cwd, config.tsConfig)
     })
 
     const root = project.getCompilerOptions().rootDir ?? cwd
@@ -920,8 +920,8 @@ export const parseProject = () =>
     }))
 
     // Filter out files that match the exclude glob patterns.
-    const filters = config.exclude.map((_) => Minimatch.filter(_))
-    const filtered = files.filter((_) => !filters.some((filter) => filter(_.path.join("/"))))
+    const exclude = config.exclude.map((_) => Minimatch.filter(_))
+    const filtered = files.filter((_) => !exclude.some((filter) => filter(_.path.join("/"))))
 
     return yield* _(
       Effect.validateAll(filtered, (_) => parseFile(_.file, _.path)),

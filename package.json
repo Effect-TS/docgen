@@ -35,13 +35,14 @@
     "lint-fix": "eslint src test --fix",
     "coverage": "vitest run --coverage",
     "check": "tsc -b tsconfig.json",
-    "test": "pnpm coverage && pnpm docgen",
+    "test": "vitest",
     "clean": "rimraf dist coverage .tsbuildinfo",
     "build": "tsc -b tsconfig.build.json",
     "schema": "tsx scripts/gen-schema.ts",
     "docgen": "node dist/bin"
   },
   "dependencies": {
+    "@babel/core": "^7.23.2",
     "@effect/platform-node": "^0.28.2",
     "@effect/schema": "^0.47.2",
     "chalk": "^5.3.0",
@@ -81,13 +82,12 @@
     "prettier": "^3.0.3",
     "rimraf": "^5.0.5",
     "ts-morph": "^20.0.0",
-    "typescript": "^5.2.2",
     "tsx": "^3.14.0",
+    "typescript": "^5.2.2",
     "vite": "^4.5.0",
     "vitest": "^0.34.6"
   },
   "peerDependencies": {
-    "typescript": "^5.2.2",
-    "tsx": "^3.14.0"
+    "typescript": "^5.2.2"
   }
 }
