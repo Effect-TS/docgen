@@ -10,7 +10,9 @@
   "engines": {
     "node": ">=16.17.1"
   },
-  "bin": "dist/bin",
+  "bin": {
+    "docgen": "./dist/bin.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/effect-ts/docgen.git"
