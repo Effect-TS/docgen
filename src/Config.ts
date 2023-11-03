@@ -108,7 +108,7 @@ export const getDefaultConfig = (name: string, homepage: string): Config => ({
   enforceExamples: false,
   enforceVersion: true,
   exclude: [],
-  sourceTsConfig: "tsconfig.source.json",
+  sourceTsConfig: "tsconfig.build.json",
   baseTsConfig: "tsconfig.base.json"
 })
 
