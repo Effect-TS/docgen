@@ -63,8 +63,8 @@ Added in v1.0.0
 
 ```ts
 export declare const parseFiles: (
-  files: ReadonlyArray<FileSystem.File>
-) => Effect.Effect<Process.Process | Config.Config, string[][], Domain.Module[]>
+  files: ReadonlyArray<FileSystem.File>,
+) => Effect.Effect<Process.Process | Config.Config | Path.Path, string[][], Domain.Module[]>
 ```
 
 Added in v1.0.0
@@ -94,7 +94,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseModule: Effect.Effect<Config.Config | Source, string[], Domain.Module>
+export declare const parseModule: Effect.Effect<Config.Config | Path.Path | Source, string[], Domain.Module>
 ```
 
 Added in v1.0.0

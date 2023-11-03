@@ -2,10 +2,11 @@ import * as Config from "@effect/docgen/Config"
 import * as Domain from "@effect/docgen/Domain"
 import * as FileSystem from "@effect/docgen/FileSystem"
 import * as Parser from "@effect/docgen/Parser"
-import * as assert from "assert"
+import { Path } from "@effect/platform-node"
 import chalk from "chalk"
 import { Effect, Exit, Option, String } from "effect"
 import * as ast from "ts-morph"
+import { assert, describe, expect, it } from "vitest"
 
 let testCounter = 0
 
@@ -36,7 +37,7 @@ const getParser = (sourceText: string): Parser.Source => ({
 
 const expectFailure = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
+  eff: Effect.Effect<Parser.Source | Config.Config | Path.Path, E, A>,
   failure: E,
   config?: Partial<Config.Config>
 ) => {
@@ -44,6 +45,7 @@ const expectFailure = <E, A>(
     eff.pipe(
       Effect.provideService(Parser.Source, getParser(sourceText)),
       Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
+      Effect.provide(Path.layer),
       Effect.runSyncExit
     )
   ).toEqual(Exit.fail(failure))
@@ -51,7 +53,7 @@ const expectFailure = <E, A>(
 
 const expectSuccess = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
+  eff: Effect.Effect<Parser.Source | Config.Config | Path.Path, E, A>,
   a: A,
   config?: Partial<Config.Config>
 ) => {
@@ -60,6 +62,7 @@ const expectSuccess = <E, A>(
       .pipe(
         Effect.provideService(Parser.Source, getParser(sourceText)),
         Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
+        Effect.provide(Path.layer),
         Effect.runSyncExit
       )
   ).toEqual(Exit.succeed(a))
@@ -1403,6 +1406,7 @@ export const foo = 'foo'`,
         assert.deepStrictEqual(
           Parser.parseFile(project)(file).pipe(
             Effect.provideService(Config.Config, defaultConfig),
+            Effect.provide(Path.layer),
             Effect.runSyncExit
           ),
           Exit.fail(["Unable to locate file: non-existent.ts"])

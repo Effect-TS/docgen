@@ -1,29 +1,17 @@
 {
   "name": "@effect/docgen",
   "version": "0.2.1",
+  "type": "module",
+  "packageManager": "pnpm@8.10.0",
   "publishConfig": {
-    "access": "public",
-    "directory": "dist"
+    "access": "public"
   },
   "description": "An opinionated documentation generator for Effect projects",
   "engines": {
     "node": ">=16.17.1"
   },
-  "scripts": {
-    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
-    "release": "pnpm run build && changeset publish",
-    "lint": "eslint . --ext .ts,.tsx",
-    "autofix": "pnpm lint --fix",
-    "vitest": "vitest",
-    "coverage": "vitest run --coverage",
-    "test": "pnpm coverage && pnpm run docs",
-    "clean": "rimraf rm -rf dist/*",
-    "build": "tsup && pnpm copy-package-json && pnpm gen-schema",
-    "copy-package-json": "tsx scripts/copy-package-json.ts",
-    "gen-schema": "tsx scripts/gen-schema.ts",
-    "docs": "pnpm build && pnpm docs-run",
-    "docs-run": "node -e \"require('./dist/bin')\"",
-    "docs-update": "git add --force --all docs/modules || true"
+  "bin": {
+    "docgen": "./dist/bin.js"
   },
   "repository": {
     "type": "git",
@@ -35,50 +23,73 @@
     "url": "https://github.com/effect-ts/docgen/issues"
   },
   "homepage": "https://github.com/effect-ts/docgen",
+  "files": [
+    "dist",
+    "src",
+    "schema.json"
+  ],
+  "scripts": {
+    "prepare": "pnpm build",
+    "update-version": "changeset version && pnpm install --no-frozen-lockfile",
+    "lint": "eslint src test",
+    "lint-fix": "eslint src test --fix",
+    "coverage": "vitest run --coverage",
+    "check": "tsc -b tsconfig.json",
+    "test": "vitest",
+    "clean": "rimraf dist coverage .tsbuildinfo",
+    "build": "tsc -b tsconfig.build.json",
+    "schema": "tsx scripts/gen-schema.ts",
+    "docgen": "tsx src/bin.ts"
+  },
   "dependencies": {
-    "@effect/platform-node": "^0.27.0",
-    "@effect/schema": "^0.46.1",
+    "@babel/core": "^7.23.2",
+    "@effect/platform-node": "^0.28.2",
+    "@effect/schema": "^0.47.2",
     "chalk": "^5.3.0",
     "doctrine": "^3.0.0",
-    "effect": "2.0.0-next.52",
-    "fs-extra": "^11.1.1",
-    "glob": "^10.3.3",
+    "effect": "2.0.0-next.54",
+    "glob": "^10.3.10",
     "markdown-toc": "github:effect-ts/markdown-toc",
-    "prettier": "^2.8.8",
-    "ts-morph": "^19.0.0",
-    "ts-node": "^10.9.1",
-    "tsconfck": "^2.1.2",
-    "tsx": "^3.14.0"
+    "minimatch": "^9.0.3",
+    "prettier": "^3.0.3",
+    "ts-morph": "^20.0.0",
+    "tsconfck": "^3.0.0"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.26.2",
     "@effect/eslint-plugin": "^0.1.2",
     "@effect/language-service": "^0.0.21",
-    "@types/doctrine": "0.0.5",
-    "@types/fs-extra": "^11.0.1",
+    "@effect/platform-node": "^0.28.2",
+    "@effect/schema": "^0.47.2",
+    "@types/doctrine": "0.0.8",
     "@types/glob": "^8.1.0",
-    "@types/node": "^20.4.8",
-    "@types/prettier": "^2.7.3",
-    "@typescript-eslint/eslint-plugin": "^6.2.1",
-    "@typescript-eslint/parser": "^6.2.1",
-    "@vitest/coverage-v8": "^0.34.1",
-    "eslint": "^8.46.0",
-    "eslint-import-resolver-typescript": "^3.5.5",
+    "@types/node": "^20.8.10",
+    "@typescript-eslint/eslint-plugin": "^6.9.1",
+    "@typescript-eslint/parser": "^6.9.1",
+    "@vitest/coverage-v8": "^0.34.6",
+    "chalk": "^5.3.0",
+    "doctrine": "^3.0.0",
+    "effect": "2.0.0-next.54",
+    "eslint": "^8.52.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-codegen": "^0.17.0",
-    "eslint-plugin-deprecation": "^1.5.0",
-    "eslint-plugin-import": "^2.28.0",
+    "eslint-plugin-deprecation": "^2.0.0",
+    "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-sort-destructure-keys": "^1.5.0",
-    "rimraf": "^5.0.4",
-    "tsup": "^7.2.0",
-    "typescript": "^5.1.6",
-    "vite": "^4.4.8",
-    "vitest": "^0.34.1"
+    "glob": "^10.3.10",
+    "markdown-toc": "github:effect-ts/markdown-toc",
+    "prettier": "^3.0.3",
+    "rimraf": "^5.0.5",
+    "ts-morph": "^20.0.0",
+    "tsx": "^3.14.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0",
+    "vitest": "^0.34.6"
   },
   "peerDependencies": {
-    "typescript": "^5.x"
-  },
-  "tags": [],
-  "keywords": []
+    "typescript": "^5.2.2",
+    "tsx": "^3.14.0"
+  }
 }

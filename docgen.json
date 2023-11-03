@@ -1,5 +1,4 @@
 {
-  "$schema": "dist/schema.json",
-  "parseCompilerOptions": "./tsconfig.json",
-  "examplesCompilerOptions": "./tsconfig.examples.json"
+  "$schema": "./schema.json",
+  "exclude": ["bin.ts"]
 }
