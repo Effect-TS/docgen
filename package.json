@@ -27,6 +27,7 @@
     "schema.json"
   ],
   "scripts": {
+    "prepare": "pnpm build",
     "update-version": "changeset version && pnpm install --no-frozen-lockfile",
     "lint": "eslint src test",
     "lint-fix": "eslint src test --fix",
