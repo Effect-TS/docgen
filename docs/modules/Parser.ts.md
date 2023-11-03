@@ -1,6 +1,6 @@
 ---
-title: Parser.ts
-nav_order: 9
+title:
+nav_order: 8
 parent: Modules
 ---
 
@@ -16,11 +16,11 @@ Added in v1.0.0
   - [parseClasses](#parseclasses)
   - [parseConstants](#parseconstants)
   - [parseExports](#parseexports)
-  - [parseFiles](#parsefiles)
   - [parseFunctions](#parsefunctions)
   - [parseInterfaces](#parseinterfaces)
   - [parseModule](#parsemodule)
   - [parseNamespaces](#parsenamespaces)
+  - [parseProject](#parseproject)
   - [parseTypeAliases](#parsetypealiases)
 
 ---
@@ -57,18 +57,6 @@ export declare const parseExports: Effect.Effect<Config.Config | Source, string[
 
 Added in v1.0.0
 
-## parseFiles
-
-**Signature**
-
-```ts
-export declare const parseFiles: (
-  files: ReadonlyArray<FileSystem.File>
-) => Effect.Effect<Process.Process | Config.Config, string[][], Domain.Module[]>
-```
-
-Added in v1.0.0
-
 ## parseFunctions
 
 **Signature**
@@ -94,7 +82,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseModule: Effect.Effect<Config.Config | Source, string[], Domain.Module>
+export declare const parseModule: Effect.Effect<Config.Config | Path.Path | Source, string[], Domain.Module>
 ```
 
 Added in v1.0.0
@@ -105,6 +93,20 @@ Added in v1.0.0
 
 ```ts
 export declare const parseNamespaces: Effect.Effect<Config.Config | Source, string[], Domain.Namespace[]>
+```
+
+Added in v1.0.0
+
+## parseProject
+
+**Signature**
+
+```ts
+export declare const parseProject: () => Effect.Effect<
+  Config.Config | Path.Path | Process.Process,
+  string[][],
+  Domain.Module[]
+>
 ```
 
 Added in v1.0.0

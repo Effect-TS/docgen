@@ -27,7 +27,7 @@ pnpm add @effect/docgen -D
 ```json
 {
   "scripts": {
-    "docs": "docgen"
+    "docgen": "docgen"
   }
 }
 ```
@@ -41,32 +41,8 @@ The `docgen.json` configuration file allows you to customize `docgen`'s behavior
 
 ```json
 {
-  "exclude": ["src/internal/**/*.ts"],
-  "theme": "mikearnaldi/just-the-docs",
-  "parseCompilerOptions": {
-    "strict": true,
-    "noEmit": true,
-    "target": "ES2021",
-    "lib": ["ES2021"],
-    "paths": {
-      "@effect/<project-name>": ["./src/index.ts"],
-      "@effect/<project-name>/test/*": ["./test/*"],
-      "@effect/<project-name>/examples/*": ["./examples/*"],
-      "@effect/<project-name>/*": ["./src/*"]
-    }
-  },
-  "examplesCompilerOptions": {
-    "strict": true,
-    "noEmit": true,
-    "target": "ES2021",
-    "lib": ["ES2021"],
-    "paths": {
-      "@effect/<project-name>": ["../../src/index.ts"],
-      "@effect/<project-name>/test/*": ["../../test/*"],
-      "@effect/<project-name>/examples/*": ["../../examples/*"],
-      "@effect/<project-name>/*": ["../../src/*"]
-    }
-  }
+  "exclude": ["internal/**/*.ts"],
+  "theme": "mikearnaldi/just-the-docs"
 }
 ```
 
@@ -92,7 +68,6 @@ The `docgen.json` configuration file adheres to the following interface:
 ```ts
 interface Config {
   readonly projectHomepage?: string;
-  readonly srcDir?: string;
   readonly outDir?: string;
   readonly theme?: string;
   readonly enableSearch?: boolean;
@@ -100,8 +75,6 @@ interface Config {
   readonly enforceExamples?: boolean;
   readonly enforceVersion?: boolean;
   readonly exclude?: ReadonlyArray<string>;
-  readonly parseCompilerOptions?: string | Record<string, unknown>;
-  readonly examplesCompilerOptions?: string | Record<string, unknown>;
 }
 ```
 
@@ -110,7 +83,6 @@ The following table describes each configuration parameter, its purpose, and its
 | Parameter               | Description                                                                                                                                                                         | Default Value                 |
 | :---------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------- |
 | projectHomepage         | Will link to the project homepage from the [Auxiliary Links](https://pmarsceill.github.io/just-the-docs/docs/navigation-structure/#auxiliary-links) of the generated documentation. | `homepage` in `package.json`  |
-| srcDir                  | The directory in which `docgen` will search for TypeScript files to parse.                                                                                                          | `'src'`                       |
 | outDir                  | The directory to which `docgen` will generate its output markdown documents.                                                                                                        | `'docs'`                      |
 | theme                   | The theme that `docgen` will specify should be used for GitHub Docs in the generated `_config.yml` file.                                                                            | `'mikearnaldi/just-the-docs'` |
 | enableSearch            | Whether or search should be enabled for GitHub Docs in the generated `_config.yml` file.                                                                                            | `true`                        |
@@ -118,8 +90,8 @@ The following table describes each configuration parameter, its purpose, and its
 | enforceExamples         | Whether or not `@example` tags for each module export should be required. (**Note**: examples will not be enforced in module documentation)                                         | `false`                       |
 | enforceVersion          | Whether or not `@since` tags for each module export should be required.                                                                                                             | `true`                        |
 | exclude                 | An array of glob strings specifying files that should be excluded from the documentation.                                                                                           | `[]`                          |
-| parseCompilerOptions    | tsconfig for parsing options (or path to a tsconfig)                                                                                                                                | {}                            |
-| examplesCompilerOptions | tsconfig for the examples options (or path to a tsconfig)                                                                                                                           | {}                            |
+| baseTsConfig            | The path to the base tsconfig.json file for the project.                                                                                                                            | `tsconfig.base.json`          |
+| sourceTsConfig          | The path to the source tsconfig.json file for the project.                                                                                                                          | `tsconfig.build.json`         |
 
 # FAQ
 

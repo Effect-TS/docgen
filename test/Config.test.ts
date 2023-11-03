@@ -1,9 +1,10 @@
 import * as Config from "@effect/docgen/Config"
 import * as FileSystem from "@effect/docgen/FileSystem"
 import * as Process from "@effect/docgen/Process"
-import * as assert from "assert"
+import { Path } from "@effect/platform-node"
 import { Effect, Either, hole, Layer } from "effect"
-import NodePath from "node:path"
+import * as NodePath from "node:path"
+import { assert, describe, it } from "vitest"
 
 describe("Config", () => {
   const fakePackageJson = { name: "name", homepage: "homepage" }
@@ -32,6 +33,7 @@ describe("Config", () => {
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
       Effect.provide(FileSystemTest),
+      Effect.provide(Path.layer),
       Effect.runPromise
     )
   })
@@ -41,6 +43,7 @@ describe("Config", () => {
 
     const program = Effect.gen(function*(_) {
       const config = yield* _(Config.Config)
+      console.log(config)
       assert.deepStrictEqual(config, {
         ...Config.getDefaultConfig(fakePackageJson.name, fakePackageJson.homepage),
         ...docgen
@@ -73,6 +76,7 @@ describe("Config", () => {
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
       Effect.provide(FileSystemTest),
+      Effect.provide(Path.layer),
       Effect.runPromise
     )
   })
@@ -106,6 +110,7 @@ describe("Config", () => {
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
       Effect.provide(FileSystemTest),
+      Effect.provide(Path.layer),
       Effect.either,
       Effect.runPromise
     ).then((result) => {

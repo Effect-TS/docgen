@@ -1,21 +1,30 @@
 /**
  * @since 1.0.0
  */
+import { Path } from "@effect/platform-node"
 import chalk from "chalk"
 import * as doctrine from "doctrine"
-import { Context, Effect, Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
-import { flow, pipe } from "effect/Function"
-import * as NodePath from "node:path"
+import {
+  Context,
+  Effect,
+  flow,
+  Option,
+  Order,
+  pipe,
+  ReadonlyArray,
+  ReadonlyRecord,
+  String
+} from "effect"
+import * as Minimatch from "minimatch"
 import * as ast from "ts-morph"
-import * as Config from "./Config"
-import * as Domain from "./Domain"
-import type * as FileSystem from "./FileSystem"
-import * as Process from "./Process"
+import * as Config from "./Config.js"
+import * as Domain from "./Domain.js"
+import * as Process from "./Process.js"
 
 /** @internal */
 export interface Source {
   readonly path: ReadonlyArray.NonEmptyReadonlyArray<string>
-  readonly sourceFile: ast.SourceFile
+  readonly file: ast.SourceFile
 }
 
 /** @internal */
@@ -223,7 +232,7 @@ const parseInterfaceDeclarations = (interfaces: ReadonlyArray<ast.InterfaceDecla
  */
 export const parseInterfaces = Effect.flatMap(
   Source,
-  (source) => parseInterfaceDeclarations(source.sourceFile.getInterfaces())
+  (source) => parseInterfaceDeclarations(source.file.getInterfaces())
 )
 
 const getFunctionDeclarationSignature = (
@@ -319,12 +328,12 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
 const getFunctionDeclarations = Effect.gen(function*(_) {
   const source = yield* _(Source)
   const functions = ReadonlyArray.filter(
-    source.sourceFile.getFunctions(),
+    source.file.getFunctions(),
     (fd) => fd.isExported() && shouldNotIgnore(getFunctionDeclarationJSDocs(fd))
   )
   const arrows = pipe(
     ReadonlyArray.filter(
-      source.sourceFile.getVariableDeclarations(),
+      source.file.getVariableDeclarations(),
       (vd) => {
         if (isVariableDeclarationList(vd.getParent())) {
           const vs: any = vd.getParent().getParent()
@@ -391,7 +400,7 @@ const parseTypeAliasDeclarations = (typeAliases: ReadonlyArray<ast.TypeAliasDecl
  */
 export const parseTypeAliases = Effect.flatMap(
   Source,
-  (source) => parseTypeAliasDeclarations(source.sourceFile.getTypeAliases())
+  (source) => parseTypeAliasDeclarations(source.file.getTypeAliases())
 )
 
 const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
@@ -423,7 +432,7 @@ export const parseConstants = Effect.gen(function*(_) {
   const source = yield* _(Source)
   const variableDeclarations = pipe(
     ReadonlyArray.filter(
-      source.sourceFile.getVariableDeclarations(),
+      source.file.getVariableDeclarations(),
       (vd) => {
         if (isVariableDeclarationList(vd.getParent())) {
           const vs: any = vd.getParent().getParent()
@@ -529,7 +538,7 @@ const parseNamedExports = (ed: ast.ExportDeclaration) => {
  * @since 1.0.0
  */
 export const parseExports = pipe(
-  Effect.map(Source, (source) => source.sourceFile.getExportDeclarations()),
+  Effect.map(Source, (source) => source.file.getExportDeclarations()),
   Effect.flatMap((exportDeclarations) => Effect.validateAll(exportDeclarations, parseNamedExports)),
   Effect.mapBoth({
     onFailure: ReadonlyArray.flatten,
@@ -594,7 +603,7 @@ export const parseNamespaces: Effect.Effect<
   Source | Config.Config,
   Array<string>,
   Array<Domain.Namespace>
-> = Effect.flatMap(Source, (source) => parseModuleDeclarations(source.sourceFile.getModules()))
+> = Effect.flatMap(Source, (source) => parseModuleDeclarations(source.file.getModules()))
 
 const getTypeParameters = (
   tps: ReadonlyArray<ast.TypeParameterDeclaration>
@@ -783,7 +792,7 @@ const parseClass = (c: ast.ClassDeclaration) =>
 export const parseClasses = Effect.gen(function*(_) {
   const source = yield* _(Source)
   const exportedClasses = ReadonlyArray.filter(
-    source.sourceFile.getClasses(),
+    source.file.getClasses(),
     (cd) => cd.isExported() && shouldNotIgnore(cd.getJsDocs())
   )
   return yield* _(
@@ -796,21 +805,18 @@ export const parseClasses = Effect.gen(function*(_) {
   )
 })
 
-const getModuleName = (
-  path: ReadonlyArray.NonEmptyReadonlyArray<string>
-): string => NodePath.parse(ReadonlyArray.lastNonEmpty(path)).name
-
 /**
  * @internal
  */
 export const parseModuleDocumentation = Effect.gen(function*(_) {
+  const path = yield* _(Path.Path)
   const config = yield* _(Config.Config)
   const source = yield* _(Source)
-  const name = getModuleName(source.path)
+  const name = path.parse(ReadonlyArray.lastNonEmpty(source.path)).name
   // if any of the settings enforcing documentation are set to `true`, then
   // a module should have associated documentation
   const isDocumentationRequired = config.enforceDescriptions || config.enforceVersion
-  const statements = source.sourceFile.getStatements()
+  const statements = source.file.getStatements()
   const ofirstStatement = ReadonlyArray.head(statements)
   if (Option.isNone(ofirstStatement)) {
     if (isDocumentationRequired) {
@@ -885,67 +891,43 @@ export const parseModule = Effect.gen(function*(_) {
 /**
  * @internal
  */
-export const parseFile = (project: ast.Project) =>
-(
-  file: FileSystem.File
-): Effect.Effect<Config.Config, Array<string>, Domain.Module> => {
-  const path = file.path.split(
-    NodePath.sep
-  ) as any as ReadonlyArray.NonEmptyReadonlyArray<string>
-  const sourceFile = project.getSourceFile(file.path)
-  if (sourceFile !== undefined) {
-    return pipe(
-      parseModule,
-      Effect.provideService(Source, { path, sourceFile })
-    )
-  }
-  return Effect.fail([`Unable to locate file: ${file.path}`])
-}
-
-const createProject = (files: ReadonlyArray<FileSystem.File>) =>
-  Effect.gen(function*(_) {
-    const config = yield* _(Config.Config)
-    const process = yield* _(Process.Process)
-    const cwd = yield* _(process.cwd)
-    // Convert the raw config into a format that TS/TS-Morph expects
-    const parsed = ast.ts.parseJsonConfigFileContent(
-      {
-        compilerOptions: {
-          strict: true,
-          moduleResolution: "node",
-          ...config.parseCompilerOptions
-        }
-      },
-      ast.ts.sys,
-      cwd
-    )
-
-    const options: ast.ProjectOptions = {
-      compilerOptions: parsed.options
-    }
-    const project = new ast.Project(options)
-    for (const file of files) {
-      project.addSourceFileAtPath(file.path)
-    }
-    return project
-  })
+export const parseFile = (
+  file: ast.SourceFile,
+  path: ReadonlyArray.NonEmptyReadonlyArray<string>
+): Effect.Effect<Config.Config | Path.Path, Array<string>, Domain.Module> =>
+  pipe(parseModule, Effect.provideService(Source, { path, file }))
 
 /**
  * @category parsers
  * @since 1.0.0
  */
-export const parseFiles = (files: ReadonlyArray<FileSystem.File>) =>
-  createProject(files).pipe(
-    Effect.flatMap((project) =>
-      pipe(
-        files,
-        Effect.validateAll(parseFile(project)),
-        Effect.map(
-          flow(
-            ReadonlyArray.filter((module) => !module.deprecated),
-            sortModulesByPath
-          )
-        )
-      )
+export const parseProject = () =>
+  Effect.gen(function*(_) {
+    const path = yield* _(Path.Path)
+    const config = yield* _(Config.Config)
+    const process = yield* _(Process.Process)
+    const cwd = yield* _(process.cwd)
+    const project = new ast.Project({
+      tsConfigFilePath: path.join(cwd, config.sourceTsConfig)
+    })
+
+    const root = project.getCompilerOptions().rootDir ?? cwd
+    const files = project.getSourceFiles().map((file) => ({
+      path: path.relative(root, file.getFilePath()).split(
+        path.sep
+      ) as any as ReadonlyArray.NonEmptyReadonlyArray<string>,
+      file
+    }))
+
+    // Filter out files that match the exclude glob patterns.
+    const filters = config.exclude.map((_) => Minimatch.filter(_))
+    const filtered = files.filter((_) => !filters.some((filter) => filter(_.path.join("/"))))
+
+    return yield* _(
+      Effect.validateAll(filtered, (_) => parseFile(_.file, _.path)),
+      Effect.map(flow(
+        ReadonlyArray.filter((module) => !module.deprecated),
+        sortModulesByPath
+      ))
     )
-  )
+  })

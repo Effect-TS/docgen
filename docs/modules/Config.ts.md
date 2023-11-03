@@ -1,6 +1,6 @@
 ---
-title: Config.ts
-nav_order: 3
+title:
+nav_order: 2
 parent: Modules
 ---
 
@@ -28,7 +28,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ConfigLive: Layer.Layer<Process.Process | FileSystem.FileSystem, Error, Config>
+export declare const ConfigLive: Layer.Layer<FileSystem.FileSystem | Path.Path | Process.Process, Error, Config>
 ```
 
 Added in v1.0.0
@@ -53,7 +53,6 @@ Added in v1.0.0
 export interface Config {
   readonly projectName: string
   readonly projectHomepage: string
-  readonly srcDir: string
   readonly outDir: string
   readonly theme: string
   readonly enableSearch: boolean
@@ -61,8 +60,8 @@ export interface Config {
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
   readonly exclude: ReadonlyArray<string>
-  readonly parseCompilerOptions: Record<string, unknown>
-  readonly examplesCompilerOptions: Record<string, unknown>
+  readonly sourceTsConfig: string
+  readonly baseTsConfig: string
 }
 ```
 
@@ -75,32 +74,30 @@ Added in v1.0.0
 ```ts
 export declare const ConfigSchema: Schema.Schema<
   {
-    readonly $schema?: string
-    readonly projectHomepage?: string
-    readonly srcDir?: string
-    readonly outDir?: string
-    readonly theme?: string
-    readonly enableSearch?: boolean
-    readonly enforceDescriptions?: boolean
-    readonly enforceExamples?: boolean
-    readonly enforceVersion?: boolean
-    readonly exclude?: readonly string[]
-    readonly parseCompilerOptions?: string | { readonly [x: string]: unknown }
-    readonly examplesCompilerOptions?: string | { readonly [x: string]: unknown }
+    readonly $schema?: string | undefined
+    readonly projectHomepage?: string | undefined
+    readonly outDir?: string | undefined
+    readonly theme?: string | undefined
+    readonly enableSearch?: boolean | undefined
+    readonly enforceDescriptions?: boolean | undefined
+    readonly exclude?: readonly string[] | undefined
+    readonly enforceExamples?: boolean | undefined
+    readonly enforceVersion?: boolean | undefined
+    readonly sourceTsConfig?: string | undefined
+    readonly baseTsConfig?: string | undefined
   },
   {
-    readonly $schema?: string
-    readonly projectHomepage?: string
-    readonly srcDir?: string
-    readonly outDir?: string
-    readonly theme?: string
-    readonly enableSearch?: boolean
-    readonly enforceDescriptions?: boolean
-    readonly enforceExamples?: boolean
-    readonly enforceVersion?: boolean
-    readonly exclude?: readonly string[]
-    readonly parseCompilerOptions?: string | { readonly [x: string]: unknown }
-    readonly examplesCompilerOptions?: string | { readonly [x: string]: unknown }
+    readonly $schema?: string | undefined
+    readonly projectHomepage?: string | undefined
+    readonly outDir?: string | undefined
+    readonly theme?: string | undefined
+    readonly enableSearch?: boolean | undefined
+    readonly enforceDescriptions?: boolean | undefined
+    readonly exclude?: readonly string[] | undefined
+    readonly enforceExamples?: boolean | undefined
+    readonly enforceVersion?: boolean | undefined
+    readonly sourceTsConfig?: string | undefined
+    readonly baseTsConfig?: string | undefined
   }
 >
 ```

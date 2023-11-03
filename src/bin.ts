@@ -6,7 +6,7 @@
 
 import chalk from "chalk"
 import { Effect } from "effect"
-import { main } from "./Core"
+import { main } from "./Core.js"
 
 Effect.runPromise(main).catch((defect) => {
   console.error(chalk.bold.red("Unexpected Error"))

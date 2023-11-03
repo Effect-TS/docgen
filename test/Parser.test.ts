@@ -1,11 +1,11 @@
 import * as Config from "@effect/docgen/Config"
 import * as Domain from "@effect/docgen/Domain"
-import * as FileSystem from "@effect/docgen/FileSystem"
 import * as Parser from "@effect/docgen/Parser"
-import * as assert from "assert"
+import { Path } from "@effect/platform-node"
 import chalk from "chalk"
 import { Effect, Exit, Option, String } from "effect"
 import * as ast from "ts-morph"
+import { assert, describe, expect, it } from "vitest"
 
 let testCounter = 0
 
@@ -17,7 +17,6 @@ const project = new ast.Project({
 const defaultConfig: Config.Config = {
   projectName: "docgen",
   projectHomepage: "https://github.com/effect-ts/docgen",
-  srcDir: "src",
   outDir: "docs",
   theme: "pmarsceill/just-the-docs",
   enableSearch: true,
@@ -25,23 +24,24 @@ const defaultConfig: Config.Config = {
   enforceExamples: false,
   enforceVersion: true,
   exclude: [],
-  parseCompilerOptions: {},
-  examplesCompilerOptions: {}
+  sourceTsConfig: "tsconfig.build.json",
+  baseTsConfig: "tsconfig.base.json"
 }
 
 const getParser = (sourceText: string): Parser.Source => ({
   path: ["test"],
-  sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
+  file: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
 })
 
 const expectFailure = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
+  eff: Effect.Effect<Path.Path | Parser.Source | Config.Config, E, A>,
   failure: E,
   config?: Partial<Config.Config>
 ) => {
   expect(
     eff.pipe(
+      Effect.provide(Path.layer),
       Effect.provideService(Parser.Source, getParser(sourceText)),
       Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
       Effect.runSyncExit
@@ -51,13 +51,14 @@ const expectFailure = <E, A>(
 
 const expectSuccess = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Config.Config, E, A>,
+  eff: Effect.Effect<Path.Path | Parser.Source | Config.Config, E, A>,
   a: A,
   config?: Partial<Config.Config>
 ) => {
   expect(
     eff
       .pipe(
+        Effect.provide(Path.layer),
         Effect.provideService(Parser.Source, getParser(sourceText)),
         Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
         Effect.runSyncExit
@@ -1234,7 +1235,7 @@ describe("Parser", () => {
         const actual = Parser.parseExports.pipe(
           Effect.provideService(Parser.Source, {
             path: ["test"],
-            sourceFile
+            file: sourceFile
           }),
           Effect.provideService(Config.Config, defaultConfig),
           Effect.runSyncExit
@@ -1271,7 +1272,7 @@ describe("Parser", () => {
         const actual = Parser.parseExports.pipe(
           Effect.provideService(Parser.Source, {
             path: ["test"],
-            sourceFile
+            file: sourceFile
           }),
           Effect.provideService(Config.Config, defaultConfig),
           Effect.runSyncExit
@@ -1309,7 +1310,7 @@ describe("Parser", () => {
         const actual = Parser.parseExports.pipe(
           Effect.provideService(Parser.Source, {
             path: ["test"],
-            sourceFile
+            file: sourceFile
           }),
           Effect.provideService(Config.Config, defaultConfig),
           Effect.runSyncExit
@@ -1391,21 +1392,6 @@ export const foo = 'foo'`,
             namespaces: []
           },
           { enforceExamples: true }
-        )
-      })
-    })
-
-    describe("parseFile", () => {
-      it("should not parse a non-existent file", async () => {
-        const file = FileSystem.createFile("non-existent.ts", "")
-        const project = new ast.Project({ useInMemoryFileSystem: true })
-
-        assert.deepStrictEqual(
-          Parser.parseFile(project)(file).pipe(
-            Effect.provideService(Config.Config, defaultConfig),
-            Effect.runSyncExit
-          ),
-          Exit.fail(["Unable to locate file: non-existent.ts"])
         )
       })
     })

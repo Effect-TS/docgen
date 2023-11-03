@@ -1,14 +1,12 @@
 /**
  * @since 1.0.0
  */
-import * as Schema from "@effect/schema/Schema"
-import * as TreeFormatter from "@effect/schema/TreeFormatter"
+import { Path } from "@effect/platform-node"
+import { Schema, TreeFormatter } from "@effect/schema"
 import chalk from "chalk"
 import { Context, Effect, Layer, Option } from "effect"
-import * as NodePath from "node:path"
-import * as tsconfck from "tsconfck"
-import * as FileSystem from "./FileSystem"
-import * as Process from "./Process"
+import * as FileSystem from "./FileSystem.js"
+import * as Process from "./Process.js"
 
 const PACKAGE_JSON_FILE_NAME = "package.json"
 const CONFIG_FILE_NAME = "docgen.json"
@@ -22,9 +20,6 @@ export const ConfigSchema = Schema.struct({
   projectHomepage: Schema.optional(Schema.string, {
     description:
       "Will link to the project homepage from the Auxiliary Links of the generated documentation."
-  }),
-  srcDir: Schema.optional(Schema.string, {
-    description: "The directory in which docgen will search for TypeScript files to parse."
   }),
   outDir: Schema.optional(Schema.string, {
     description: "The directory to which docgen will generate its output markdown documents."
@@ -40,6 +35,10 @@ export const ConfigSchema = Schema.struct({
   enforceDescriptions: Schema.optional(Schema.boolean, {
     description: "Whether or not descriptions for each module export should be required."
   }),
+  exclude: Schema.optional(Schema.array(Schema.string), {
+    description:
+      "An array of glob strings specifying files that should be excluded from the documentation."
+  }),
   enforceExamples: Schema.optional(Schema.boolean, {
     description:
       "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)"
@@ -47,22 +46,12 @@ export const ConfigSchema = Schema.struct({
   enforceVersion: Schema.optional(Schema.boolean, {
     description: "Whether or not @since tags for each module export should be required."
   }),
-  exclude: Schema.optional(Schema.array(Schema.string), {
-    description:
-      "An array of glob strings specifying files that should be excluded from the documentation."
+  sourceTsConfig: Schema.optional(Schema.string, {
+    description: "The path to the source tsconfig.json file for the project."
   }),
-  parseCompilerOptions: Schema.optional(
-    Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
-    {
-      description: "tsconfig for parsing options (or path to a tsconfig)"
-    }
-  ),
-  examplesCompilerOptions: Schema.optional(
-    Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
-    {
-      description: "tsconfig for the examples options (or path to a tsconfig)"
-    }
-  )
+  baseTsConfig: Schema.optional(Schema.string, {
+    description: "The path to the base tsconfig.json file for the project."
+  })
 })
 
 /**
@@ -72,7 +61,6 @@ export const ConfigSchema = Schema.struct({
 export interface Config {
   readonly projectName: string
   readonly projectHomepage: string
-  readonly srcDir: string
   readonly outDir: string
   readonly theme: string
   readonly enableSearch: boolean
@@ -80,8 +68,8 @@ export interface Config {
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
   readonly exclude: ReadonlyArray<string>
-  readonly parseCompilerOptions: Record<string, unknown>
-  readonly examplesCompilerOptions: Record<string, unknown>
+  readonly sourceTsConfig: string
+  readonly baseTsConfig: string
 }
 
 /**
@@ -113,7 +101,6 @@ const validateJsonFile = <I, A>(
 export const getDefaultConfig = (name: string, homepage: string): Config => ({
   projectName: name,
   projectHomepage: homepage,
-  srcDir: "src",
   outDir: "docs",
   theme: "mikearnaldi/just-the-docs",
   enableSearch: true,
@@ -121,8 +108,8 @@ export const getDefaultConfig = (name: string, homepage: string): Config => ({
   enforceExamples: false,
   enforceVersion: true,
   exclude: [],
-  parseCompilerOptions: {},
-  examplesCompilerOptions: {}
+  sourceTsConfig: "tsconfig.source.json",
+  baseTsConfig: "tsconfig.base.json"
 })
 
 const loadConfig = (
@@ -151,16 +138,17 @@ export const ConfigLive = Layer.effect(
   Config,
   Effect.gen(function*(_) {
     // Extract the requisite services
+    const path = yield* _(Path.Path)
     const process = yield* _(Process.Process)
     const cwd = yield* _(process.cwd)
 
     // Read and parse the package.json
-    const packageJsonPath = NodePath.join(cwd, PACKAGE_JSON_FILE_NAME)
+    const packageJsonPath = path.join(cwd, PACKAGE_JSON_FILE_NAME)
     const packageJson = yield* _(validateJsonFile(PackageJsonSchema, packageJsonPath))
 
     // Read and resolve the configuration
     const defaultConfig = getDefaultConfig(packageJson.name, packageJson.homepage)
-    const configPath = NodePath.join(cwd, CONFIG_FILE_NAME)
+    const configPath = path.join(cwd, CONFIG_FILE_NAME)
     const maybeConfig = yield* _(loadConfig(configPath))
 
     if (Option.isNone(maybeConfig)) {
@@ -172,47 +160,11 @@ export const ConfigLive = Layer.effect(
 
     yield* _(Effect.logInfo(chalk.bold("Configuration file found")))
 
-    // Allow the user to provide a path to a tsconfig.json file to resolve the compiler options
-    const examplesCompilerOptions = yield* _(
-      resolveCompilerOptions(cwd, maybeConfig.value.examplesCompilerOptions)
-    )
-    const parseCompilerOptions = yield* _(
-      resolveCompilerOptions(cwd, maybeConfig.value.parseCompilerOptions)
-    )
-
     return Config.of(
       {
         ...defaultConfig,
-        ...maybeConfig.value,
-        examplesCompilerOptions,
-        parseCompilerOptions
+        ...maybeConfig.value
       }
     )
   })
 )
-
-function resolveCompilerOptions(
-  cwd: string,
-  options?: string | Record<string, unknown>
-): Effect.Effect<
-  never,
-  Error,
-  {
-    readonly [x: string]: unknown
-  }
-> {
-  if (options === undefined) {
-    return Effect.succeed({})
-  }
-  if (typeof options === "object") {
-    return Effect.succeed(options)
-  }
-
-  return Effect.tryPromise({
-    try: () =>
-      tsconfck.parse(NodePath.resolve(cwd, options)).then(({ tsconfig }) =>
-        tsconfig.compilerOptions ?? {}
-      ),
-    catch: (error) => new Error(`[Config] Failed to resolve ${options}: ${String(error)}`)
-  })
-}

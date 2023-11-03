@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
+import { Path } from "@effect/platform-node"
 import * as PlatformFileSystem from "@effect/platform-node/FileSystem"
 import { Context, Data, Effect, Layer } from "effect"
-import * as FSExtra from "fs-extra"
 import * as Glob from "glob"
 
 /**
@@ -78,6 +78,7 @@ export const FileSystemLive = Layer.effect(
   FileSystem,
   Effect.gen(function*(_) {
     const fs = yield* _(PlatformFileSystem.FileSystem)
+    const p = yield* _(Path.Path)
 
     const readFile = (path: string): Effect.Effect<never, Error, string> =>
       fs.readFileString(path, "utf8").pipe(
@@ -87,18 +88,11 @@ export const FileSystemLive = Layer.effect(
       )
 
     const writeFile = (path: string, content: string): Effect.Effect<never, Error, void> =>
-      Effect.async((resume) =>
-        FSExtra.outputFile(path, content, "utf8", (error) => {
-          if (error) {
-            resume(
-              Effect.fail(
-                new Error(`[FileSystem] Unable to write file to '${path}': ${error.message}`)
-              )
-            )
-          } else {
-            resume(Effect.unit)
-          }
-        })
+      fs.makeDirectory(p.dirname(path), { recursive: true }).pipe(
+        Effect.zip(fs.writeFileString(path, content)),
+        Effect.mapError((error) =>
+          new Error(`[FileSystem] Unable to write file to '${path}': ${error.message}`)
+        )
       )
 
     const removeFile = (
@@ -145,7 +139,7 @@ export const FileSystemLive = Layer.effect(
       glob
     })
   })
-).pipe(Layer.use(PlatformFileSystem.layer))
+).pipe(Layer.use(PlatformFileSystem.layer), Layer.use(Path.layer))
 
 /**
  * Represents a file which can be optionally overwriteable.

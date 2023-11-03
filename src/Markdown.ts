@@ -1,12 +1,13 @@
 /**
  * @since 1.0.0
  */
-import { Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
+import { Effect, Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
 import { pipe } from "effect/Function"
 import * as Prettier from "prettier"
-import type * as Domain from "./Domain"
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const toc = require("markdown-toc")
+import type * as Domain from "./Domain.js"
+
+// @ts-ignore
+import toc from "markdown-toc"
 
 type Printable =
   | Domain.Class
@@ -275,7 +276,10 @@ const byCategory = Order.mapInput(
  * @category printers
  * @since 1.0.0
  */
-export const printModule = (module: Domain.Module, order: number): string => {
+export const printModule = (
+  module: Domain.Module,
+  order: number
+): Effect.Effect<never, never, string> => {
   const header = printMeta(module.path.slice(1).join("/"), order)
 
   const description = MarkdownPrinter.paragraph(printModuleDescription(module))
@@ -327,4 +331,8 @@ const defaultPrettierOptions: Prettier.Options = {
 }
 
 /** @internal */
-export const prettify = (s: string): string => Prettier.format(s, defaultPrettierOptions)
+export const prettify = (s: string): Effect.Effect<never, never, string> =>
+  Effect.tryPromise({
+    try: () => Prettier.format(s, defaultPrettierOptions),
+    catch: (_) => _
+  }).pipe(Effect.orDie)

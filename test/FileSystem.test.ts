@@ -1,6 +1,6 @@
 import * as FileSystem from "@effect/docgen/FileSystem"
-import * as assert from "assert"
 import { Effect, Exit } from "effect"
+import { assert, describe, it } from "vitest"
 
 const isBun = "Bun" in globalThis
 
@@ -34,9 +34,7 @@ describe("FileSystem", () => {
       assert.deepStrictEqual(
         await Effect.runPromiseExit(program),
         Exit.fail(
-          isBun ?
-            `[FileSystem] Unable to read and parse JSON file from '${path}': SyntaxError: JSON Parse error: Expected '}'` :
-            `[FileSystem] Unable to read and parse JSON file from '${path}': SyntaxError: Unexpected token ] in JSON at position 1`
+          `[FileSystem] Unable to read and parse JSON file from '${path}': SyntaxError: Expected property name or '}' in JSON at position 1`
         )
       )
     })
