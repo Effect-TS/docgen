@@ -208,7 +208,7 @@ Added in v1.0.0
 
 ```ts
 export interface Class extends NamedDoc {
-  readonly _tag: 'Class'
+  readonly _tag: "Class"
   readonly signature: string
   readonly methods: ReadonlyArray<Method>
   readonly staticMethods: ReadonlyArray<Method>
@@ -224,7 +224,7 @@ Added in v1.0.0
 
 ```ts
 export interface Constant extends NamedDoc {
-  readonly _tag: 'Constant'
+  readonly _tag: "Constant"
   readonly signature: string
 }
 ```
@@ -273,7 +273,7 @@ export {
 
 ```ts
 export interface Export extends NamedDoc {
-  readonly _tag: 'Export'
+  readonly _tag: "Export"
   readonly signature: string
 }
 ```
@@ -286,7 +286,7 @@ Added in v1.0.0
 
 ```ts
 export interface Function extends NamedDoc {
-  readonly _tag: 'Function'
+  readonly _tag: "Function"
   readonly signatures: ReadonlyArray<string>
 }
 ```
@@ -299,7 +299,7 @@ Added in v1.0.0
 
 ```ts
 export interface Interface extends NamedDoc {
-  readonly _tag: 'Interface'
+  readonly _tag: "Interface"
   readonly signature: string
 }
 ```
@@ -355,7 +355,7 @@ Added in v1.0.0
 
 ```ts
 export interface Namespace extends NamedDoc {
-  readonly _tag: 'Namespace'
+  readonly _tag: "Namespace"
   readonly interfaces: ReadonlyArray<Interface>
   readonly typeAliases: ReadonlyArray<TypeAlias>
   readonly namespaces: ReadonlyArray<Namespace>
@@ -382,7 +382,7 @@ Added in v1.0.0
 
 ```ts
 export interface TypeAlias extends NamedDoc {
-  readonly _tag: 'TypeAlias'
+  readonly _tag: "TypeAlias"
   readonly signature: string
 }
 ```

@@ -326,7 +326,7 @@ export const printModule = (
 const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",
   semi: false,
-  singleQuote: true,
+  singleQuote: false,
   printWidth: 120
 }
 
