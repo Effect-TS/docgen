@@ -75,32 +75,32 @@ Added in v1.0.0
 ```ts
 export declare const ConfigSchema: Schema.Schema<
   {
-    readonly $schema?: string | undefined
-    readonly projectHomepage?: string | undefined
-    readonly srcDir?: string | undefined
-    readonly outDir?: string | undefined
-    readonly theme?: string | undefined
-    readonly enableSearch?: boolean | undefined
-    readonly enforceDescriptions?: boolean | undefined
-    readonly enforceExamples?: boolean | undefined
-    readonly enforceVersion?: boolean | undefined
-    readonly exclude?: readonly string[] | undefined
-    readonly parseCompilerOptions?: string | { readonly [x: string]: unknown } | undefined
-    readonly examplesCompilerOptions?: string | { readonly [x: string]: unknown } | undefined
+    readonly $schema?: string
+    readonly projectHomepage?: string
+    readonly srcDir?: string
+    readonly outDir?: string
+    readonly theme?: string
+    readonly enableSearch?: boolean
+    readonly enforceDescriptions?: boolean
+    readonly enforceExamples?: boolean
+    readonly enforceVersion?: boolean
+    readonly exclude?: readonly string[]
+    readonly parseCompilerOptions?: string | { readonly [x: string]: unknown }
+    readonly examplesCompilerOptions?: string | { readonly [x: string]: unknown }
   },
   {
-    readonly $schema?: string | undefined
-    readonly projectHomepage?: string | undefined
-    readonly srcDir?: string | undefined
-    readonly outDir?: string | undefined
-    readonly theme?: string | undefined
-    readonly enableSearch?: boolean | undefined
-    readonly enforceDescriptions?: boolean | undefined
-    readonly enforceExamples?: boolean | undefined
-    readonly enforceVersion?: boolean | undefined
-    readonly exclude?: readonly string[] | undefined
-    readonly parseCompilerOptions?: string | { readonly [x: string]: unknown } | undefined
-    readonly examplesCompilerOptions?: string | { readonly [x: string]: unknown } | undefined
+    readonly $schema?: string
+    readonly projectHomepage?: string
+    readonly srcDir?: string
+    readonly outDir?: string
+    readonly theme?: string
+    readonly enableSearch?: boolean
+    readonly enforceDescriptions?: boolean
+    readonly enforceExamples?: boolean
+    readonly enforceVersion?: boolean
+    readonly exclude?: readonly string[]
+    readonly parseCompilerOptions?: string | { readonly [x: string]: unknown }
+    readonly examplesCompilerOptions?: string | { readonly [x: string]: unknown }
   }
 >
 ```

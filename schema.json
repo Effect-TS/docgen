@@ -33,6 +33,11 @@
       "description": "Will link to the project homepage from the Auxiliary Links of the generated documentation.",
       "title": "string"
     },
+    "srcDir": {
+      "type": "string",
+      "description": "The directory in which docgen will search for TypeScript files to parse.",
+      "title": "string"
+    },
     "outDir": {
       "type": "string",
       "description": "The directory to which docgen will generate its output markdown documents.",
@@ -43,16 +48,6 @@
       "description": "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
       "title": "string"
     },
-    "sourceTsConfig": {
-      "type": "string",
-      "description": "The path to the source tsconfig.json file for the project.",
-      "title": "string"
-    },
-    "baseTsConfig": {
-      "type": "string",
-      "description": "The path to the base tsconfig.json file for the project.",
-      "title": "string"
-    },
     "exclude": {
       "type": "array",
       "items": {
@@ -61,6 +56,42 @@
         "title": "string"
       },
       "description": "An array of glob strings specifying files that should be excluded from the documentation."
+    },
+    "parseCompilerOptions": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [],
+          "properties": {},
+          "additionalProperties": {
+            "title": "unknown"
+          }
+        },
+        {
+          "type": "string",
+          "description": "a string",
+          "title": "string"
+        }
+      ],
+      "description": "tsconfig for parsing options (or path to a tsconfig)"
+    },
+    "examplesCompilerOptions": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [],
+          "properties": {},
+          "additionalProperties": {
+            "title": "unknown"
+          }
+        },
+        {
+          "type": "string",
+          "description": "a string",
+          "title": "string"
+        }
+      ],
+      "description": "tsconfig for the examples options (or path to a tsconfig)"
     }
   },
   "additionalProperties": false

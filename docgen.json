@@ -1,4 +1,16 @@
 {
   "$schema": "./schema.json",
-  "exclude": ["bin.ts"]
+  "exclude": ["bin.ts"],
+  "parseCompilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true,
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ]
+  }
 }

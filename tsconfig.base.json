@@ -9,6 +9,7 @@
     "esModuleInterop": false,
     "declaration": true,
     "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "moduleResolution": "NodeNext",
