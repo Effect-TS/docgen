@@ -1,12 +1,10 @@
 /**
  * @since 1.0.0
  */
-import { Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
+import { Effect, identity, Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
 import { pipe } from "effect/Function"
 import * as Prettier from "prettier"
-import type * as Domain from "./Domain"
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const toc = require("markdown-toc")
+import type * as Domain from "./Domain.js"
 
 type Printable =
   | Domain.Class
@@ -275,56 +273,75 @@ const byCategory = Order.mapInput(
  * @category printers
  * @since 1.0.0
  */
-export const printModule = (module: Domain.Module, order: number): string => {
-  const header = printMeta(module.path.slice(1).join("/"), order)
+export const printModule = (
+  module: Domain.Module,
+  order: number
+): Effect.Effect<never, never, string> =>
+  Effect.gen(function*(_) {
+    const header = printMeta(module.path.slice(1).join("/"), order)
 
-  const description = MarkdownPrinter.paragraph(printModuleDescription(module))
+    const description = MarkdownPrinter.paragraph(printModuleDescription(module))
 
-  const content = pipe(
-    getPrintables(module),
-    ReadonlyArray.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
-    ReadonlyRecord.toEntries,
-    ReadonlyArray.sort(byCategory),
-    ReadonlyArray.map(([category, printables]) =>
-      [
-        MarkdownPrinter.h1(category),
-        ...pipe(
-          printables,
-          ReadonlyArray.sort(
-            Order.mapInput(
-              String.Order,
-              (printable: Printable) => printable.name
-            )
-          ),
-          ReadonlyArray.map(print)
-        )
-      ].join("\n")
+    const content = pipe(
+      getPrintables(module),
+      ReadonlyArray.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
+      ReadonlyRecord.toEntries,
+      ReadonlyArray.sort(byCategory),
+      ReadonlyArray.map(([category, printables]) =>
+        [
+          MarkdownPrinter.h1(category),
+          ...pipe(
+            printables,
+            ReadonlyArray.sort(
+              Order.mapInput(
+                String.Order,
+                (printable: Printable) => printable.name
+              )
+            ),
+            ReadonlyArray.map(print)
+          )
+        ].join("\n")
+      )
+    ).join("\n")
+
+    const toc = yield* _(
+      Effect.tryPromise({
+        try: () => {
+          // @ts-ignore
+          return import("markdown-toc").then((m) => m.default)
+        },
+        catch: identity
+      }).pipe(Effect.orDie)
     )
-  ).join("\n")
 
-  const tableOfContents = (content: string) =>
-    "<h2 class=\"text-delta\">Table of contents</h2>\n\n"
-    + toc(content).content
-    + "\n\n"
+    const tableOfContents = (content: string) =>
+      "<h2 class=\"text-delta\">Table of contents</h2>\n\n"
+      + toc(content).content
+      + "\n\n"
 
-  return prettify(
-    [
-      header,
-      description,
-      "---\n",
-      tableOfContents(content),
-      "---\n",
-      content
-    ].join("\n")
-  )
-}
+    return yield* _(prettify(
+      [
+        header,
+        description,
+        "---\n",
+        tableOfContents(content),
+        "---\n",
+        content
+      ].join("\n")
+    ))
+  })
 
 const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",
   semi: false,
-  singleQuote: true,
-  printWidth: 120
+  singleQuote: false,
+  printWidth: 120,
+  trailingComma: "none"
 }
 
 /** @internal */
-export const prettify = (s: string): string => Prettier.format(s, defaultPrettierOptions)
+export const prettify = (s: string): Effect.Effect<never, never, string> =>
+  Effect.tryPromise({
+    try: () => Prettier.format(s, defaultPrettierOptions),
+    catch: identity
+  }).pipe(Effect.orDie)

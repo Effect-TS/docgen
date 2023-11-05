@@ -1,8 +1,7 @@
 import * as FileSystem from "@effect/docgen/FileSystem"
 import * as assert from "assert"
 import { Effect, Exit } from "effect"
-
-const isBun = "Bun" in globalThis
+import { describe, it } from "vitest"
 
 describe("FileSystem", () => {
   describe("readFile", () => {
@@ -16,9 +15,7 @@ describe("FileSystem", () => {
       assert.deepStrictEqual(
         await Effect.runPromiseExit(program),
         Exit.fail(
-          isBun ?
-            `[FileSystem] Unable to read file from '${path}': No such file or directory` :
-            `[FileSystem] Unable to read file from '${path}': ENOENT: no such file or directory, open '${path}'`
+          `[FileSystem] Unable to read file from '${path}': ENOENT: no such file or directory, open '${path}'`
         )
       )
     })
@@ -34,9 +31,7 @@ describe("FileSystem", () => {
       assert.deepStrictEqual(
         await Effect.runPromiseExit(program),
         Exit.fail(
-          isBun ?
-            `[FileSystem] Unable to read and parse JSON file from '${path}': SyntaxError: JSON Parse error: Expected '}'` :
-            `[FileSystem] Unable to read and parse JSON file from '${path}': SyntaxError: Unexpected token ] in JSON at position 1`
+          `[FileSystem] Unable to read and parse JSON file from '${path}': SyntaxError: Expected property name or '}' in JSON at position 1`
         )
       )
     })

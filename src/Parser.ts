@@ -1,16 +1,16 @@
 /**
  * @since 1.0.0
  */
+import { Path } from "@effect/platform-node"
 import chalk from "chalk"
 import * as doctrine from "doctrine"
 import { Context, Effect, Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
 import { flow, pipe } from "effect/Function"
-import * as NodePath from "node:path"
 import * as ast from "ts-morph"
-import * as Config from "./Config"
-import * as Domain from "./Domain"
-import type * as FileSystem from "./FileSystem"
-import * as Process from "./Process"
+import * as Config from "./Config.js"
+import * as Domain from "./Domain.js"
+import type * as FileSystem from "./FileSystem.js"
+import * as Process from "./Process.js"
 
 /** @internal */
 export interface Source {
@@ -796,17 +796,14 @@ export const parseClasses = Effect.gen(function*(_) {
   )
 })
 
-const getModuleName = (
-  path: ReadonlyArray.NonEmptyReadonlyArray<string>
-): string => NodePath.parse(ReadonlyArray.lastNonEmpty(path)).name
-
 /**
  * @internal
  */
 export const parseModuleDocumentation = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const source = yield* _(Source)
-  const name = getModuleName(source.path)
+  const path = yield* _(Path.Path)
+  const name = path.parse(ReadonlyArray.lastNonEmpty(source.path)).name
   // if any of the settings enforcing documentation are set to `true`, then
   // a module should have associated documentation
   const isDocumentationRequired = config.enforceDescriptions || config.enforceVersion
@@ -888,19 +885,20 @@ export const parseModule = Effect.gen(function*(_) {
 export const parseFile = (project: ast.Project) =>
 (
   file: FileSystem.File
-): Effect.Effect<Config.Config, Array<string>, Domain.Module> => {
-  const path = file.path.split(
-    NodePath.sep
-  ) as any as ReadonlyArray.NonEmptyReadonlyArray<string>
-  const sourceFile = project.getSourceFile(file.path)
-  if (sourceFile !== undefined) {
-    return pipe(
-      parseModule,
-      Effect.provideService(Source, { path, sourceFile })
-    )
-  }
-  return Effect.fail([`Unable to locate file: ${file.path}`])
-}
+): Effect.Effect<Config.Config | Path.Path, Array<string>, Domain.Module> =>
+  Effect.flatMap(Path.Path, (_) => {
+    const path = file.path.split(
+      _.sep
+    ) as any as ReadonlyArray.NonEmptyReadonlyArray<string>
+    const sourceFile = project.getSourceFile(file.path)
+    if (sourceFile !== undefined) {
+      return pipe(
+        parseModule,
+        Effect.provideService(Source, { path, sourceFile })
+      )
+    }
+    return Effect.fail([`Unable to locate file: ${file.path}`])
+  })
 
 const createProject = (files: ReadonlyArray<FileSystem.File>) =>
   Effect.gen(function*(_) {

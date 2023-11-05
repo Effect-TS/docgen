@@ -1,9 +1,9 @@
 import * as Config from "@effect/docgen/Config"
 import * as FileSystem from "@effect/docgen/FileSystem"
 import * as Process from "@effect/docgen/Process"
-import * as assert from "assert"
+import { Path } from "@effect/platform-node"
 import { Effect, Either, hole, Layer } from "effect"
-import NodePath from "node:path"
+import { assert, describe, it } from "vitest"
 
 describe("Config", () => {
   const fakePackageJson = { name: "name", homepage: "homepage" }
@@ -31,6 +31,7 @@ describe("Config", () => {
     return program.pipe(
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
+      Effect.provide(Path.layer),
       Effect.provide(FileSystemTest),
       Effect.runPromise
     )
@@ -47,32 +48,34 @@ describe("Config", () => {
       })
     })
 
-    const FileSystemTest = Layer.succeed(
+    const FileSystemTest = Layer.effect(
       FileSystem.FileSystem,
-      FileSystem.FileSystem.of({
-        readFile: (path) => {
-          const fileName = NodePath.basename(path)
-          if (fileName === "package.json") {
-            return Effect.succeed(JSON.stringify(fakePackageJson))
-          } else if (fileName === "docgen.json") {
-            return Effect.succeed(JSON.stringify(docgen))
-          } else {
-            return Effect.fail(new Error(`file not found: ${path}`))
-          }
-        },
-        writeFile: hole,
-        removeFile: hole,
-        exists: (path) => {
-          return Effect.succeed(NodePath.basename(path) === "docgen.json")
-        },
-        glob: hole
-      })
+      Effect.map(Path.Path, (_) =>
+        FileSystem.FileSystem.of({
+          readFile: (path) => {
+            const fileName = _.basename(path)
+            if (fileName === "package.json") {
+              return Effect.succeed(JSON.stringify(fakePackageJson))
+            } else if (fileName === "docgen.json") {
+              return Effect.succeed(JSON.stringify(docgen))
+            } else {
+              return Effect.fail(new Error(`file not found: ${path}`))
+            }
+          },
+          writeFile: hole,
+          removeFile: hole,
+          exists: (path) => {
+            return Effect.succeed(_.basename(path) === "docgen.json")
+          },
+          glob: hole
+        }))
     )
 
     return program.pipe(
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
-      Effect.provide(FileSystemTest),
+      Effect.provide(Path.layer),
+      Effect.provide(FileSystemTest.pipe(Layer.use(Path.layer))),
       Effect.runPromise
     )
   })
@@ -80,32 +83,34 @@ describe("Config", () => {
   it(`should raise a validation error if docgen.json is not valid`, () => {
     const docgen = { projectHomepage: 1 }
 
-    const FileSystemTest = Layer.succeed(
+    const FileSystemTest = Layer.effect(
       FileSystem.FileSystem,
-      FileSystem.FileSystem.of({
-        readFile: (path) => {
-          const fileName = NodePath.basename(path)
-          if (fileName === "package.json") {
-            return Effect.succeed(JSON.stringify(fakePackageJson))
-          } else if (fileName === "docgen.json") {
-            return Effect.succeed(JSON.stringify(docgen))
-          } else {
-            return Effect.fail(new Error(`file not found: ${path}`))
-          }
-        },
-        writeFile: hole,
-        removeFile: hole,
-        exists: (path) => {
-          return Effect.succeed(NodePath.basename(path) === "docgen.json")
-        },
-        glob: hole
-      })
+      Effect.map(Path.Path, (_) =>
+        FileSystem.FileSystem.of({
+          readFile: (path) => {
+            const fileName = _.basename(path)
+            if (fileName === "package.json") {
+              return Effect.succeed(JSON.stringify(fakePackageJson))
+            } else if (fileName === "docgen.json") {
+              return Effect.succeed(JSON.stringify(docgen))
+            } else {
+              return Effect.fail(new Error(`file not found: ${path}`))
+            }
+          },
+          writeFile: hole,
+          removeFile: hole,
+          exists: (path) => {
+            return Effect.succeed(_.basename(path) === "docgen.json")
+          },
+          glob: hole
+        }))
     )
 
     return Effect.unit.pipe(
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
-      Effect.provide(FileSystemTest),
+      Effect.provide(Path.layer),
+      Effect.provide(FileSystemTest.pipe(Layer.use(Path.layer))),
       Effect.either,
       Effect.runPromise
     ).then((result) => {

@@ -2,23 +2,17 @@
  * @since 1.0.0
  */
 
+import { Path } from "@effect/platform-node"
 import chalk from "chalk"
 import { Console, Effect, Layer, Logger, LogLevel, ReadonlyArray, String } from "effect"
-import * as NodePath from "path"
-import * as ChildProcess from "./CommandExecutor"
-import * as Config from "./Config"
-import type * as Domain from "./Domain"
-import * as FileSystem from "./FileSystem"
-import { SimpleLogger } from "./Logger"
-import { printModule } from "./Markdown"
-import * as Parser from "./Parser"
-import * as Process from "./Process"
-
-/**
- * Joins all given path segments together using the platform-specific separator as a delimiter,
- * then normalizes the resulting path.
- */
-const join = (...paths: Array<string>): string => NodePath.normalize(NodePath.join(...paths))
+import * as ChildProcess from "./CommandExecutor.js"
+import * as Config from "./Config.js"
+import type * as Domain from "./Domain.js"
+import * as FileSystem from "./FileSystem.js"
+import { SimpleLogger } from "./Logger.js"
+import { printModule } from "./Markdown.js"
+import * as Parser from "./Parser.js"
+import * as Process from "./Process.js"
 
 /**
  * Reads all TypeScript files in the source directory and returns an array of file objects.
@@ -27,7 +21,10 @@ const join = (...paths: Array<string>): string => NodePath.normalize(NodePath.jo
 const readSourceFiles = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const fs = yield* _(FileSystem.FileSystem)
-  const paths = yield* _(fs.glob(join(config.srcDir, "**", "*.ts"), config.exclude))
+  const path = yield* _(Path.Path)
+  const paths = yield* _(
+    fs.glob(path.normalize(path.join(config.srcDir, "**", "*.ts")), config.exclude)
+  )
   yield* _(Effect.logInfo(chalk.bold(`${paths.length} module(s) found`)))
   return yield* _(Effect.forEach(paths, (path) =>
     Effect.map(
@@ -43,9 +40,10 @@ const writeFileToOutDir = (file: FileSystem.File) =>
   Effect.gen(function*(_) {
     const config = yield* _(Config.Config)
     const fs = yield* _(FileSystem.FileSystem)
+    const path = yield* _(Path.Path)
     const process = yield* _(Process.Process)
     const cwd = yield* _(process.cwd)
-    const fileName = NodePath.relative(NodePath.join(cwd, config.outDir), file.path)
+    const fileName = path.relative(path.join(cwd, config.outDir), file.path)
 
     const exists = yield* _(fs.exists(file.path))
     if (exists) {
@@ -82,6 +80,7 @@ const parseModules = (files: ReadonlyArray<FileSystem.File>) =>
  */
 const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*(_) {
+    yield* _(cleanupExamples)
     const files = yield* _(getExampleFiles(modules))
     const examples = yield* _(handleImports(files))
     const len = examples.length
@@ -89,7 +88,8 @@ const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
       yield* _(Effect.logInfo(`${len} example(s) found`))
       yield* _(writeExamplesToOutDir(examples))
       yield* _(createExamplesTsConfigJson)
-      yield* _(runTsNodeOnExamples)
+      yield* _(runTscOnExamples)
+      yield* _(runTsxOnExamples)
     } else {
       yield* _(Effect.logInfo("No examples found."))
     }
@@ -102,6 +102,7 @@ const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
 const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*(_) {
     const config = yield* _(Config.Config)
+    const path = yield* _(Path.Path)
     return ReadonlyArray.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
@@ -111,7 +112,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
             doc.examples,
             (content, i) =>
               FileSystem.createFile(
-                join(
+                path.join(
                   config.outDir,
                   "examples",
                   `${prefix}-${exampleId}-${doc.name}-${i}.ts`
@@ -203,11 +204,11 @@ const handleImports = (files: ReadonlyArray<FileSystem.File>) =>
 const getExamplesEntryPoint = (examples: ReadonlyArray<FileSystem.File>) =>
   Effect.gen(function*(_) {
     const config = yield* _(Config.Config)
-    const content = examples.map((example) =>
-      `import './${NodePath.basename(example.path, ".ts")}'`
-    ).join("\n")
+    const path = yield* _(Path.Path)
+    const content = examples.map((example) => `import './${path.basename(example.path, ".ts")}'`)
+      .join("\n")
     return FileSystem.createFile(
-      join(config.outDir, "examples", "index.ts"),
+      path.normalize(path.join(config.outDir, "examples", "index.ts")),
       `${content}\n`,
       true // make the file overwritable
     )
@@ -219,22 +220,44 @@ const getExamplesEntryPoint = (examples: ReadonlyArray<FileSystem.File>) =>
 const cleanupExamples = Effect.gen(function*(_) {
   const fs = yield* _(FileSystem.FileSystem)
   const config = yield* _(Config.Config)
-  yield* _(fs.removeFile(join(config.outDir, "examples")))
+  const path = yield* _(Path.Path)
+  yield* _(fs.removeFile(path.join(config.outDir, "examples")))
 })
 
 /**
- * Runs ts-node on the examples directory.
+ * Runs tsc on the examples directory.
  */
-const runTsNodeOnExamples = Effect.gen(function*(_) {
+const runTscOnExamples = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const process = yield* _(Process.Process)
   const executor = yield* _(ChildProcess.CommandExecutor)
   const cwd = yield* _(process.cwd)
+  const path = yield* _(Path.Path)
   const platform = yield* _(process.platform)
-  const command = platform === "win32" ? "ts-node.cmd" : "ts-node"
-  const arg = join(cwd, config.outDir, "examples", "index.ts")
-  yield* _(Effect.logDebug("Running ts-node on examples..."))
-  yield* _(executor.spawn(command, arg))
+
+  const tsconfig = path.normalize(path.join(cwd, config.outDir, "examples", "tsconfig.json"))
+  const command = platform === "win32" ? "tsc.cmd" : "tsc"
+  yield* _(Effect.logDebug("Running tsc on examples..."))
+  yield* _(executor.spawn(command, "--noEmit", "--project", tsconfig))
+})
+
+/**
+ * Runs tsc on the examples directory.
+ */
+const runTsxOnExamples = Effect.gen(function*(_) {
+  const config = yield* _(Config.Config)
+  const path = yield* _(Path.Path)
+  const process = yield* _(Process.Process)
+  const executor = yield* _(ChildProcess.CommandExecutor)
+  const cwd = yield* _(process.cwd)
+  const platform = yield* _(process.platform)
+
+  const examples = path.normalize(path.join(cwd, config.outDir, "examples"))
+  const tsconfig = path.join(examples, "tsconfig.json")
+  const index = path.join(examples, "index.ts")
+  const command = platform === "win32" ? "tsx.cmd" : "tsx"
+  yield* _(Effect.logDebug("Running tsx on examples..."))
+  yield* _(executor.spawn(command, "--tsconfig", tsconfig, index))
 })
 
 const writeExamplesToOutDir = (examples: ReadonlyArray<FileSystem.File>) =>
@@ -250,9 +273,10 @@ const createExamplesTsConfigJson = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const process = yield* _(Process.Process)
   const cwd = yield* _(process.cwd)
+  const path = yield* _(Path.Path)
   yield* _(writeFileToOutDir(
     FileSystem.createFile(
-      join(cwd, config.outDir, "examples", "tsconfig.json"),
+      path.join(cwd, config.outDir, "examples", "tsconfig.json"),
       JSON.stringify({ compilerOptions: config.examplesCompilerOptions }, null, 2),
       true // make the file overwritable
     )
@@ -272,8 +296,9 @@ const getMarkdownHomepage = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const process = yield* _(Process.Process)
   const cwd = yield* _(process.cwd)
+  const path = yield* _(Path.Path)
   return FileSystem.createFile(
-    join(cwd, config.outDir, "index.md"),
+    path.join(cwd, config.outDir, "index.md"),
     String.stripMargin(
       `|---
        |title: Home
@@ -289,8 +314,9 @@ const getMarkdownIndex = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const process = yield* _(Process.Process)
   const cwd = yield* _(process.cwd)
+  const path = yield* _(Path.Path)
   return FileSystem.createFile(
-    join(cwd, config.outDir, "modules", "index.md"),
+    path.join(cwd, config.outDir, "modules", "index.md"),
     String.stripMargin(
       `|---
      |title: Modules
@@ -328,7 +354,8 @@ const getMarkdownConfigYML = Effect.gen(function*(_) {
   const process = yield* _(Process.Process)
   const fs = yield* _(FileSystem.FileSystem)
   const cwd = yield* _(process.cwd)
-  const configPath = join(cwd, config.outDir, "_config.yml")
+  const path = yield* _(Path.Path)
+  const configPath = path.join(cwd, config.outDir, "_config.yml")
   const exists = yield* _(fs.exists(configPath))
   if (exists) {
     const content = yield* _(fs.readFile(configPath))
@@ -354,26 +381,27 @@ const getMarkdownConfigYML = Effect.gen(function*(_) {
 })
 
 const getModuleMarkdownOutputPath = (module: Domain.Module) =>
-  Effect.map(Config.Config, (config) =>
-    join(
+  Effect.map(Effect.all([Config.Config, Path.Path]), ([config, path]) =>
+    path.normalize(path.join(
       config.outDir,
       "modules",
-      `${module.path.slice(1).join(NodePath.sep)}.md`
-    ))
+      `${module.path.slice(1).join(path.sep)}.md`
+    )))
 
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.forEach(modules, (module, order) =>
     Effect.gen(function*(_) {
       const outputPath = yield* _(getModuleMarkdownOutputPath(module))
-      const content = printModule(module, order + 1)
+      const content = yield* _(printModule(module, order + 1))
       return FileSystem.createFile(outputPath, content, true)
     }))
 
 const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
   Effect.gen(function*(_) {
     const config = yield* _(Config.Config)
+    const path = yield* _(Path.Path)
     const fileSystem = yield* _(FileSystem.FileSystem)
-    const pattern = join(config.outDir, "**/*.ts.md")
+    const pattern = path.normalize(path.join(config.outDir, "**/*.ts.md"))
     yield* _(Effect.logDebug(`Deleting ${chalk.black(pattern)}...`))
     const paths = yield* _(fileSystem.glob(pattern))
     yield* _(
@@ -400,6 +428,7 @@ const MainLayer = Layer.mergeAll(
   Logger.replace(Logger.defaultLogger, SimpleLogger),
   ChildProcess.CommandExecutorLive,
   FileSystem.FileSystemLive,
+  Path.layer,
   Process.ProcessLive
 ).pipe(
   Layer.provideMerge(Config.ConfigLive)

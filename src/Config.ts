@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
+import { Path } from "@effect/platform-node"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import chalk from "chalk"
 import { Context, Effect, Layer, Option } from "effect"
-import * as NodePath from "node:path"
 import * as tsconfck from "tsconfck"
-import * as FileSystem from "./FileSystem"
-import * as Process from "./Process"
+import * as FileSystem from "./FileSystem.js"
+import * as Process from "./Process.js"
 
 const PACKAGE_JSON_FILE_NAME = "package.json"
 const CONFIG_FILE_NAME = "docgen.json"
@@ -109,6 +109,18 @@ const validateJsonFile = <I, A>(
     )
   })
 
+const defaultCompilerOptions = {
+  noEmit: true,
+  strict: true,
+  skipLibCheck: true,
+  moduleResolution: "Bundler",
+  target: "ES2022",
+  lib: [
+    "ES2022",
+    "DOM"
+  ]
+}
+
 /** @internal */
 export const getDefaultConfig = (name: string, homepage: string): Config => ({
   projectName: name,
@@ -121,8 +133,8 @@ export const getDefaultConfig = (name: string, homepage: string): Config => ({
   enforceExamples: false,
   enforceVersion: true,
   exclude: [],
-  parseCompilerOptions: {},
-  examplesCompilerOptions: {}
+  parseCompilerOptions: defaultCompilerOptions,
+  examplesCompilerOptions: defaultCompilerOptions
 })
 
 const loadConfig = (
@@ -153,14 +165,15 @@ export const ConfigLive = Layer.effect(
     // Extract the requisite services
     const process = yield* _(Process.Process)
     const cwd = yield* _(process.cwd)
+    const path = yield* _(Path.Path)
 
     // Read and parse the package.json
-    const packageJsonPath = NodePath.join(cwd, PACKAGE_JSON_FILE_NAME)
+    const packageJsonPath = path.join(cwd, PACKAGE_JSON_FILE_NAME)
     const packageJson = yield* _(validateJsonFile(PackageJsonSchema, packageJsonPath))
 
     // Read and resolve the configuration
     const defaultConfig = getDefaultConfig(packageJson.name, packageJson.homepage)
-    const configPath = NodePath.join(cwd, CONFIG_FILE_NAME)
+    const configPath = path.join(cwd, CONFIG_FILE_NAME)
     const maybeConfig = yield* _(loadConfig(configPath))
 
     if (Option.isNone(maybeConfig)) {
@@ -195,24 +208,25 @@ function resolveCompilerOptions(
   cwd: string,
   options?: string | Record<string, unknown>
 ): Effect.Effect<
-  never,
+  Path.Path,
   Error,
   {
     readonly [x: string]: unknown
   }
 > {
   if (options === undefined) {
-    return Effect.succeed({})
+    return Effect.succeed(defaultCompilerOptions)
   }
   if (typeof options === "object") {
     return Effect.succeed(options)
   }
 
-  return Effect.tryPromise({
-    try: () =>
-      tsconfck.parse(NodePath.resolve(cwd, options)).then(({ tsconfig }) =>
-        tsconfig.compilerOptions ?? {}
-      ),
-    catch: (error) => new Error(`[Config] Failed to resolve ${options}: ${String(error)}`)
-  })
+  return Effect.flatMap(Path.Path, (_) =>
+    Effect.tryPromise({
+      try: () =>
+        tsconfck.parse(_.resolve(cwd, options)).then(({ tsconfig }) =>
+          tsconfig.compilerOptions ?? defaultCompilerOptions
+        ),
+      catch: (error) => new Error(`[Config] Failed to resolve ${options}: ${String(error)}`)
+    }))
 }

@@ -1,21 +1,17 @@
+import { ConfigSchema } from "@effect/docgen/Config"
+import * as FileSystem from "@effect/docgen/FileSystem"
 import { JSONSchema } from "@effect/schema"
 import { Effect } from "effect"
-import * as path from "node:path"
-import { ConfigSchema } from "../src/Config"
-import * as FileSystem from "../src/FileSystem"
-
-const configJsonSchema = JSONSchema.to(ConfigSchema)
-
-const pathTo = path.join("dist", "schema.json")
 
 const program = Effect.gen(function*(_) {
-  console.log(`Writing Config schema to ${pathTo}...`)
   const fs = yield* _(FileSystem.FileSystem)
+  yield* _(Effect.log("Writing config schema"))
+  yield* _(fs.writeFile("schema.json", JSON.stringify(JSONSchema.to(ConfigSchema), null, 2)))
+  yield* _(Effect.log("Wrote schema to ./schema.json"))
+})
 
-  yield* _(fs.writeFile(pathTo, JSON.stringify(configJsonSchema, null, 2)))
-  console.log("Completed.")
-}).pipe(
+const runnable = program.pipe(
   Effect.provide(FileSystem.FileSystemLive)
 )
 
-Effect.runPromise(program).catch(console.error)
+Effect.runPromise(runnable.pipe(Effect.tapErrorCause((_) => Effect.logError(_))))

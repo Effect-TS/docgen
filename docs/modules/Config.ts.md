@@ -28,7 +28,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ConfigLive: Layer.Layer<Process.Process | FileSystem.FileSystem, Error, Config>
+export declare const ConfigLive: Layer.Layer<Process.Process | Path.Path | FileSystem.FileSystem, Error, Config>
 ```
 
 Added in v1.0.0

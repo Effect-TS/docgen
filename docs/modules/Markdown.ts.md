@@ -24,18 +24,18 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const printModule: (module: Domain.Module, order: number) => string
+export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<never, never, string>
 ```
 
 **Example**
 
 ```ts
-import * as Markdown from '@effect/docgen/Markdown'
-import * as Domain from '@effect/docgen/Domain'
-import { Option } from 'effect'
+import * as Markdown from "@effect/docgen/Markdown"
+import * as Domain from "@effect/docgen/Domain"
+import { Option } from "effect"
 
-const doc = Domain.createNamedDoc('tests', Option.none(), Option.some('1.0.0'), false, [], Option.none())
-const m = Domain.createModule(doc, ['src', 'tests.ts'], [], [], [], [], [], [], [])
+const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
+const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 console.log(Markdown.printModule(m, 0))
 ```
 

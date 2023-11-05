@@ -42,29 +42,38 @@ The `docgen.json` configuration file allows you to customize `docgen`'s behavior
 ```json
 {
   "exclude": ["src/internal/**/*.ts"],
-  "theme": "mikearnaldi/just-the-docs",
   "parseCompilerOptions": {
-    "strict": true,
     "noEmit": true,
-    "target": "ES2021",
-    "lib": ["ES2021"],
+    "strict": true,
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "paths": {
-      "@effect/<project-name>": ["./src/index.ts"],
-      "@effect/<project-name>/test/*": ["./test/*"],
-      "@effect/<project-name>/examples/*": ["./examples/*"],
-      "@effect/<project-name>/*": ["./src/*"]
+      "@effect/<project-name>": ["./src/index.js"],
+      "@effect/<project-name>/test/*": ["./test/*.js"],
+      "@effect/<project-name>/examples/*": ["./examples/*.js"],
+      "@effect/<project-name>/*": ["./src/*.js"]
     }
   },
   "examplesCompilerOptions": {
-    "strict": true,
     "noEmit": true,
-    "target": "ES2021",
-    "lib": ["ES2021"],
+    "strict": true,
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "paths": {
-      "@effect/<project-name>": ["../../src/index.ts"],
-      "@effect/<project-name>/test/*": ["../../test/*"],
-      "@effect/<project-name>/examples/*": ["../../examples/*"],
-      "@effect/<project-name>/*": ["../../src/*"]
+      "@effect/<project-name>": ["../../src/index.js"],
+      "@effect/<project-name>/test/*": ["../../test/*.js"],
+      "@effect/<project-name>/examples/*": ["../../examples/*.js"],
+      "@effect/<project-name>/*": ["../../src/*.js"]
     }
   }
 }
