@@ -56,7 +56,7 @@ export declare const createClass: (
   signature: string,
   methods: ReadonlyArray<Method>,
   staticMethods: ReadonlyArray<Method>,
-  properties: ReadonlyArray<Property>,
+  properties: ReadonlyArray<Property>
 ) => Class
 ```
 
@@ -82,7 +82,7 @@ export declare const createDoc: (
   since: Option.Option<string>,
   deprecated: boolean,
   examples: ReadonlyArray<Example>,
-  category: Option.Option<string>,
+  category: Option.Option<string>
 ) => Doc
 ```
 
@@ -142,7 +142,7 @@ export declare const createModule: (
   typeAliases: ReadonlyArray<TypeAlias>,
   constants: ReadonlyArray<Constant>,
   exports: ReadonlyArray<Export>,
-  namespaces: ReadonlyArray<Namespace>,
+  namespaces: ReadonlyArray<Namespace>
 ) => Module
 ```
 
@@ -159,7 +159,7 @@ export declare const createNamedDoc: (
   since: Option.Option<string>,
   deprecated: boolean,
   examples: ReadonlyArray<Example>,
-  category: Option.Option<string>,
+  category: Option.Option<string>
 ) => NamedDoc
 ```
 
@@ -174,7 +174,7 @@ export declare const createNamespace: (
   doc: NamedDoc,
   interfaces: ReadonlyArray<Interface>,
   typeAliases: ReadonlyArray<TypeAlias>,
-  namespaces: ReadonlyArray<Namespace>,
+  namespaces: ReadonlyArray<Namespace>
 ) => Namespace
 ```
 

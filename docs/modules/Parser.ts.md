@@ -63,7 +63,7 @@ Added in v1.0.0
 
 ```ts
 export declare const parseFiles: (
-  files: ReadonlyArray<FileSystem.File>,
+  files: ReadonlyArray<FileSystem.File>
 ) => Effect.Effect<Process.Process | Config.Config | Path.Path, string[][], Domain.Module[]>
 ```
 

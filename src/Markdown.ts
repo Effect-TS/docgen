@@ -335,7 +335,8 @@ const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",
   semi: false,
   singleQuote: false,
-  printWidth: 120
+  printWidth: 120,
+  trailingComma: "none"
 }
 
 /** @internal */
