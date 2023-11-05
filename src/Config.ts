@@ -111,6 +111,7 @@ const validateJsonFile = <I, A>(
 
 const defaultCompilerOptions = {
   noEmit: true,
+  strict: true,
   skipLibCheck: true,
   moduleResolution: "Bundler",
   target: "ES2022",
