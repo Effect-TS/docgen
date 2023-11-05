@@ -73,7 +73,7 @@ The `docgen.json` configuration file allows you to customize `docgen`'s behavior
       "@effect/<project-name>": ["../../src/index.js"],
       "@effect/<project-name>/test/*": ["../../test/*.js"],
       "@effect/<project-name>/examples/*": ["../../examples/*.js"],
-      "@effect/<project-name>/*": ["../../src/*"]
+      "@effect/<project-name>/*": ["../../src/*.js"]
     }
   }
 }
