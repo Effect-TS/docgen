@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.0
+
+### Minor Changes
+
+- e08edb1: Modernized and switched to a `tsc` and `tsx` based setup with support for `NodeNext` module resolution.
+
 ## 0.2.1
 
 ### Patch Changes
