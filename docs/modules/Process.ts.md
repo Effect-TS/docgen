@@ -54,6 +54,7 @@ Represents a handle to the currently executing process.
 export interface Process {
   readonly cwd: Effect.Effect<never, never, string>
   readonly platform: Effect.Effect<never, never, string>
+  readonly argv: Effect.Effect<never, never, Array<string>>
 }
 ```
 
