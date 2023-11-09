@@ -410,13 +410,19 @@ const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
     return yield* _(writeFilesToOutDir(files))
   })
 
+const NO_EXAMPLES_OPTION = "--no-examples"
+
 const program = Effect.gen(function*(_) {
   yield* _(Effect.logInfo("Reading modules..."))
   const sourceFiles = yield* _(readSourceFiles)
   yield* _(Effect.logInfo("Parsing modules..."))
   const modules = yield* _(parseModules(sourceFiles))
-  yield* _(Effect.logInfo("Typechecking examples..."))
-  yield* _(typeCheckAndRunExamples(modules))
+  const process = yield* _(Process.Process)
+  const argv = yield* _(process.argv)
+  if (!argv.slice(2).some((arg) => arg === NO_EXAMPLES_OPTION)) {
+    yield* _(Effect.logInfo("Typechecking examples..."))
+    yield* _(typeCheckAndRunExamples(modules))
+  }
   yield* _(Effect.logInfo("Creating markdown files..."))
   const outputFiles = yield* _(getMarkdown(modules))
   yield* _(Effect.logInfo("Writing markdown files..."))

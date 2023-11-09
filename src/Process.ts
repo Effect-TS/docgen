@@ -13,6 +13,7 @@ import { Context, Effect, Layer } from "effect"
 export interface Process {
   readonly cwd: Effect.Effect<never, never, string>
   readonly platform: Effect.Effect<never, never, string>
+  readonly argv: Effect.Effect<never, never, Array<string>>
 }
 
 /**
@@ -29,6 +30,7 @@ export const ProcessLive = Layer.succeed(
   Process,
   Process.of({
     cwd: Effect.sync(() => process.cwd()),
-    platform: Effect.sync(() => process.platform)
+    platform: Effect.sync(() => process.platform),
+    argv: Effect.sync(() => process.argv)
   })
 )
