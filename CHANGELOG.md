@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.1
+
+### Patch Changes
+
+- b799243: add `--no-examples` option
+
 ## 0.3.0
 
 ### Minor Changes
