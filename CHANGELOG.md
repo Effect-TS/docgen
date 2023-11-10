@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.2
+
+### Patch Changes
+
+- 16fc976: Updated dependencies
+
 ## 0.3.1
 
 ### Patch Changes
