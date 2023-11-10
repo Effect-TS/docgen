@@ -42,8 +42,8 @@
     "docgen": "tsx src/bin.ts"
   },
   "dependencies": {
-    "@effect/platform-node": "^0.28.2",
-    "@effect/schema": "^0.47.2",
+    "@effect/platform-node": "^0.29.0",
+    "@effect/schema": "^0.47.3",
     "chalk": "^5.3.0",
     "doctrine": "^3.0.0",
     "effect": "2.0.0-next.54",
@@ -59,19 +59,18 @@
     "@effect/eslint-plugin": "^0.1.2",
     "@effect/language-service": "^0.0.21",
     "@effect/platform-node": "^0.28.2",
-    "@effect/schema": "^0.47.2",
-    "@types/doctrine": "0.0.8",
+    "@types/doctrine": "0.0.9",
     "@types/glob": "^8.1.0",
-    "@types/node": "^20.8.10",
-    "@typescript-eslint/eslint-plugin": "^6.9.1",
-    "@typescript-eslint/parser": "^6.9.1",
+    "@types/node": "^20.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
     "@vitest/coverage-v8": "^0.34.6",
     "chalk": "^5.3.0",
     "doctrine": "^3.0.0",
     "effect": "2.0.0-next.54",
-    "eslint": "^8.52.0",
+    "eslint": "^8.53.0",
     "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-codegen": "^0.17.0",
+    "eslint-plugin-codegen": "^0.18.1",
     "eslint-plugin-deprecation": "^2.0.0",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-simple-import-sort": "^10.0.0",
@@ -81,13 +80,13 @@
     "prettier": "^3.0.3",
     "rimraf": "^5.0.5",
     "ts-morph": "^20.0.0",
-    "tsx": "^3.14.0",
+    "tsx": "^4.1.0",
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
     "vitest": "^0.34.6"
   },
   "peerDependencies": {
-    "tsx": "^3.14.0",
+    "tsx": "^4.1.0",
     "typescript": "^5.2.2"
   }
 }
