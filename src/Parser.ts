@@ -9,7 +9,7 @@ import { flow, pipe } from "effect/Function"
 import * as ast from "ts-morph"
 import * as Config from "./Config.js"
 import * as Domain from "./Domain.js"
-import type * as FileSystem from "./FileSystem.js"
+import * as FileSystem from "./FileSystem.js"
 import * as Process from "./Process.js"
 
 /** @internal */
@@ -879,6 +879,48 @@ export const parseModule = Effect.gen(function*(_) {
   )
 })
 
+export const parseFileAndImpl = (project: ast.Project) =>
+(
+  file: FileSystem.File
+): Effect.Effect<Config.Config | Path.Path, Array<string>, Domain.Module> => {
+  const parse = parseFile(project)
+  const impl = file.path.replace("src/", "src/impl/")
+  const implInterface = impl.replace(/\.ts$/, ".interface.ts")
+  return parse(file).pipe(
+    Effect.flatMap((module) =>
+      parse(FileSystem.createFile(impl, "", false)).pipe(
+        Effect.catchAll((err) =>
+          Effect.sync(() => console.log(err)).pipe(Effect.zipRight(Effect.succeed(module)))
+        ),
+        Effect.flatMap((mod2) =>
+          parse(FileSystem.createFile(implInterface, "", false)).pipe(
+            Effect.catchAll((err) =>
+              Effect.sync(() => console.log(err)).pipe(Effect.zipRight(Effect.succeed(null)))
+            ),
+            Effect.map((mod3) =>
+              Domain.createModule(
+                module,
+                module.path,
+                module.classes.concat(mod2.classes),
+                module.interfaces.concat(mod2.interfaces).concat(mod3?.interfaces ?? []),
+                module.functions.concat(mod2.functions),
+                module.typeAliases.concat(mod2.typeAliases),
+                module.constants.concat(mod2.constants),
+                mod2.exports,
+                module.namespaces.filter((_) =>
+                  _.interfaces.length + _.namespaces.length + _.typeAliases.length
+                ).concat(
+                  mod2.namespaces
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+}
+
 /**
  * @internal
  */
@@ -937,7 +979,7 @@ export const parseFiles = (files: ReadonlyArray<FileSystem.File>) =>
     Effect.flatMap((project) =>
       pipe(
         files,
-        Effect.validateAll(parseFile(project)),
+        Effect.validateAll(parseFileAndImpl(project)),
         Effect.map(
           flow(
             ReadonlyArray.filter((module) => !module.deprecated),
