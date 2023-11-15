@@ -1,5 +1,12 @@
 # @effect/docgen
 
+## 0.3.3
+
+### Patch Changes
+
+- 3ee6dd1: Improve error output when spawning child process fails
+- 73a1d93: build with tsup
+
 ## 0.3.2
 
 ### Patch Changes
