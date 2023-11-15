@@ -115,7 +115,7 @@ describe("Config", () => {
       Effect.runPromise
     ).then((result) => {
       assert.deepStrictEqual(
-        result.pipe(Either.reverse, Either.map((error) => error.message), Either.getOrThrow),
+        result.pipe(Either.flip, Either.map((error) => error.message), Either.getOrThrow),
         `[Config] Invalid config:
 error(s) found
 └─ ["projectHomepage"]
