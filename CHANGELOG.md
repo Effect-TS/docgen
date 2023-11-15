@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.4
+
+### Patch Changes
+
+- 4e72aee: Re-added schema.json
+
 ## 0.3.3
 
 ### Patch Changes
