@@ -11,9 +11,6 @@
   "engines": {
     "node": ">=16.17.1"
   },
-  "bin": {
-    "docgen": "./dist/bin.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/effect-ts/docgen.git"
@@ -24,11 +21,6 @@
     "url": "https://github.com/effect-ts/docgen/issues"
   },
   "homepage": "https://github.com/effect-ts/docgen",
-  "files": [
-    "dist",
-    "src",
-    "schema.json"
-  ],
   "scripts": {
     "prepare": "pnpm clean && pnpm build",
     "update-version": "changeset version && pnpm install --no-frozen-lockfile",
