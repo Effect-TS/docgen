@@ -21,7 +21,7 @@ import * as Process from "./Process.js"
 const readSourceFiles = Effect.gen(function*(_) {
   const config = yield* _(Config.Config)
   const fs = yield* _(FileSystem.FileSystem)
-  const path = yield* _(Path.Path)
+  const path = yield* _(Path.Path, Effect.provide(Path.layerPosix))
   const paths = yield* _(
     fs.glob(path.normalize(path.join(config.srcDir, "**", "*.ts")), config.exclude)
   )
@@ -399,7 +399,7 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
 const writeMarkdown = (files: ReadonlyArray<FileSystem.File>) =>
   Effect.gen(function*(_) {
     const config = yield* _(Config.Config)
-    const path = yield* _(Path.Path)
+    const path = yield* _(Path.Path, Effect.provide(Path.layerPosix))
     const fileSystem = yield* _(FileSystem.FileSystem)
     const pattern = path.normalize(path.join(config.outDir, "**/*.ts.md"))
     yield* _(Effect.logDebug(`Deleting ${chalk.black(pattern)}...`))
