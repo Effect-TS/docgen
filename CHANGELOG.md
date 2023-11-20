@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.5
+
+### Patch Changes
+
+- bcaf971: fix glob pattern on windows
+
 ## 0.3.4
 
 ### Patch Changes
