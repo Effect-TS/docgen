@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.6
+
+### Patch Changes
+
+- d58b355: chore: add defaults to `schema.json`
+
 ## 0.3.5
 
 ### Patch Changes
