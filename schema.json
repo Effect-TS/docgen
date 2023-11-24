@@ -6,22 +6,26 @@
     "enableSearch": {
       "type": "boolean",
       "description": "Whether or search should be enabled for GitHub Docs in the generated _config.yml file.",
-      "title": "boolean"
+      "title": "boolean",
+      "default": true
     },
     "enforceDescriptions": {
       "type": "boolean",
       "description": "Whether or not descriptions for each module export should be required.",
-      "title": "boolean"
+      "title": "boolean",
+      "default": false
     },
     "enforceExamples": {
       "type": "boolean",
       "description": "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)",
-      "title": "boolean"
+      "title": "boolean",
+      "default": false
     },
     "enforceVersion": {
       "type": "boolean",
       "description": "Whether or not @since tags for each module export should be required.",
-      "title": "boolean"
+      "title": "boolean",
+      "default": true
     },
     "$schema": {
       "type": "string",
@@ -36,17 +40,20 @@
     "srcDir": {
       "type": "string",
       "description": "The directory in which docgen will search for TypeScript files to parse.",
-      "title": "string"
+      "title": "string",
+      "default": "src"
     },
     "outDir": {
       "type": "string",
       "description": "The directory to which docgen will generate its output markdown documents.",
-      "title": "string"
+      "title": "string",
+      "default": "docs"
     },
     "theme": {
       "type": "string",
       "description": "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
-      "title": "string"
+      "title": "string",
+      "default": "mikearnaldi/just-the-docs"
     },
     "exclude": {
       "type": "array",
@@ -55,7 +62,8 @@
         "description": "a string",
         "title": "string"
       },
-      "description": "An array of glob strings specifying files that should be excluded from the documentation."
+      "description": "An array of glob strings specifying files that should be excluded from the documentation.",
+      "default": []
     },
     "parseCompilerOptions": {
       "anyOf": [
@@ -73,7 +81,8 @@
           "title": "string"
         }
       ],
-      "description": "tsconfig for parsing options (or path to a tsconfig)"
+      "description": "tsconfig for parsing options (or path to a tsconfig)",
+      "default": {}
     },
     "examplesCompilerOptions": {
       "anyOf": [
@@ -91,7 +100,8 @@
           "title": "string"
         }
       ],
-      "description": "tsconfig for the examples options (or path to a tsconfig)"
+      "description": "tsconfig for the examples options (or path to a tsconfig)",
+      "default": {}
     }
   },
   "additionalProperties": false

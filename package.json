@@ -30,7 +30,7 @@
     "check": "tsc -b tsconfig.json",
     "test": "vitest",
     "clean": "rimraf dist coverage .tsbuildinfo",
-    "build": "tsup && tsx scripts/copy-package-json.ts",
+    "build": "pnpm schema && tsup && tsx scripts/copy-package-json.ts",
     "schema": "tsx scripts/gen-schema.ts",
     "docgen": "tsx src/bin.ts"
   },
