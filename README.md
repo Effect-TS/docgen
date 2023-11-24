@@ -27,12 +27,12 @@ pnpm add @effect/docgen -D
 ```json
 {
   "scripts": {
-    "docs": "docgen"
+    "docgen": "docgen"
   }
 }
 ```
 
-> **Warning**
+> [!WARNING]
 > To use "@effect/docgen", Node.js v18 or above is required.
 
 ## Example Configuration
@@ -48,10 +48,7 @@ The `docgen.json` configuration file allows you to customize `docgen`'s behavior
     "skipLibCheck": true,
     "moduleResolution": "Bundler",
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM"
-    ],
+    "lib": ["ES2022", "DOM"],
     "paths": {
       "@effect/<project-name>": ["./src/index.js"],
       "@effect/<project-name>/test/*": ["./test/*.js"],
@@ -65,10 +62,7 @@ The `docgen.json` configuration file allows you to customize `docgen`'s behavior
     "skipLibCheck": true,
     "moduleResolution": "Bundler",
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM"
-    ],
+    "lib": ["ES2022", "DOM"],
     "paths": {
       "@effect/<project-name>": ["../../src/index.js"],
       "@effect/<project-name>/test/*": ["../../test/*.js"],

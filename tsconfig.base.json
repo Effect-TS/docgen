@@ -10,13 +10,10 @@
     "declaration": true,
     "skipLibCheck": true,
     "exactOptionalPropertyTypes": true,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "moduleResolution": "NodeNext",
-    "lib": [
-      "ES2022",
-      "DOM"
-    ],
+    "lib": ["ES2022", "DOM"],
     "isolatedModules": true,
     "sourceMap": true,
     "declarationMap": true,
@@ -40,16 +37,10 @@
     "incremental": true,
     "removeComments": false,
     "paths": {
-      "@effect/docgen": [
-        "./src/index.js"
-      ],
-      "@effect/docgen/*": [
-        "./src/*.js"
-      ]
+      "@effect/docgen": ["./src/index.js"],
+      "@effect/docgen/*": ["./src/*.js"]
     },
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "plugins": [
       {
         "name": "@effect/language-service"

@@ -24,43 +24,53 @@ export const ConfigSchema = Schema.struct({
       "Will link to the project homepage from the Auxiliary Links of the generated documentation."
   }),
   srcDir: Schema.optional(Schema.string, {
-    description: "The directory in which docgen will search for TypeScript files to parse."
+    description: "The directory in which docgen will search for TypeScript files to parse.",
+    default: "src"
   }),
   outDir: Schema.optional(Schema.string, {
-    description: "The directory to which docgen will generate its output markdown documents."
+    description: "The directory to which docgen will generate its output markdown documents.",
+    default: "docs"
   }),
   theme: Schema.optional(Schema.string, {
     description:
-      "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file."
+      "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
+    default: "mikearnaldi/just-the-docs"
   }),
   enableSearch: Schema.optional(Schema.boolean, {
     description:
-      "Whether or search should be enabled for GitHub Docs in the generated _config.yml file."
+      "Whether or search should be enabled for GitHub Docs in the generated _config.yml file.",
+    default: true
   }),
   enforceDescriptions: Schema.optional(Schema.boolean, {
-    description: "Whether or not descriptions for each module export should be required."
+    description: "Whether or not descriptions for each module export should be required.",
+    default: false
   }),
   enforceExamples: Schema.optional(Schema.boolean, {
     description:
-      "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)"
+      "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)",
+    default: false
   }),
   enforceVersion: Schema.optional(Schema.boolean, {
-    description: "Whether or not @since tags for each module export should be required."
+    description: "Whether or not @since tags for each module export should be required.",
+    default: true
   }),
   exclude: Schema.optional(Schema.array(Schema.string), {
     description:
-      "An array of glob strings specifying files that should be excluded from the documentation."
+      "An array of glob strings specifying files that should be excluded from the documentation.",
+    default: []
   }),
   parseCompilerOptions: Schema.optional(
     Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
     {
-      description: "tsconfig for parsing options (or path to a tsconfig)"
+      description: "tsconfig for parsing options (or path to a tsconfig)",
+      default: {}
     }
   ),
   examplesCompilerOptions: Schema.optional(
     Schema.union(Schema.string, Schema.record(Schema.string, Schema.unknown)),
     {
-      description: "tsconfig for the examples options (or path to a tsconfig)"
+      description: "tsconfig for the examples options (or path to a tsconfig)",
+      default: {}
     }
   )
 })
