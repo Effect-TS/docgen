@@ -57,6 +57,7 @@ export interface Config {
   readonly outDir: string
   readonly theme: string
   readonly enableSearch: boolean
+  readonly enableAI: boolean
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean

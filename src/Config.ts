@@ -86,6 +86,7 @@ export interface Config {
   readonly outDir: string
   readonly theme: string
   readonly enableSearch: boolean
+  readonly enableAI: boolean
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
@@ -138,6 +139,7 @@ export const getDefaultConfig = (name: string, homepage: string): Config => ({
   srcDir: "src",
   outDir: "docs",
   theme: "mikearnaldi/just-the-docs",
+  enableAI: true,
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,
