@@ -75,7 +75,7 @@ describe("Config", () => {
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
       Effect.provide(Path.layer),
-      Effect.provide(FileSystemTest.pipe(Layer.use(Path.layer))),
+      Effect.provide(FileSystemTest.pipe(Layer.provide(Path.layer))),
       Effect.runPromise
     )
   })
@@ -110,7 +110,7 @@ describe("Config", () => {
       Effect.provide(Config.ConfigLive),
       Effect.provide(Process.ProcessLive),
       Effect.provide(Path.layer),
-      Effect.provide(FileSystemTest.pipe(Layer.use(Path.layer))),
+      Effect.provide(FileSystemTest.pipe(Layer.provide(Path.layer))),
       Effect.either,
       Effect.runPromise
     ).then((result) => {

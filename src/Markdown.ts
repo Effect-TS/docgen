@@ -243,7 +243,7 @@ export const print = (p: Printable): string => {
 }
 
 const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
-  ReadonlyArray.flatten<Printable>([
+  ReadonlyArray.flatten([
     module.classes,
     module.constants,
     module.exports,

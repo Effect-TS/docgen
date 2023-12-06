@@ -35,11 +35,11 @@
     "docgen": "tsx src/bin.ts"
   },
   "dependencies": {
-    "@effect/platform-node": "^0.31.0",
-    "@effect/schema": "^0.48.0",
+    "@effect/platform-node": "^0.34.0",
+    "@effect/schema": "^0.52.0",
     "chalk": "^5.3.0",
     "doctrine": "^3.0.0",
-    "effect": "2.0.0-next.55",
+    "effect": "2.0.0-next.59",
     "glob": "^10.3.10",
     "markdown-toc": "github:effect-ts/markdown-toc",
     "prettier": "^3.1.0",

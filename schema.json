@@ -72,6 +72,7 @@
           "required": [],
           "properties": {},
           "additionalProperties": {
+            "$id": "/schemas/unknown",
             "title": "unknown"
           }
         },
@@ -91,6 +92,7 @@
           "required": [],
           "properties": {},
           "additionalProperties": {
+            "$id": "/schemas/unknown",
             "title": "unknown"
           }
         },
