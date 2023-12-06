@@ -430,15 +430,13 @@ const program = Effect.gen(function*(_) {
   yield* _(Effect.logInfo(chalk.bold.green("Docs generation succeeded!")))
 }).pipe(Logger.withMinimumLogLevel(LogLevel.Info))
 
-const MainLayer = Layer.mergeAll(
+const MainLayer = Config.ConfigLive.pipe(Layer.provideMerge(Layer.mergeAll(
   Logger.replace(Logger.defaultLogger, SimpleLogger),
   ChildProcess.CommandExecutorLive,
   FileSystem.FileSystemLive,
   Path.layer,
   Process.ProcessLive
-).pipe(
-  Layer.provideMerge(Config.ConfigLive)
-)
+)))
 
 const runnable = program.pipe(Effect.provide(MainLayer))
 

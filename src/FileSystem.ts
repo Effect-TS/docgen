@@ -139,7 +139,7 @@ export const FileSystemLive = Layer.effect(
       glob
     })
   })
-).pipe(Layer.use(PlatformFileSystem.layer), Layer.use(Path.layer))
+).pipe(Layer.provide(PlatformFileSystem.layer), Layer.provide(Path.layer))
 
 /**
  * Represents a file which can be optionally overwriteable.

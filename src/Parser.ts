@@ -159,7 +159,7 @@ const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
     const config = yield* _(Config.Config)
     const source = yield* _(Source)
     const examples = ReadonlyRecord.get(comment.tags, "example").pipe(
-      Option.map(ReadonlyArray.compact),
+      Option.map(ReadonlyArray.getSomes),
       Option.getOrElse(() => [])
     )
     if (ReadonlyArray.isEmptyArray(examples) && config.enforceExamples && !isModule) {
@@ -752,12 +752,12 @@ const parseClass = (c: ast.ClassDeclaration) =>
     const methods = yield* _(pipe(
       c.getInstanceMethods(),
       Effect.validateAll(parseMethod),
-      Effect.map(ReadonlyArray.compact)
+      Effect.map(ReadonlyArray.getSomes)
     ))
     const staticMethods = yield* _(pipe(
       c.getStaticMethods(),
       Effect.validateAll(parseMethod),
-      Effect.map(ReadonlyArray.compact)
+      Effect.map(ReadonlyArray.getSomes)
     ))
     const properties = yield* _(parseProperties(name, c))
     return Domain.createClass(

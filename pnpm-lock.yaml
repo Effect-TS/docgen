@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@effect/platform-node':
-    specifier: ^0.31.0
-    version: 0.31.0(@effect/schema@0.48.0)(effect@2.0.0-next.55)
+    specifier: ^0.34.0
+    version: 0.34.0(@effect/schema@0.52.0)(effect@2.0.0-next.59)
   '@effect/schema':
-    specifier: ^0.48.0
-    version: 0.48.0(effect@2.0.0-next.55)(fast-check@3.13.2)
+    specifier: ^0.52.0
+    version: 0.52.0(effect@2.0.0-next.59)(fast-check@3.13.2)
   chalk:
     specifier: ^5.3.0
     version: 5.3.0
@@ -18,8 +18,8 @@ dependencies:
     specifier: ^3.0.0
     version: 3.0.0
   effect:
-    specifier: 2.0.0-next.55
-    version: 2.0.0-next.55
+    specifier: 2.0.0-next.59
+    version: 2.0.0-next.59
   glob:
     specifier: ^10.3.10
     version: 10.3.10
@@ -576,39 +576,39 @@ packages:
     resolution: {integrity: sha512-e8vfKbjnbYiyneBincEFS0tzXluopGK77OkVFbPRtUbNDS5tJfb+jiwOQEiqASDsadcZmd+9J9+Q6v/z7GuN2g==}
     dev: true
 
-  /@effect/platform-node@0.31.0(@effect/schema@0.48.0)(effect@2.0.0-next.55):
-    resolution: {integrity: sha512-N+oUeIXtI/DCuhaXd9/UVJrvQbUtkc2g+YoeGmEIZovr4EgJX+6NFPV8auALqtNtXoucPjBZqALns8H7DMmnbw==}
+  /@effect/platform-node@0.34.0(@effect/schema@0.52.0)(effect@2.0.0-next.59):
+    resolution: {integrity: sha512-T5GNvJcl3vshkBs/Jg8EbEpce/GA6eVBXWPEyOpusIHNaOfGzLvfAKuElR35K7Rv473UmNiX+yH4rM9+VsyNNA==}
     peerDependencies:
-      effect: 2.0.0-next.55
+      effect: 2.0.0-next.59
     dependencies:
-      '@effect/platform': 0.30.0(@effect/schema@0.48.0)(effect@2.0.0-next.55)
-      effect: 2.0.0-next.55
+      '@effect/platform': 0.33.0(@effect/schema@0.52.0)(effect@2.0.0-next.59)
+      effect: 2.0.0-next.59
       mime: 3.0.0
-      multipasta: 0.1.15
+      multipasta: 0.1.19
     transitivePeerDependencies:
       - '@effect/schema'
     dev: false
 
-  /@effect/platform@0.30.0(@effect/schema@0.48.0)(effect@2.0.0-next.55):
-    resolution: {integrity: sha512-/MKZk7eI9guL6QD3XbcXG+EKWe2lPKJVoalVgt9wE3aznfWG+F5Zx0UBuw8gFhSx/IZKE4Mo7I2BLFt842m8dA==}
+  /@effect/platform@0.33.0(@effect/schema@0.52.0)(effect@2.0.0-next.59):
+    resolution: {integrity: sha512-WJv91JDpoglNn/iEFq8i/Uye+1W+w44coQikG0PfRyiYg47Jr303xHe6c6KtUijK1DdImXHfA8w6lb0+TN88wg==}
     peerDependencies:
-      '@effect/schema': ^0.48.0
-      effect: 2.0.0-next.55
+      '@effect/schema': ^0.52.0
+      effect: 2.0.0-next.59
     dependencies:
-      '@effect/schema': 0.48.0(effect@2.0.0-next.55)(fast-check@3.13.2)
-      effect: 2.0.0-next.55
+      '@effect/schema': 0.52.0(effect@2.0.0-next.59)(fast-check@3.13.2)
+      effect: 2.0.0-next.59
       find-my-way: 7.7.0
-      multipasta: 0.1.15
+      multipasta: 0.1.19
       path-browserify: 1.0.1
     dev: false
 
-  /@effect/schema@0.48.0(effect@2.0.0-next.55)(fast-check@3.13.2):
-    resolution: {integrity: sha512-IpAik8hX4kAuOdfNBfxfE8mYVfiikheSxFyWRkVQUutD1E86hDXG90EUYu2/zL2pHkgoS6c2cnY7uoKYwKSP2w==}
+  /@effect/schema@0.52.0(effect@2.0.0-next.59)(fast-check@3.13.2):
+    resolution: {integrity: sha512-x6SmSdoL6PeZVAaK895NoRkKF8D/w+XyO8i17cUsQYFJBHNyUTi9Y1H2wrO8TkxhTmC93ejburpM+35/OKCi2Q==}
     peerDependencies:
-      effect: 2.0.0-next.55
+      effect: 2.0.0-next.59
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.0.0-next.55
+      effect: 2.0.0-next.59
       fast-check: 3.13.2
     dev: false
 
@@ -1982,8 +1982,8 @@ packages:
   /eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  /effect@2.0.0-next.55:
-    resolution: {integrity: sha512-kNOB/HaDSdaFSDVXK2gyf4XcTKbKKlllyoS871uDyoJskcc+024sSOHnNioXZPgkqaz55a3mad4DFfLUIETwYQ==}
+  /effect@2.0.0-next.59:
+    resolution: {integrity: sha512-EE87vFl0/zIN5lKDtFccU3YCnbPqjxg9rY72obNN65/GE4JOJsXciyX8XC4pIDr3lE6KeJ0le8IXf+A7d92ntQ==}
     dev: false
 
   /electron-to-chromium@1.4.580:
@@ -3741,8 +3741,8 @@ packages:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
     dev: true
 
-  /multipasta@0.1.15:
-    resolution: {integrity: sha512-mxwpIFmpBRFJfoOU2DJdBd/rL3rf5RWsd7OamXqaukWudWkIYcsOfVABLuVG1Tf9qhsVWMIPwSa6Mgj5j1Hgwg==}
+  /multipasta@0.1.19:
+    resolution: {integrity: sha512-vRQ17a7eQRImx/vS4PcJlDDuzzCT5nigItgDFNT/db9NiVEiscdkUWbUg3cHrv2x0oznNu5YNO+NBo5Z2rBL+w==}
     dev: false
 
   /mz@2.7.0:
