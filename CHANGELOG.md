@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.7
+
+### Patch Changes
+
+- 2573662: update effect
+
 ## 0.3.6
 
 ### Patch Changes
