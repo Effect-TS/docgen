@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.3.8
+
+### Patch Changes
+
+- 8abf24f: Core: do not swallow examples errors
+
 ## 0.3.7
 
 ### Patch Changes

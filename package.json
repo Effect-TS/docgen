@@ -1,6 +1,6 @@
 {
   "name": "@effect/docgen",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "type": "module",
   "packageManager": "pnpm@8.10.0",
   "publishConfig": {
