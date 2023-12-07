@@ -4,7 +4,7 @@
 
 import { Path } from "@effect/platform-node"
 import chalk from "chalk"
-import { Console, Effect, Layer, Logger, LogLevel, ReadonlyArray, String } from "effect"
+import { Effect, Layer, Logger, LogLevel, ReadonlyArray, String } from "effect"
 import * as ChildProcess from "./CommandExecutor.js"
 import * as Config from "./Config.js"
 import type * as Domain from "./Domain.js"
@@ -438,12 +438,8 @@ const MainLayer = Config.ConfigLive.pipe(Layer.provideMerge(Layer.mergeAll(
   Process.ProcessLive
 )))
 
-const runnable = program.pipe(Effect.provide(MainLayer))
-
 /**
  * @category main
  * @since 1.0.0
  */
-export const main: Effect.Effect<never, never, void> = runnable.pipe(
-  Effect.catchAll((error) => Console.error(chalk.bold.red("Error:"), error.message))
-)
+export const main: Effect.Effect<never, Error, void> = program.pipe(Effect.provide(MainLayer))
