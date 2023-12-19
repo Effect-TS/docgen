@@ -1,10 +1,10 @@
 ---
-title: FileSystem.ts
-nav_order: 6
+title: File.ts
+nav_order: 5
 parent: Modules
 ---
 
-## FileSystem overview
+## File overview
 
 Added in v1.0.0
 

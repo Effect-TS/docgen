@@ -1,10 +1,10 @@
 ---
-title: Config.ts
-nav_order: 3
+title: Configuration.ts
+nav_order: 2
 parent: Modules
 ---
 
-## Config overview
+## Configuration overview
 
 Added in v1.0.0
 
@@ -12,45 +12,31 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [layer](#layer)
-  - [ConfigLive](#configlive)
 - [service](#service)
-  - [Config](#config)
-  - [Config (interface)](#config-interface)
-  - [ConfigSchema](#configschema)
+  - [Configuration](#configuration)
+  - [Configuration (interface)](#configuration-interface)
+  - [ConfigurationSchema](#configurationschema)
 
 ---
 
-# layer
-
-## ConfigLive
-
-**Signature**
-
-```ts
-export declare const ConfigLive: Layer.Layer<Process.Process | Path.Path | FileSystem.FileSystem, Error, Config>
-```
-
-Added in v1.0.0
-
 # service
 
-## Config
+## Configuration
 
 **Signature**
 
 ```ts
-export declare const Config: Context.Tag<Config, Config>
+export declare const Configuration: Context.Tag<Configuration, Configuration>
 ```
 
 Added in v1.0.0
 
-## Config (interface)
+## Configuration (interface)
 
 **Signature**
 
 ```ts
-export interface Config {
+export interface Configuration {
   readonly projectName: string
   readonly projectHomepage: string
   readonly srcDir: string
@@ -60,6 +46,7 @@ export interface Config {
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
+  readonly runExamples: boolean
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
@@ -68,12 +55,12 @@ export interface Config {
 
 Added in v1.0.0
 
-## ConfigSchema
+## ConfigurationSchema
 
 **Signature**
 
 ```ts
-export declare const ConfigSchema: Schema.Schema<
+export declare const ConfigurationSchema: Schema.Schema<
   {
     readonly $schema?: string
     readonly projectHomepage?: string

@@ -13,11 +13,14 @@ import * as Runtime from "@effect/platform-node/Runtime"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as Config from "effect/Config"
-import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Layer from "effect/Layer"
+import * as Logger from "effect/Logger"
+import * as LogLevel from "effect/LogLevel"
 import * as Configuration from "./Configuration.js"
+import * as Core from "./Core.js"
+import { SimpleLogger } from "./Logger.js"
 import * as Process from "./Process.js"
 
 const projectHomepage = Options.text("homepage").pipe(
@@ -90,6 +93,15 @@ const enforceVersion = Options.boolean("no-enforce-version", {
   )
 )
 
+const runExamples = Options.boolean("no-run-examples", {
+  ifPresent: false,
+  negationNames: ["run-examples"]
+}).pipe(
+  Options.withDescription(
+    "Whether or not to execute examples discovered in the TypeScript source files"
+  )
+)
+
 const exclude = Options.text("exclude").pipe(
   Options.repeated,
   Options.withFallbackConfig(Config.array(Config.string("exclude")).pipe(Config.withDefault([]))),
@@ -150,18 +162,14 @@ const options = {
   enforceDescriptions,
   enforceExamples,
   enforceVersion,
+  runExamples,
   exclude,
   parseCompilerOptions,
   examplesCompilerOptions
 }
 
 const cli = Command.make("docgen", options).pipe(
-  Command.withHandler((_) =>
-    Effect.gen(function*(_) {
-      const configuration = yield* _(Configuration.Configuration)
-      yield* _(Console.log(configuration))
-    })
-  ),
+  Command.withHandler(() => Core.program),
   Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
   Command.run({
     name: "docgen",
@@ -171,6 +179,8 @@ const cli = Command.make("docgen", options).pipe(
 
 const MainLive = Configuration.configProviderLayer.pipe(
   Layer.provideMerge(Layer.mergeAll(
+    Logger.replace(Logger.defaultLogger, SimpleLogger),
+    Logger.minimumLogLevel(LogLevel.Info),
     Process.ProcessLive,
     NodeContext.layer
   ))

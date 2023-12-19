@@ -1,4 +1,4 @@
-import * as Config from "@effect/docgen/Config"
+import * as Configuration from "@effect/docgen/Configuration"
 import * as FileSystem from "@effect/docgen/FileSystem"
 import * as Process from "@effect/docgen/Process"
 import { Path } from "@effect/platform-node"
@@ -10,7 +10,7 @@ describe("Config", () => {
 
   it(`should return the default config if docgen.json doesn't exists`, () => {
     const program = Effect.gen(function*(_) {
-      const config = yield* _(Config.Config)
+      const config = yield* _(Configuration.Configuration)
       assert.deepStrictEqual(
         config,
         Config.getDefaultConfig(fakePackageJson.name, fakePackageJson.homepage)
@@ -29,7 +29,7 @@ describe("Config", () => {
     )
 
     return program.pipe(
-      Effect.provide(Config.ConfigLive),
+      Effect.provide(Configuration.configProviderLayer),
       Effect.provide(Process.ProcessLive),
       Effect.provide(Path.layer),
       Effect.provide(FileSystemTest),

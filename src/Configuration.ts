@@ -93,6 +93,7 @@ export interface Configuration {
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
+  readonly runExamples: boolean
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
@@ -226,6 +227,7 @@ export const load = (args: {
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
+  readonly runExamples: boolean
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Option.Option<string | Record<string, unknown>>
   readonly examplesCompilerOptions: Option.Option<string | Record<string, unknown>>

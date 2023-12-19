@@ -1,6 +1,6 @@
 ---
 title: Parser.ts
-nav_order: 9
+nav_order: 8
 parent: Modules
 ---
 
@@ -32,7 +32,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseClasses: Effect.Effect<Config.Config | Source, string[], Domain.Class[]>
+export declare const parseClasses: Effect.Effect<Configuration.Configuration | Source, string[], Domain.Class[]>
 ```
 
 Added in v1.0.0
@@ -42,7 +42,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseConstants: Effect.Effect<Config.Config | Source, string[], Domain.Constant[]>
+export declare const parseConstants: Effect.Effect<Configuration.Configuration | Source, string[], Domain.Constant[]>
 ```
 
 Added in v1.0.0
@@ -52,7 +52,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseExports: Effect.Effect<Config.Config | Source, string[], Domain.Export[]>
+export declare const parseExports: Effect.Effect<Configuration.Configuration | Source, string[], Domain.Export[]>
 ```
 
 Added in v1.0.0
@@ -63,8 +63,8 @@ Added in v1.0.0
 
 ```ts
 export declare const parseFiles: (
-  files: ReadonlyArray<FileSystem.File>
-) => Effect.Effect<Process.Process | Config.Config | Path.Path, string[][], Domain.Module[]>
+  files: ReadonlyArray<File.File>
+) => Effect.Effect<Process.Process | Configuration.Configuration | Path.Path, string[][], Domain.Module[]>
 ```
 
 Added in v1.0.0
@@ -74,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseFunctions: Effect.Effect<Config.Config | Source, string[], Domain.Function[]>
+export declare const parseFunctions: Effect.Effect<Configuration.Configuration | Source, string[], Domain.Function[]>
 ```
 
 Added in v1.0.0
@@ -84,7 +84,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseInterfaces: Effect.Effect<Config.Config | Source, string[], Domain.Interface[]>
+export declare const parseInterfaces: Effect.Effect<Configuration.Configuration | Source, string[], Domain.Interface[]>
 ```
 
 Added in v1.0.0
@@ -94,7 +94,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseModule: Effect.Effect<Config.Config | Path.Path | Source, string[], Domain.Module>
+export declare const parseModule: Effect.Effect<
+  Configuration.Configuration | Path.Path | Source,
+  string[],
+  Domain.Module
+>
 ```
 
 Added in v1.0.0
@@ -104,7 +108,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseNamespaces: Effect.Effect<Config.Config | Source, string[], Domain.Namespace[]>
+export declare const parseNamespaces: Effect.Effect<Configuration.Configuration | Source, string[], Domain.Namespace[]>
 ```
 
 Added in v1.0.0
@@ -114,7 +118,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseTypeAliases: Effect.Effect<Config.Config | Source, string[], Domain.TypeAlias[]>
+export declare const parseTypeAliases: Effect.Effect<Configuration.Configuration | Source, string[], Domain.TypeAlias[]>
 ```
 
 Added in v1.0.0
