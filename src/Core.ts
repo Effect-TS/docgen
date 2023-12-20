@@ -7,27 +7,17 @@ import * as CommandExecutor from "@effect/platform-node/CommandExecutor"
 import * as FileSystem from "@effect/platform-node/FileSystem"
 import * as Path from "@effect/platform-node/Path"
 import chalk from "chalk"
-import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as String from "effect/String"
 import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
 import type * as Domain from "./Domain.js"
+import { DocgenError } from "./Error.js"
 import * as File from "./File.js"
 import { printModule } from "./Markdown.js"
 import * as Parser from "./Parser.js"
 import * as Process from "./Process.js"
-
-/**
- * Represents an error that occurred while parsing TypeScript source files.
- *
- * @category model
- * @since 1.0.0
- */
-export class ParseError extends Data.TaggedError("ParseError")<{
-  readonly message: string
-}> {}
 
 /**
  * Find all files matching the specified `glob` pattern, optionally excluding
@@ -41,7 +31,10 @@ const glob = (pattern: string, exclude: ReadonlyArray<string> = []) =>
     })
   ).pipe(
     Effect.orDieWith(() =>
-      `Unable to execute glob pattern '${pattern}' excluding files matching '${exclude}'`
+      new DocgenError({
+        message: `[Core.glob] Unable to execute glob pattern '${pattern}' ` +
+          `excluding files matching '${exclude}'`
+      })
     )
   )
 
@@ -100,10 +93,11 @@ const writeFilesToOutDir = (
 const parseModules = (files: ReadonlyArray<File.File>) =>
   Parser.parseFiles(files).pipe(
     Effect.mapError((errors) =>
-      new ParseError({
-        message: `The following error(s) occurred while parsing the TypeScript source files:\n${
-          errors.map((errors) => errors.join("\n")).join("\n")
-        }`
+      new DocgenError({
+        message: "[Core.parseModules] The following error(s) occurred while " +
+          `parsing the TypeScript source files:\n${
+            errors.map((errors) => errors.join("\n")).join("\n")
+          }`
       })
     )
   )

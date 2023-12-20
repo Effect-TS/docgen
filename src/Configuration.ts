@@ -181,7 +181,11 @@ const readTSConfig = (fileName: string): Effect.Effect<
     return yield* _(
       Effect.promise(() => tsconfck.parse(path.resolve(cwd, fileName))).pipe(
         Effect.map(({ tsconfig }) => tsconfig.compilerOptions ?? defaultCompilerOptions),
-        Effect.orDieWith((error) => `[Config] Failed to read TSConfig file: ${String(error)}`)
+        Effect.orDieWith((error) =>
+          new DocgenError({
+            message: `[Configuration.readTSConfig] Failed to read TSConfig file\n${String(error)}`
+          })
+        )
       )
     )
   })
