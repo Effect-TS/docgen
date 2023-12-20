@@ -49,7 +49,7 @@ export const ConfigurationSchema = Schema.struct({
   }),
   enableSearch: Schema.optional(Schema.boolean, {
     description:
-      "Whether or search should be enabled for GitHub Docs in the generated _config.yml file.",
+      "Whether or not search should be enabled for GitHub Docs in the generated _config.yml file.",
     default: true
   }),
   enforceDescriptions: Schema.optional(Schema.boolean, {
