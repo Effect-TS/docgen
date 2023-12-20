@@ -13,6 +13,7 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import * as tsconfck from "tsconfck"
+import { DocgenError } from "./Error.js"
 import * as Process from "./Process.js"
 
 const PACKAGE_JSON_FILE_NAME = "package.json"
@@ -105,7 +106,8 @@ export interface Configuration {
  */
 export const Configuration = Context.Tag<Configuration>()
 
-const defaultCompilerOptions = {
+/** @internal */
+export const defaultCompilerOptions = {
   noEmit: true,
   strict: true,
   skipLibCheck: true,
@@ -142,7 +144,9 @@ const validateJsonFile = <I, A>(
     return yield* _(
       Schema.parse(schema)(content),
       Effect.orDieWith(({ errors }) =>
-        `[Config] Invalid config:\n${TreeFormatter.formatErrors(errors)}`
+        new DocgenError({
+          message: `[Configuration.validateJsonFile]\n${TreeFormatter.formatErrors(errors)}`
+        })
       )
     )
   })

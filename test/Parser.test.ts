@@ -1,6 +1,6 @@
-import * as Config from "@effect/docgen/Config"
+import * as Configuration from "@effect/docgen/Configuration"
 import * as Domain from "@effect/docgen/Domain"
-import * as FileSystem from "@effect/docgen/FileSystem"
+import * as File from "@effect/docgen/File"
 import * as Parser from "@effect/docgen/Parser"
 import { Path } from "@effect/platform-node"
 import chalk from "chalk"
@@ -15,7 +15,7 @@ const project = new ast.Project({
   useInMemoryFileSystem: true
 })
 
-const defaultConfig: Config.Config = {
+const defaultConfig: Configuration.Configuration = {
   projectName: "docgen",
   projectHomepage: "https://github.com/effect-ts/docgen",
   srcDir: "src",
@@ -25,6 +25,7 @@ const defaultConfig: Config.Config = {
   enforceDescriptions: false,
   enforceExamples: false,
   enforceVersion: true,
+  runExamples: true,
   exclude: [],
   parseCompilerOptions: {},
   examplesCompilerOptions: {}
@@ -37,14 +38,14 @@ const getParser = (sourceText: string): Parser.Source => ({
 
 const expectFailure = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Config.Config | Path.Path, E, A>,
+  eff: Effect.Effect<Parser.Source | Configuration.Configuration | Path.Path, E, A>,
   failure: E,
-  config?: Partial<Config.Config>
+  config?: Partial<Configuration.Configuration>
 ) => {
   expect(
     eff.pipe(
       Effect.provideService(Parser.Source, getParser(sourceText)),
-      Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
+      Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
       Effect.provide(Path.layer),
       Effect.runSyncExit
     )
@@ -53,15 +54,15 @@ const expectFailure = <E, A>(
 
 const expectSuccess = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Config.Config | Path.Path, E, A>,
+  eff: Effect.Effect<Parser.Source | Configuration.Configuration | Path.Path, E, A>,
   a: A,
-  config?: Partial<Config.Config>
+  config?: Partial<Configuration.Configuration>
 ) => {
   expect(
     eff
       .pipe(
         Effect.provideService(Parser.Source, getParser(sourceText)),
-        Effect.provideService(Config.Config, { ...defaultConfig, ...config }),
+        Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
         Effect.provide(Path.layer),
         Effect.runSyncExit
       )
@@ -1239,7 +1240,7 @@ describe("Parser", () => {
             path: ["test"],
             sourceFile
           }),
-          Effect.provideService(Config.Config, defaultConfig),
+          Effect.provideService(Configuration.Configuration, defaultConfig),
           Effect.runSyncExit
         )
         expect(actual).toEqual(
@@ -1276,7 +1277,7 @@ describe("Parser", () => {
             path: ["test"],
             sourceFile
           }),
-          Effect.provideService(Config.Config, defaultConfig),
+          Effect.provideService(Configuration.Configuration, defaultConfig),
           Effect.runSyncExit
         )
 
@@ -1314,7 +1315,7 @@ describe("Parser", () => {
             path: ["test"],
             sourceFile
           }),
-          Effect.provideService(Config.Config, defaultConfig),
+          Effect.provideService(Configuration.Configuration, defaultConfig),
           Effect.runSyncExit
         )
 
@@ -1400,12 +1401,12 @@ export const foo = 'foo'`,
 
     describe("parseFile", () => {
       it("should not parse a non-existent file", async () => {
-        const file = FileSystem.createFile("non-existent.ts", "")
+        const file = File.createFile("non-existent.ts", "")
         const project = new ast.Project({ useInMemoryFileSystem: true })
 
         assert.deepStrictEqual(
           Parser.parseFile(project)(file).pipe(
-            Effect.provideService(Config.Config, defaultConfig),
+            Effect.provideService(Configuration.Configuration, defaultConfig),
             Effect.provide(Path.layer),
             Effect.runSyncExit
           ),

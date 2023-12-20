@@ -28,7 +28,7 @@ export const Process = Context.Tag<Process>()
  * @category layer
  * @since 1.0.0
  */
-export const ProcessLive = Layer.succeed(
+export const layer = Layer.succeed(
   Process,
   Process.of({
     cwd: Effect.sync(() => process.cwd()),
