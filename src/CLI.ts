@@ -12,6 +12,7 @@ import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as Config from "effect/Config"
 import * as Either from "effect/Either"
+import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Configuration from "./Configuration.js"
 import * as Core from "./Core.js"
 import * as InternalVersion from "./internal/version.js"
@@ -101,7 +102,11 @@ const runExamples = Options.boolean("no-run-examples", {
 
 const exclude = Options.text("exclude").pipe(
   Options.repeated,
-  Options.withFallbackConfig(Config.array(Config.string("exclude")).pipe(Config.withDefault([]))),
+  Options.withFallbackConfig(
+    Config.array(Config.string("exclude")).pipe(
+      Config.withDefault(ReadonlyArray.empty<string>())
+    )
+  ),
   Options.withDescription(
     "An array of glob patterns specifying files that should be excluded from " +
       "the generated documentation"

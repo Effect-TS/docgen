@@ -10,8 +10,10 @@ import * as Config from "effect/Config"
 import * as ConfigProvider from "effect/ConfigProvider"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
+import { identity } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as tsconfck from "tsconfck"
 import { DocgenError } from "./Error.js"
 import * as Process from "./Process.js"
@@ -257,6 +259,18 @@ export const load = (args: {
     const configPath = path.join(cwd, CONFIG_FILE_NAME)
     const config = yield* _(readDocgenConfig(configPath))
 
+    // Resolve the excluded files
+    const exclude = ReadonlyArray.match(args.exclude, {
+      onEmpty: () =>
+        Option.match(config, {
+          onNone: () => ReadonlyArray.empty<string>(),
+          onSome: ({ exclude }) => exclude || ReadonlyArray.empty<string>()
+        }),
+      onNonEmpty: identity
+    })
+
+    console.log(exclude)
+
     // Resolve the TypeScript configuration options
     const examplesCompilerOptions = yield* _(
       resolveCompilerOptions(
@@ -277,6 +291,7 @@ export const load = (args: {
       ...args,
       projectName,
       projectHomepage,
+      exclude,
       examplesCompilerOptions,
       parseCompilerOptions
     })
