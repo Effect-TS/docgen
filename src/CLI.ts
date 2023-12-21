@@ -14,6 +14,7 @@ import * as Config from "effect/Config"
 import * as Either from "effect/Either"
 import * as Configuration from "./Configuration.js"
 import * as Core from "./Core.js"
+import * as InternalVersion from "./internal/version.js"
 
 const projectHomepage = Options.text("homepage").pipe(
   Options.withFallbackConfig(Config.string("projectHomepage")),
@@ -173,6 +174,6 @@ export const cli = docgenCommand.pipe(
   Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
   Command.run({
     name: "docgen",
-    version: "v1.0.0"
+    version: `v${InternalVersion.moduleVersion}`
   })
 )
