@@ -1,6 +1,6 @@
 {
   "$schema": "./schema.json",
-  "exclude": ["bin.ts"],
+  "exclude": ["src/internal/**/*.ts", "src/bin.ts"],
   "parseCompilerOptions": {
     "noEmit": true,
     "strict": true,

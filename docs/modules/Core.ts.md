@@ -1,6 +1,6 @@
 ---
 title: Core.ts
-nav_order: 4
+nav_order: 3
 parent: Modules
 ---
 
@@ -12,19 +12,4 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [main](#main)
-  - [main](#main-1)
-
 ---
-
-# main
-
-## main
-
-**Signature**
-
-```ts
-export declare const main: Effect.Effect<never, Error, void>
-```
-
-Added in v1.0.0

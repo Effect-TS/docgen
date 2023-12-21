@@ -1,7 +1,8 @@
 import * as Domain from "@effect/docgen/Domain"
-import * as _ from "@effect/docgen/Markdown"
-import { Effect, Option } from "effect"
+import * as Markdown from "@effect/docgen/Markdown"
+import * as Effect from "effect/Effect"
 import { flow } from "effect/Function"
+import * as Option from "effect/Option"
 import { assert, describe, it } from "vitest"
 
 const testCases = {
@@ -165,7 +166,7 @@ const testCases = {
 
 describe("Markdown", () => {
   it("printNamespace", async () => {
-    const print = flow(_.printNamespace, _.prettify)
+    const print = flow(Markdown.printNamespace, Markdown.prettify)
     assert.strictEqual(
       await Effect.runPromise(print(testCases.namespace, 0)),
       `## A (namespace)
@@ -200,7 +201,7 @@ Added in v1.0.3
   })
 
   it("printClass", async () => {
-    const print = flow(_.printClass, _.prettify)
+    const print = flow(Markdown.printClass, Markdown.prettify)
     assert.strictEqual(
       await Effect.runPromise(print(testCases.class)),
       `## A (class)
@@ -257,7 +258,7 @@ Added in v1.0.0
   })
 
   it("printConstant", async () => {
-    const print = flow(_.printConstant, _.prettify)
+    const print = flow(Markdown.printConstant, Markdown.prettify)
     assert.strictEqual(
       await Effect.runPromise(print(testCases.constant)),
       `## test
@@ -276,7 +277,7 @@ Added in v1.0.0
   })
 
   it("printExport", async () => {
-    const print = flow(_.printExport, _.prettify)
+    const print = flow(Markdown.printExport, Markdown.prettify)
     assert.strictEqual(
       await Effect.runPromise(print(testCases.export)),
       `## test
@@ -293,7 +294,7 @@ Added in v1.0.0
   })
 
   it("printFunction", async () => {
-    const print = flow(_.printFunction, _.prettify)
+    const print = flow(Markdown.printFunction, Markdown.prettify)
     assert.strictEqual(
       await Effect.runPromise(print(testCases.function)),
       `## ~~func~~
@@ -318,7 +319,7 @@ Added in v1.0.0
   })
 
   it("printInterface", async () => {
-    const print = flow(_.printInterface, _.prettify)
+    const print = flow(Markdown.printInterface, Markdown.prettify)
     assert.strictEqual(
       await Effect.runPromise(print(testCases.interface, 0)),
       `## A (interface)
@@ -335,7 +336,7 @@ Added in v1.0.0
   })
 
   it("printTypeAlias", async () => {
-    const print = flow(_.printTypeAlias, _.prettify)
+    const print = flow(Markdown.printTypeAlias, Markdown.prettify)
     assert.strictEqual(
       await Effect.runPromise(print(testCases.typeAlias, 0)),
       `## A (type alias)
@@ -373,7 +374,7 @@ export type A = number
       Option.none()
     )
     assert.strictEqual(
-      await Effect.runPromise(_.printModule(
+      await Effect.runPromise(Markdown.printModule(
         Domain.createModule(
           doc,
           ["src", "tests.ts"],
@@ -569,7 +570,7 @@ Added in v1.0.0
     const empty = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 
     assert.strictEqual(
-      await Effect.runPromise(_.printModule(empty, 1)),
+      await Effect.runPromise(Markdown.printModule(empty, 1)),
       `---
 title: tests.ts
 nav_order: 1

@@ -13,7 +13,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [layer](#layer)
-  - [ProcessLive](#processlive)
+  - [layer](#layer-1)
 - [service](#service)
   - [Process](#process)
   - [Process (interface)](#process-interface)
@@ -22,12 +22,12 @@ Added in v1.0.0
 
 # layer
 
-## ProcessLive
+## layer
 
 **Signature**
 
 ```ts
-export declare const ProcessLive: Layer.Layer<never, never, Process>
+export declare const layer: Layer.Layer<never, never, Process>
 ```
 
 Added in v1.0.0

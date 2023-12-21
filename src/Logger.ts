@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 import chalk from "chalk"
-import { Logger } from "effect"
+import * as Logger from "effect/Logger"
 
 /**
  * @category logging

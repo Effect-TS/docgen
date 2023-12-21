@@ -1,10 +1,10 @@
 ---
-title: bin.ts
+title: CLI.ts
 nav_order: 1
 parent: Modules
 ---
 
-## bin overview
+## CLI overview
 
 Added in v1.0.0
 

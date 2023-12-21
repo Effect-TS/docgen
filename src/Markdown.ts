@@ -1,8 +1,13 @@
 /**
  * @since 1.0.0
  */
-import { Effect, identity, Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
-import { pipe } from "effect/Function"
+import * as Effect from "effect/Effect"
+import { identity, pipe } from "effect/Function"
+import * as Option from "effect/Option"
+import * as Order from "effect/Order"
+import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as ReadonlyRecord from "effect/ReadonlyRecord"
+import * as String from "effect/String"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain.js"
 

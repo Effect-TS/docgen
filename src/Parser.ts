@@ -4,12 +4,18 @@
 import { Path } from "@effect/platform-node"
 import chalk from "chalk"
 import * as doctrine from "doctrine"
-import { Context, Effect, Option, Order, ReadonlyArray, ReadonlyRecord, String } from "effect"
+import * as Context from "effect/Context"
+import * as Effect from "effect/Effect"
 import { flow, pipe } from "effect/Function"
+import * as Option from "effect/Option"
+import * as Order from "effect/Order"
+import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as ReadonlyRecord from "effect/ReadonlyRecord"
+import * as String from "effect/String"
 import * as ast from "ts-morph"
-import * as Config from "./Config.js"
+import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
-import type * as FileSystem from "./FileSystem.js"
+import type * as File from "./File.js"
 import * as Process from "./Process.js"
 
 /** @internal */
@@ -107,7 +113,7 @@ const getMissingTagError = (
 
 const getSinceTag = (name: string, comment: Comment) =>
   Effect.gen(function*(_) {
-    const config = yield* _(Config.Config)
+    const config = yield* _(Configuration.Configuration)
     const source = yield* _(Source)
     const since = ReadonlyRecord.get(comment.tags, "since").pipe(
       Option.flatMap(ReadonlyArray.headNonEmpty),
@@ -140,7 +146,7 @@ const getCategoryTag = (name: string, comment: Comment) =>
 
 const getDescription = (name: string, comment: Comment) =>
   Effect.gen(function*(_) {
-    const config = yield* _(Config.Config)
+    const config = yield* _(Configuration.Configuration)
     const source = yield* _(Source)
     if (Option.isNone(comment.description) && config.enforceDescriptions) {
       return yield* _(
@@ -156,7 +162,7 @@ const getDescription = (name: string, comment: Comment) =>
 
 const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
   Effect.gen(function*(_) {
-    const config = yield* _(Config.Config)
+    const config = yield* _(Configuration.Configuration)
     const source = yield* _(Source)
     const examples = ReadonlyRecord.get(comment.tags, "example").pipe(
       Option.map(ReadonlyArray.getSomes),
@@ -474,7 +480,7 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
 
 const parseExportStar = (
   ed: ast.ExportDeclaration
-): Effect.Effect<Source | Config.Config, string, Domain.Export> =>
+): Effect.Effect<Source | Configuration.Configuration, string, Domain.Export> =>
   Effect.gen(function*(_) {
     const source = yield* _(Source)
     const es = ed.getModuleSpecifier()!
@@ -539,7 +545,7 @@ export const parseExports = pipe(
 
 const parseModuleDeclaration = (
   ed: ast.ModuleDeclaration
-): Effect.Effect<Source | Config.Config, Array<string>, Domain.Namespace> =>
+): Effect.Effect<Source | Configuration.Configuration, Array<string>, Domain.Namespace> =>
   Effect.flatMap(Source, (_source) => {
     const name = ed.getName()
     const text = getJSDocText(ed.getJsDocs())
@@ -591,7 +597,7 @@ const parseModuleDeclarations = (namespaces: ReadonlyArray<ast.ModuleDeclaration
  * @since 1.0.0
  */
 export const parseNamespaces: Effect.Effect<
-  Source | Config.Config,
+  Source | Configuration.Configuration,
   Array<string>,
   Array<Domain.Namespace>
 > = Effect.flatMap(Source, (source) => parseModuleDeclarations(source.sourceFile.getModules()))
@@ -800,7 +806,7 @@ export const parseClasses = Effect.gen(function*(_) {
  * @internal
  */
 export const parseModuleDocumentation = Effect.gen(function*(_) {
-  const config = yield* _(Config.Config)
+  const config = yield* _(Configuration.Configuration)
   const source = yield* _(Source)
   const path = yield* _(Path.Path)
   const name = path.parse(ReadonlyArray.lastNonEmpty(source.path)).name
@@ -883,9 +889,11 @@ export const parseModule = Effect.gen(function*(_) {
  * @internal
  */
 export const parseFile = (project: ast.Project) =>
-(
-  file: FileSystem.File
-): Effect.Effect<Config.Config | Path.Path, Array<string>, Domain.Module> =>
+(file: File.File): Effect.Effect<
+  Configuration.Configuration | Path.Path,
+  Array<string>,
+  Domain.Module
+> =>
   Effect.flatMap(Path.Path, (_) => {
     const path = file.path.split(
       _.sep
@@ -900,9 +908,9 @@ export const parseFile = (project: ast.Project) =>
     return Effect.fail([`Unable to locate file: ${file.path}`])
   })
 
-const createProject = (files: ReadonlyArray<FileSystem.File>) =>
+const createProject = (files: ReadonlyArray<File.File>) =>
   Effect.gen(function*(_) {
-    const config = yield* _(Config.Config)
+    const config = yield* _(Configuration.Configuration)
     const process = yield* _(Process.Process)
     const cwd = yield* _(process.cwd)
     // Convert the raw config into a format that TS/TS-Morph expects
@@ -932,7 +940,7 @@ const createProject = (files: ReadonlyArray<FileSystem.File>) =>
  * @category parsers
  * @since 1.0.0
  */
-export const parseFiles = (files: ReadonlyArray<FileSystem.File>) =>
+export const parseFiles = (files: ReadonlyArray<File.File>) =>
   createProject(files).pipe(
     Effect.flatMap((project) =>
       pipe(
