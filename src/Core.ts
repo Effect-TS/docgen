@@ -2,10 +2,10 @@
  * @since 1.0.0
  */
 
-import * as Command from "@effect/platform-node/Command"
-import * as CommandExecutor from "@effect/platform-node/CommandExecutor"
-import * as FileSystem from "@effect/platform-node/FileSystem"
-import * as Path from "@effect/platform-node/Path"
+import * as Command from "@effect/platform/Command"
+import * as CommandExecutor from "@effect/platform/CommandExecutor"
+import * as FileSystem from "@effect/platform/FileSystem"
+import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
 import * as Effect from "effect/Effect"
 import * as ReadonlyArray from "effect/ReadonlyArray"
@@ -45,7 +45,7 @@ const glob = (pattern: string, exclude: ReadonlyArray<string> = []) =>
 const readSourceFiles = Effect.gen(function*(_) {
   const config = yield* _(Configuration.Configuration)
   const fs = yield* _(FileSystem.FileSystem)
-  const path = yield* _(Path.Path, Effect.provide(Path.layerPosix))
+  const path = yield* _(Path.Path)
 
   const pattern = path.normalize(path.join(config.srcDir, "**", "*.ts"))
   const paths = yield* _(glob(pattern, config.exclude))
@@ -438,7 +438,7 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
 const writeMarkdown = (files: ReadonlyArray<File.File>) =>
   Effect.gen(function*(_) {
     const config = yield* _(Configuration.Configuration)
-    const path = yield* _(Path.Path, Effect.provide(Path.layerPosix))
+    const path = yield* _(Path.Path)
     const fileSystem = yield* _(FileSystem.FileSystem)
     const pattern = path.normalize(path.join(config.outDir, "**/*.ts.md"))
     yield* _(Effect.logDebug(`Deleting ${chalk.black(pattern)}...`))

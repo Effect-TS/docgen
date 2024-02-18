@@ -24,7 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<never, never, string>
+export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<string>
 ```
 
 **Example**

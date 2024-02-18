@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { Path } from "@effect/platform-node"
+import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
 import * as doctrine from "doctrine"
 import * as Context from "effect/Context"
@@ -25,7 +25,7 @@ export interface Source {
 }
 
 /** @internal */
-export const Source = Context.Tag<Source>()
+export const Source = Context.GenericTag<Source>("@services/Source")
 
 interface Comment {
   readonly description: Option.Option<string>
@@ -480,7 +480,7 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
 
 const parseExportStar = (
   ed: ast.ExportDeclaration
-): Effect.Effect<Source | Configuration.Configuration, string, Domain.Export> =>
+): Effect.Effect<Domain.Export, string, Source | Configuration.Configuration> =>
   Effect.gen(function*(_) {
     const source = yield* _(Source)
     const es = ed.getModuleSpecifier()!
@@ -545,7 +545,7 @@ export const parseExports = pipe(
 
 const parseModuleDeclaration = (
   ed: ast.ModuleDeclaration
-): Effect.Effect<Source | Configuration.Configuration, Array<string>, Domain.Namespace> =>
+): Effect.Effect<Domain.Namespace, Array<string>, Source | Configuration.Configuration> =>
   Effect.flatMap(Source, (_source) => {
     const name = ed.getName()
     const text = getJSDocText(ed.getJsDocs())
@@ -597,9 +597,9 @@ const parseModuleDeclarations = (namespaces: ReadonlyArray<ast.ModuleDeclaration
  * @since 1.0.0
  */
 export const parseNamespaces: Effect.Effect<
-  Source | Configuration.Configuration,
+  Array<Domain.Namespace>,
   Array<string>,
-  Array<Domain.Namespace>
+  Source | Configuration.Configuration
 > = Effect.flatMap(Source, (source) => parseModuleDeclarations(source.sourceFile.getModules()))
 
 const getTypeParameters = (
@@ -890,9 +890,9 @@ export const parseModule = Effect.gen(function*(_) {
  */
 export const parseFile = (project: ast.Project) =>
 (file: File.File): Effect.Effect<
-  Configuration.Configuration | Path.Path,
+  Domain.Module,
   Array<string>,
-  Domain.Module
+  Configuration.Configuration | Path.Path
 > =>
   Effect.flatMap(Path.Path, (_) => {
     const path = file.path.split(

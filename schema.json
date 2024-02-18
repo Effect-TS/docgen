@@ -5,7 +5,7 @@
   "properties": {
     "enableSearch": {
       "type": "boolean",
-      "description": "Whether or search should be enabled for GitHub Docs in the generated _config.yml file.",
+      "description": "Whether or not search should be enabled for GitHub Docs in the generated _config.yml file.",
       "title": "boolean",
       "default": true
     },

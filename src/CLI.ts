@@ -11,7 +11,7 @@ import * as ValidationError from "@effect/cli/ValidationError"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as Config from "effect/Config"
-import * as Either from "effect/Either"
+import * as Effect from "effect/Effect"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Configuration from "./Configuration.js"
 import * as Core from "./Core.js"
@@ -114,19 +114,20 @@ const exclude = Options.text("exclude").pipe(
 )
 
 const compilerOptionsSchema = Schema.record(Schema.string, Schema.unknown)
+const decodeCompilerOptions = Schema.decodeUnknown(compilerOptionsSchema)
 
 const parseCompilerOptions = Options.file("parse-tsconfig-file", { exists: "yes" }).pipe(
   Options.withDescription("The TypeScript TSConfig file to use for parsing source files"),
   Options.orElse(
     Options.text("parse-compiler-options").pipe(
       Options.withDescription("The TypeScript compiler options to use for parsing source files"),
-      Options.mapOrFail((options) =>
-        Schema.parseEither(compilerOptionsSchema)(options).pipe(
-          Either.mapLeft(({ errors }) => {
-            const error = HelpDoc.p(
-              `Invalid TypeScript compiler options:\n${TreeFormatter.formatErrors(errors)}`
+      Options.mapEffect((options) =>
+        decodeCompilerOptions(options).pipe(
+          Effect.mapError((error) => {
+            const message = HelpDoc.p(
+              `Invalid TypeScript compiler options:\n${TreeFormatter.formatError(error)}`
             )
-            return ValidationError.invalidValue(error)
+            return ValidationError.invalidValue(message)
           })
         )
       )
@@ -140,13 +141,13 @@ const examplesCompilerOptions = Options.file("examples-tsconfig-file", { exists:
   Options.orElse(
     Options.text("examples-compiler-options").pipe(
       Options.withDescription("The TypeScript compiler options to use for examples"),
-      Options.mapOrFail((options) =>
-        Schema.parseEither(compilerOptionsSchema)(options).pipe(
-          Either.mapLeft(({ errors }) => {
-            const error = HelpDoc.p(
-              `Invalid TypeScript compiler options:\n${TreeFormatter.formatErrors(errors)}`
+      Options.mapEffect((options) =>
+        decodeCompilerOptions(options).pipe(
+          Effect.mapError((error) => {
+            const message = HelpDoc.p(
+              `Invalid TypeScript compiler options:\n${TreeFormatter.formatError(error)}`
             )
-            return ValidationError.invalidValue(error)
+            return ValidationError.invalidValue(message)
           })
         )
       )
@@ -174,7 +175,7 @@ const options = {
 export const docgenCommand = Command.make("docgen", options)
 
 /** @internal */
-export const cli = docgenCommand.pipe(
+export const run = docgenCommand.pipe(
   Command.withHandler(() => Core.program),
   Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
   Command.run({

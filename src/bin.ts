@@ -5,12 +5,12 @@
  */
 
 import * as NodeContext from "@effect/platform-node/NodeContext"
-import * as Runtime from "@effect/platform-node/Runtime"
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import { cli } from "./CLI.js"
+import * as Cli from "./Cli.js"
 import * as Configuration from "./Configuration.js"
 import { SimpleLogger } from "./Logger.js"
 import * as Process from "./Process.js"
@@ -25,8 +25,7 @@ export const MainLive = Configuration.configProviderLayer.pipe(
   ))
 )
 
-Effect.sync(() => process.argv.slice(2)).pipe(
-  Effect.flatMap((args) => cli(args)),
+Cli.run(process.argv).pipe(
   Effect.provide(MainLive),
-  Runtime.runMain
+  NodeRuntime.runMain
 )

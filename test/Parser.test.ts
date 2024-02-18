@@ -2,9 +2,12 @@ import * as Configuration from "@effect/docgen/Configuration"
 import * as Domain from "@effect/docgen/Domain"
 import * as File from "@effect/docgen/File"
 import * as Parser from "@effect/docgen/Parser"
-import { Path } from "@effect/platform-node"
+import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
-import { Effect, Exit, Option, String } from "effect"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import * as Option from "effect/Option"
+import * as String from "effect/String"
 import * as ast from "ts-morph"
 import { assert, describe, expect, it } from "vitest"
 
@@ -38,7 +41,7 @@ const getParser = (sourceText: string): Parser.Source => ({
 
 const expectFailure = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Configuration.Configuration | Path.Path, E, A>,
+  eff: Effect.Effect<A, E, Parser.Source | Configuration.Configuration | Path.Path>,
   failure: E,
   config?: Partial<Configuration.Configuration>
 ) => {
@@ -54,7 +57,7 @@ const expectFailure = <E, A>(
 
 const expectSuccess = <E, A>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Configuration.Configuration | Path.Path, E, A>,
+  eff: Effect.Effect<A, E, Parser.Source | Configuration.Configuration | Path.Path>,
   a: A,
   config?: Partial<Configuration.Configuration>
 ) => {

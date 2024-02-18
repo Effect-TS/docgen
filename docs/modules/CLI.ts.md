@@ -1,10 +1,10 @@
 ---
-title: CLI.ts
+title: Cli.ts
 nav_order: 1
 parent: Modules
 ---
 
-## CLI overview
+## Cli overview
 
 Added in v1.0.0
 

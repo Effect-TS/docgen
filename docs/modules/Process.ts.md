@@ -27,7 +27,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<never, never, Process>
+export declare const layer: Layer.Layer<Process, never, never>
 ```
 
 Added in v1.0.0
@@ -52,9 +52,9 @@ Represents a handle to the currently executing process.
 
 ```ts
 export interface Process {
-  readonly cwd: Effect.Effect<never, never, string>
-  readonly platform: Effect.Effect<never, never, string>
-  readonly argv: Effect.Effect<never, never, Array<string>>
+  readonly cwd: Effect.Effect<string>
+  readonly platform: Effect.Effect<string>
+  readonly argv: Effect.Effect<Array<string>>
 }
 ```
 

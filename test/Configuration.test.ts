@@ -1,13 +1,14 @@
 import * as Command from "@effect/cli/Command"
-import * as CLI from "@effect/docgen/CLI"
+import * as Cli from "@effect/docgen/Cli"
 import * as Configuration from "@effect/docgen/Configuration"
 import { DocgenError } from "@effect/docgen/Error"
 import * as Process from "@effect/docgen/Process"
-import * as CommandExecutor from "@effect/platform-node/CommandExecutor"
-import * as Error from "@effect/platform-node/Error"
-import * as FileSystem from "@effect/platform-node/FileSystem"
-import * as Path from "@effect/platform-node/Path"
-import * as Terminal from "@effect/platform-node/Terminal"
+import * as NodeCommandExecutor from "@effect/platform-node/NodeCommandExecutor"
+import * as NodePath from "@effect/platform-node/NodePath"
+import * as NodeTerminal from "@effect/platform-node/NodeTerminal"
+import * as Error from "@effect/platform/Error"
+import * as FileSystem from "@effect/platform/FileSystem"
+import * as Path from "@effect/platform/Path"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -19,7 +20,7 @@ import { assert, describe, it } from "vitest"
 
 interface DocgenJson extends Record<string, unknown> {}
 
-const DocgenJson = Context.Tag<DocgenJson>()
+const DocgenJson = Context.GenericTag<DocgenJson>("@services/DocgenJson")
 
 const makeDocgenJson = (config: Record<string, unknown>) => Layer.succeed(DocgenJson, config)
 
@@ -87,16 +88,16 @@ const TestFileSystem = Layer.effect(
 
 const TestLive = Configuration.configProviderLayer.pipe(
   Layer.provideMerge(Layer.mergeAll(
-    CommandExecutor.layer.pipe(Layer.provide(TestFileSystem)),
-    Path.layer,
+    NodeCommandExecutor.layer.pipe(Layer.provide(TestFileSystem)),
+    NodePath.layer,
     Process.layer,
-    Terminal.layer,
+    NodeTerminal.layer,
     TestFileSystem
   ))
 )
 
-const testCliFor = (program: Effect.Effect<Configuration.Configuration, never, void>) =>
-  CLI.docgenCommand.pipe(
+const testCliFor = (program: Effect.Effect<void, never, Configuration.Configuration>) =>
+  Cli.docgenCommand.pipe(
     Command.withHandler(() => program),
     Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
     Command.run({ name: "docgen", version: "v1.0.0" })
@@ -181,9 +182,9 @@ describe("Configuration", () => {
         new DocgenError({
           message: String.stripMargin(
             `|[Configuration.validateJsonFile]
-             |error(s) found
+             |{ enableSearch?: boolean; enforceDescriptions?: boolean; enforceExamples?: boolean; enforceVersion?: boolean; $schema?: string; projectHomepage?: string; srcDir?: string; outDir?: string; theme?: string; exclude?: An array of glob strings specifying files that should be excluded from the documentation.; parseCompilerOptions?: tsconfig for parsing options (or path to a tsconfig); examplesCompilerOptions?: tsconfig for the examples options (or path to a tsconfig) }
              |└─ ["projectHomepage"]
-             |   └─ Expected string, actual 1`
+             |   └─ Expected Will link to the project homepage from the Auxiliary Links of the generated documentation., actual 1`
           )
         })
       )
