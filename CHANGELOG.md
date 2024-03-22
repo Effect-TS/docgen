@@ -1,5 +1,15 @@
 # @effect/docgen
 
+## 0.4.0
+
+### Minor Changes
+
+- 5fbec18: update effect
+
+### Patch Changes
+
+- 08e8347: use ConfigProvider to load configuration for docgen
+
 ## 0.3.8
 
 ### Patch Changes
