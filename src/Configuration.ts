@@ -2,8 +2,8 @@
  * @since 1.0.0
  */
 
-import * as FileSystem from "@effect/platform-node/FileSystem"
-import * as Path from "@effect/platform-node/Path"
+import * as FileSystem from "@effect/platform/FileSystem"
+import * as Path from "@effect/platform/Path"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as Config from "effect/Config"
@@ -32,61 +32,61 @@ const compilerOptionsSchema = Schema.union(
  */
 export const ConfigurationSchema = Schema.struct({
   "$schema": Schema.optional(Schema.string),
-  projectHomepage: Schema.optional(Schema.string, {
+  projectHomepage: Schema.optional(Schema.string).annotations({
     description:
       "Will link to the project homepage from the Auxiliary Links of the generated documentation."
   }),
-  srcDir: Schema.optional(Schema.string, {
+  srcDir: Schema.optional(Schema.string).annotations({
     description: "The directory in which docgen will search for TypeScript files to parse.",
     default: "src"
   }),
-  outDir: Schema.optional(Schema.string, {
+  outDir: Schema.optional(Schema.string).annotations({
     description: "The directory to which docgen will generate its output markdown documents.",
     default: "docs"
   }),
-  theme: Schema.optional(Schema.string, {
+  theme: Schema.optional(Schema.string).annotations({
     description:
       "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
     default: "mikearnaldi/just-the-docs"
   }),
-  enableSearch: Schema.optional(Schema.boolean, {
+  enableSearch: Schema.optional(Schema.boolean).annotations({
     description:
       "Whether or not search should be enabled for GitHub Docs in the generated _config.yml file.",
     default: true
   }),
-  enforceDescriptions: Schema.optional(Schema.boolean, {
+  enforceDescriptions: Schema.optional(Schema.boolean).annotations({
     description: "Whether or not descriptions for each module export should be required.",
     default: false
   }),
-  enforceExamples: Schema.optional(Schema.boolean, {
+  enforceExamples: Schema.optional(Schema.boolean).annotations({
     description:
       "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)",
     default: false
   }),
-  enforceVersion: Schema.optional(Schema.boolean, {
+  enforceVersion: Schema.optional(Schema.boolean).annotations({
     description: "Whether or not @since tags for each module export should be required.",
     default: true
   }),
-  exclude: Schema.optional(Schema.array(Schema.string), {
+  exclude: Schema.optional(Schema.array(Schema.string)).annotations({
     description:
       "An array of glob strings specifying files that should be excluded from the documentation.",
     default: []
   }),
-  parseCompilerOptions: Schema.optional(compilerOptionsSchema, {
+  parseCompilerOptions: Schema.optional(compilerOptionsSchema).annotations({
     description: "tsconfig for parsing options (or path to a tsconfig)",
     default: {}
   }),
-  examplesCompilerOptions: Schema.optional(compilerOptionsSchema, {
+  examplesCompilerOptions: Schema.optional(compilerOptionsSchema).annotations({
     description: "tsconfig for the examples options (or path to a tsconfig)",
     default: {}
   })
-})
+}).annotations({ identifier: "ConfigurationSchema" })
 
 /**
  * @category service
  * @since 1.0.0
  */
-export interface Configuration {
+export interface ConfigurationShape {
   readonly projectName: string
   readonly projectHomepage: string
   readonly srcDir: string
@@ -106,7 +106,9 @@ export interface Configuration {
  * @category service
  * @since 1.0.0
  */
-export const Configuration = Context.Tag<Configuration>()
+export class Configuration
+  extends Context.Tag("Configuration")<Configuration, ConfigurationShape>()
+{}
 
 /** @internal */
 export const defaultCompilerOptions = {
@@ -123,7 +125,7 @@ export const defaultCompilerOptions = {
 
 const readJsonFile = (
   path: string
-): Effect.Effect<FileSystem.FileSystem, never, unknown> =>
+): Effect.Effect<unknown, never, FileSystem.FileSystem> =>
   Effect.gen(function*(_) {
     const fs = yield* _(FileSystem.FileSystem)
     const content = yield* _(Effect.orDie(fs.readFileString(path)))
@@ -137,17 +139,17 @@ const readJsonFile = (
     )
   })
 
-const validateJsonFile = <I, A>(
-  schema: Schema.Schema<I, A>,
+const validateJsonFile = <A, I>(
+  schema: Schema.Schema<A, I>,
   path: string
-): Effect.Effect<FileSystem.FileSystem, never, A> =>
+): Effect.Effect<A, never, FileSystem.FileSystem> =>
   Effect.gen(function*(_) {
     const content = yield* _(readJsonFile(path))
     return yield* _(
-      Schema.parse(schema)(content),
-      Effect.orDieWith(({ errors }) =>
+      Schema.decodeUnknown(schema)(content),
+      Effect.orDieWith((error) =>
         new DocgenError({
-          message: `[Configuration.validateJsonFile]\n${TreeFormatter.formatErrors(errors)}`
+          message: `[Configuration.validateJsonFile]\n${TreeFormatter.formatError(error)}`
         })
       )
     )
@@ -156,9 +158,9 @@ const validateJsonFile = <I, A>(
 const readDocgenConfig = (
   path: string
 ): Effect.Effect<
-  FileSystem.FileSystem,
+  Option.Option<Schema.Schema.Type<typeof ConfigurationSchema>>,
   never,
-  Option.Option<Schema.Schema.To<typeof ConfigurationSchema>>
+  FileSystem.FileSystem
 > =>
   Effect.gen(function*(_) {
     const fs = yield* _(FileSystem.FileSystem)
@@ -172,9 +174,9 @@ const readDocgenConfig = (
   })
 
 const readTSConfig = (fileName: string): Effect.Effect<
-  Path.Path | Process.Process,
+  { readonly [x: string]: unknown },
   never,
-  { readonly [x: string]: unknown }
+  Path.Path | Process.Process
 > =>
   Effect.gen(function*(_) {
     const path = yield* _(Path.Path)
@@ -195,7 +197,7 @@ const readTSConfig = (fileName: string): Effect.Effect<
 const loadCompilerOptions = (configKey: string) =>
   Config.string(configKey).pipe(
     Effect.flatMap((config) =>
-      Schema.parse(JsonRecordSchema)(config).pipe(Effect.orElseSucceed(() => config))
+      Schema.decodeUnknown(JsonRecordSchema)(config).pipe(Effect.orElseSucceed(() => config))
     )
   )
 
@@ -203,7 +205,7 @@ const resolveCompilerOptions = (
   configKey: string,
   fromCLI: Option.Option<string | Record<string, unknown>>,
   fromDocgenJson: Option.Option<string | Record<string, unknown>>
-): Effect.Effect<Path.Path | Process.Process, never, { readonly [x: string]: unknown }> => {
+): Effect.Effect<{ readonly [x: string]: unknown }, never, Path.Path | Process.Process> => {
   const fromConfigProvider = loadCompilerOptions(configKey)
   return fromCLI.pipe(
     Effect.orElse(() => fromConfigProvider),
@@ -218,9 +220,7 @@ const resolveCompilerOptions = (
   )
 }
 
-const JsonRecordSchema = Schema.ParseJson.pipe(
-  Schema.compose(Schema.record(Schema.string, Schema.unknown))
-)
+const JsonRecordSchema = Schema.parseJson(Schema.record(Schema.string, Schema.unknown))
 
 const PackageJsonSchema = Schema.struct({
   name: Schema.string,
@@ -268,8 +268,6 @@ export const load = (args: {
         }),
       onNonEmpty: identity
     })
-
-    console.log(exclude)
 
     // Resolve the TypeScript configuration options
     const examplesCompilerOptions = yield* _(

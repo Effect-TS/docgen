@@ -1,4 +1,5 @@
-import { FileSystem, Path } from "@effect/platform-node"
+import { FileSystem, Path } from "@effect/platform"
+import { NodeFileSystem, NodePath } from "@effect/platform-node"
 import { Effect, Layer, ReadonlyRecord } from "effect"
 
 const excludedPrefixes = ["@effect", "effect", "chalk", "tsconfck", "ts-morph"]
@@ -34,7 +35,7 @@ const program = Effect.gen(function*(_) {
   yield* _(fs.writeFileString(path.join("dist", "package.json"), JSON.stringify(pkg, null, 2)))
   yield* _(Effect.log("[Build] Build completed."))
 }).pipe(
-  Effect.provide(Layer.merge(FileSystem.layer, Path.layerPosix))
+  Effect.provide(Layer.merge(NodeFileSystem.layer, NodePath.layerPosix))
 )
 
 Effect.runPromise(program).catch(console.error)

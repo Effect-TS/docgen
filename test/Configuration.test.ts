@@ -3,25 +3,24 @@ import * as CLI from "@effect/docgen/CLI"
 import * as Configuration from "@effect/docgen/Configuration"
 import { DocgenError } from "@effect/docgen/Error"
 import * as Process from "@effect/docgen/Process"
-import * as CommandExecutor from "@effect/platform-node/CommandExecutor"
-import * as Error from "@effect/platform-node/Error"
-import * as FileSystem from "@effect/platform-node/FileSystem"
-import * as Path from "@effect/platform-node/Path"
-import * as Terminal from "@effect/platform-node/Terminal"
+import * as NodeCommandExecutor from "@effect/platform-node/NodeCommandExecutor"
+import * as NodeTerminal from "@effect/platform-node/NodeTerminal"
+import * as Error from "@effect/platform/Error"
+import * as FileSystem from "@effect/platform/FileSystem"
+import * as Path from "@effect/platform/Path"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import { hole } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
-import * as String from "effect/String"
 import { assert, describe, it } from "vitest"
 
 interface DocgenJson extends Record<string, unknown> {}
 
-const DocgenJson = Context.Tag<DocgenJson>()
+class DocgenJsonTag extends Context.Tag("DocgenJsonTag")<DocgenJsonTag, DocgenJson>() {}
 
-const makeDocgenJson = (config: Record<string, unknown>) => Layer.succeed(DocgenJson, config)
+const makeDocgenJson = (config: Record<string, unknown>) => Layer.succeed(DocgenJsonTag, config)
 
 const TestFileSystem = Layer.effect(
   FileSystem.FileSystem,
@@ -30,7 +29,7 @@ const TestFileSystem = Layer.effect(
 
     const docgenJson = yield* _(
       Effect.contextWith((context: Context.Context<never>) =>
-        Option.getOrElse(Context.getOption(context, DocgenJson), () => ({} as DocgenJson))
+        Option.getOrElse(Context.getOption(context, DocgenJsonTag), () => ({} as DocgenJson))
       )
     )
 
@@ -53,6 +52,7 @@ const TestFileSystem = Layer.effect(
       Effect.succeed(path.basename(filePath) === "docgen.json")
 
     return FileSystem.FileSystem.of({
+      watch: hole,
       access: hole,
       chmod: hole,
       chown: hole,
@@ -87,15 +87,15 @@ const TestFileSystem = Layer.effect(
 
 const TestLive = Configuration.configProviderLayer.pipe(
   Layer.provideMerge(Layer.mergeAll(
-    CommandExecutor.layer.pipe(Layer.provide(TestFileSystem)),
+    NodeCommandExecutor.layer.pipe(Layer.provide(TestFileSystem)),
     Path.layer,
     Process.layer,
-    Terminal.layer,
+    NodeTerminal.layer,
     TestFileSystem
   ))
 )
 
-const testCliFor = (program: Effect.Effect<Configuration.Configuration, never, void>) =>
+const testCliFor = (program: Effect.Effect<void, never, Configuration.Configuration>) =>
   CLI.docgenCommand.pipe(
     Command.withHandler(() => program),
     Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
@@ -179,12 +179,14 @@ describe("Configuration", () => {
       result,
       Exit.die(
         new DocgenError({
-          message: String.stripMargin(
-            `|[Configuration.validateJsonFile]
-             |error(s) found
-             |└─ ["projectHomepage"]
-             |   └─ Expected string, actual 1`
-          )
+          message: `[Configuration.validateJsonFile]
+ConfigurationSchema
+└─ ["projectHomepage"]
+   └─ string | undefined
+      ├─ Union member
+      │  └─ Expected a string, actual 1
+      └─ Union member
+         └─ Expected undefined, actual 1`
         })
       )
     )

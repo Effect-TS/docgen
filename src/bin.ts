@@ -5,7 +5,7 @@
  */
 
 import * as NodeContext from "@effect/platform-node/NodeContext"
-import * as Runtime from "@effect/platform-node/Runtime"
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
@@ -28,5 +28,5 @@ export const MainLive = Configuration.configProviderLayer.pipe(
 Effect.sync(() => process.argv.slice(2)).pipe(
   Effect.flatMap((args) => cli(args)),
   Effect.provide(MainLive),
-  Runtime.runMain
+  NodeRuntime.runMain
 )
