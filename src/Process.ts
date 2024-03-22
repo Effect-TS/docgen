@@ -12,17 +12,17 @@ import * as Layer from "effect/Layer"
  * @category service
  * @since 1.0.0
  */
-export interface Process {
-  readonly cwd: Effect.Effect<never, never, string>
-  readonly platform: Effect.Effect<never, never, string>
-  readonly argv: Effect.Effect<never, never, Array<string>>
+export interface ProcessShape {
+  readonly cwd: Effect.Effect<string>
+  readonly platform: Effect.Effect<string>
+  readonly argv: Effect.Effect<Array<string>>
 }
 
 /**
  * @category service
  * @since 1.0.0
  */
-export const Process = Context.Tag<Process>()
+export class Process extends Context.Tag("Process")<Process, ProcessShape>() {}
 
 /**
  * @category layer

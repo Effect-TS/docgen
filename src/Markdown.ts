@@ -281,7 +281,7 @@ const byCategory = Order.mapInput(
 export const printModule = (
   module: Domain.Module,
   order: number
-): Effect.Effect<never, never, string> =>
+): Effect.Effect<string> =>
   Effect.gen(function*(_) {
     const header = printMeta(module.path.slice(1).join("/"), order)
 
@@ -345,7 +345,7 @@ const defaultPrettierOptions: Prettier.Options = {
 }
 
 /** @internal */
-export const prettify = (s: string): Effect.Effect<never, never, string> =>
+export const prettify = (s: string): Effect.Effect<string> =>
   Effect.tryPromise({
     try: () => Prettier.format(s, defaultPrettierOptions),
     catch: identity

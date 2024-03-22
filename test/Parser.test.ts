@@ -2,7 +2,7 @@ import * as Configuration from "@effect/docgen/Configuration"
 import * as Domain from "@effect/docgen/Domain"
 import * as File from "@effect/docgen/File"
 import * as Parser from "@effect/docgen/Parser"
-import { Path } from "@effect/platform-node"
+import { Path } from "@effect/platform"
 import chalk from "chalk"
 import { Effect, Exit, Option, String } from "effect"
 import * as ast from "ts-morph"
@@ -15,7 +15,7 @@ const project = new ast.Project({
   useInMemoryFileSystem: true
 })
 
-const defaultConfig: Configuration.Configuration = {
+const defaultConfig: Configuration.ConfigurationShape = {
   projectName: "docgen",
   projectHomepage: "https://github.com/effect-ts/docgen",
   srcDir: "src",
@@ -31,16 +31,16 @@ const defaultConfig: Configuration.Configuration = {
   examplesCompilerOptions: {}
 }
 
-const getParser = (sourceText: string): Parser.Source => ({
+const getParser = (sourceText: string): Parser.SourceShape => ({
   path: ["test"],
   sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
 })
 
-const expectFailure = <E, A>(
+const expectFailure = <A, E>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Configuration.Configuration | Path.Path, E, A>,
+  eff: Effect.Effect<A, E, Parser.Source | Configuration.Configuration | Path.Path>,
   failure: E,
-  config?: Partial<Configuration.Configuration>
+  config?: Partial<Configuration.ConfigurationShape>
 ) => {
   expect(
     eff.pipe(
@@ -52,11 +52,11 @@ const expectFailure = <E, A>(
   ).toEqual(Exit.fail(failure))
 }
 
-const expectSuccess = <E, A>(
+const expectSuccess = <A, E>(
   sourceText: string,
-  eff: Effect.Effect<Parser.Source | Configuration.Configuration | Path.Path, E, A>,
+  eff: Effect.Effect<A, E, Parser.Source | Configuration.Configuration | Path.Path>,
   a: A,
-  config?: Partial<Configuration.Configuration>
+  config?: Partial<Configuration.ConfigurationShape>
 ) => {
   expect(
     eff

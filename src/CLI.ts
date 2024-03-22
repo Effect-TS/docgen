@@ -120,11 +120,11 @@ const parseCompilerOptions = Options.file("parse-tsconfig-file", { exists: "yes"
   Options.orElse(
     Options.text("parse-compiler-options").pipe(
       Options.withDescription("The TypeScript compiler options to use for parsing source files"),
-      Options.mapOrFail((options) =>
-        Schema.parseEither(compilerOptionsSchema)(options).pipe(
-          Either.mapLeft(({ errors }) => {
+      Options.mapEffect((options) =>
+        Schema.decodeUnknownEither(compilerOptionsSchema)(options).pipe(
+          Either.mapLeft((e) => {
             const error = HelpDoc.p(
-              `Invalid TypeScript compiler options:\n${TreeFormatter.formatErrors(errors)}`
+              `Invalid TypeScript compiler options:\n${TreeFormatter.formatError(e)}`
             )
             return ValidationError.invalidValue(error)
           })
@@ -140,11 +140,11 @@ const examplesCompilerOptions = Options.file("examples-tsconfig-file", { exists:
   Options.orElse(
     Options.text("examples-compiler-options").pipe(
       Options.withDescription("The TypeScript compiler options to use for examples"),
-      Options.mapOrFail((options) =>
-        Schema.parseEither(compilerOptionsSchema)(options).pipe(
-          Either.mapLeft(({ errors }) => {
+      Options.mapEffect((options) =>
+        Schema.decodeUnknownEither(compilerOptionsSchema)(options).pipe(
+          Either.mapLeft((e) => {
             const error = HelpDoc.p(
-              `Invalid TypeScript compiler options:\n${TreeFormatter.formatErrors(errors)}`
+              `Invalid TypeScript compiler options:\n${TreeFormatter.formatError(e)}`
             )
             return ValidationError.invalidValue(error)
           })

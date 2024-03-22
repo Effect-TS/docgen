@@ -1,110 +1,115 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "required": [],
-  "properties": {
-    "enableSearch": {
-      "type": "boolean",
-      "description": "Whether or search should be enabled for GitHub Docs in the generated _config.yml file.",
-      "title": "boolean",
-      "default": true
-    },
-    "enforceDescriptions": {
-      "type": "boolean",
-      "description": "Whether or not descriptions for each module export should be required.",
-      "title": "boolean",
-      "default": false
-    },
-    "enforceExamples": {
-      "type": "boolean",
-      "description": "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)",
-      "title": "boolean",
-      "default": false
-    },
-    "enforceVersion": {
-      "type": "boolean",
-      "description": "Whether or not @since tags for each module export should be required.",
-      "title": "boolean",
-      "default": true
-    },
-    "$schema": {
-      "type": "string",
-      "description": "a string",
-      "title": "string"
-    },
-    "projectHomepage": {
-      "type": "string",
-      "description": "Will link to the project homepage from the Auxiliary Links of the generated documentation.",
-      "title": "string"
-    },
-    "srcDir": {
-      "type": "string",
-      "description": "The directory in which docgen will search for TypeScript files to parse.",
-      "title": "string",
-      "default": "src"
-    },
-    "outDir": {
-      "type": "string",
-      "description": "The directory to which docgen will generate its output markdown documents.",
-      "title": "string",
-      "default": "docs"
-    },
-    "theme": {
-      "type": "string",
-      "description": "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
-      "title": "string",
-      "default": "mikearnaldi/just-the-docs"
-    },
-    "exclude": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "description": "a string",
-        "title": "string"
+  "$ref": "#/$defs/ConfigurationSchema",
+  "$defs": {
+    "ConfigurationSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "a string",
+          "title": "string"
+        },
+        "projectHomepage": {
+          "type": "string",
+          "description": "Will link to the project homepage from the Auxiliary Links of the generated documentation.",
+          "title": "string"
+        },
+        "srcDir": {
+          "type": "string",
+          "description": "The directory in which docgen will search for TypeScript files to parse.",
+          "title": "string",
+          "default": "src"
+        },
+        "outDir": {
+          "type": "string",
+          "description": "The directory to which docgen will generate its output markdown documents.",
+          "title": "string",
+          "default": "docs"
+        },
+        "theme": {
+          "type": "string",
+          "description": "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
+          "title": "string",
+          "default": "mikearnaldi/just-the-docs"
+        },
+        "enableSearch": {
+          "type": "boolean",
+          "description": "Whether or not search should be enabled for GitHub Docs in the generated _config.yml file.",
+          "title": "boolean",
+          "default": true
+        },
+        "enforceDescriptions": {
+          "type": "boolean",
+          "description": "Whether or not descriptions for each module export should be required.",
+          "title": "boolean",
+          "default": false
+        },
+        "enforceExamples": {
+          "type": "boolean",
+          "description": "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)",
+          "title": "boolean",
+          "default": false
+        },
+        "enforceVersion": {
+          "type": "boolean",
+          "description": "Whether or not @since tags for each module export should be required.",
+          "title": "boolean",
+          "default": true
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "a string",
+            "title": "string"
+          },
+          "description": "An array of glob strings specifying files that should be excluded from the documentation.",
+          "default": []
+        },
+        "parseCompilerOptions": {
+          "anyOf": [
+            {
+              "type": "string",
+              "description": "a string",
+              "title": "string"
+            },
+            {
+              "type": "object",
+              "required": [],
+              "properties": {},
+              "additionalProperties": {
+                "$id": "/schemas/unknown",
+                "title": "unknown"
+              }
+            }
+          ],
+          "description": "tsconfig for parsing options (or path to a tsconfig)",
+          "default": {}
+        },
+        "examplesCompilerOptions": {
+          "anyOf": [
+            {
+              "type": "string",
+              "description": "a string",
+              "title": "string"
+            },
+            {
+              "type": "object",
+              "required": [],
+              "properties": {},
+              "additionalProperties": {
+                "$id": "/schemas/unknown",
+                "title": "unknown"
+              }
+            }
+          ],
+          "description": "tsconfig for the examples options (or path to a tsconfig)",
+          "default": {}
+        }
       },
-      "description": "An array of glob strings specifying files that should be excluded from the documentation.",
-      "default": []
-    },
-    "parseCompilerOptions": {
-      "anyOf": [
-        {
-          "type": "object",
-          "required": [],
-          "properties": {},
-          "additionalProperties": {
-            "$id": "/schemas/unknown",
-            "title": "unknown"
-          }
-        },
-        {
-          "type": "string",
-          "description": "a string",
-          "title": "string"
-        }
-      ],
-      "description": "tsconfig for parsing options (or path to a tsconfig)",
-      "default": {}
-    },
-    "examplesCompilerOptions": {
-      "anyOf": [
-        {
-          "type": "object",
-          "required": [],
-          "properties": {},
-          "additionalProperties": {
-            "$id": "/schemas/unknown",
-            "title": "unknown"
-          }
-        },
-        {
-          "type": "string",
-          "description": "a string",
-          "title": "string"
-        }
-      ],
-      "description": "tsconfig for the examples options (or path to a tsconfig)",
-      "default": {}
+      "additionalProperties": false
     }
-  },
-  "additionalProperties": false
+  }
 }

@@ -10,13 +10,11 @@ import * as Data from "effect/Data"
  * @category model
  * @since 1.0.0
  */
-export interface File extends
-  Data.Data<{
-    readonly path: string
-    readonly content: string
-    readonly isOverwriteable: boolean
-  }>
-{}
+export interface File {
+  readonly path: string
+  readonly content: string
+  readonly isOverwriteable: boolean
+}
 
 /**
  * By default files are readonly (`isOverwriteable = false`).
