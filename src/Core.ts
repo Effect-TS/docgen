@@ -274,7 +274,14 @@ const runTscOnExamples = Effect.gen(function*(_) {
   const exe = platform === "win32" ? "tsc.cmd" : "tsc"
   const command = Command.make(exe, "--noEmit", "--project", tsconfig)
   yield* _(Effect.logDebug("Running tsc on examples..."))
-  yield* _(Effect.asUnit(executor.exitCode(command)))
+  const exitCode = yield* _(executor.exitCode(command))
+  if (exitCode !== 0) {
+    yield* _(
+      Effect.fail(
+        new DocgenError({ message: "Something went wrong while running tsc on examples" })
+      )
+    )
+  }
 })
 
 /**
@@ -294,8 +301,15 @@ const runTsxOnExamples = Effect.gen(function*(_) {
   const exe = platform === "win32" ? "tsx.cmd" : "tsx"
   const command = Command.make(exe, "--tsconfig", tsconfig, index)
   yield* _(Effect.logDebug("Running tsx on examples..."))
-  yield* _(Effect.asUnit(executor.exitCode(command)))
-})
+  const exitCode = yield* _(executor.exitCode(command))
+  if (exitCode !== 0) {
+    yield* _(
+      Effect.fail(
+        new DocgenError({ message: "Something went wrong while running tsx on examples" })
+      )
+    )
+  }
+}).pipe(Effect.scoped)
 
 const writeExamplesToOutDir = (examples: ReadonlyArray<File.File>) =>
   Effect.gen(function*(_) {
