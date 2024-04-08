@@ -8,8 +8,10 @@ import * as CommandExecutor from "@effect/platform/CommandExecutor"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
+import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
@@ -273,13 +275,29 @@ const runTscOnExamples = Effect.gen(function*(_) {
   const tsconfig = path.normalize(path.join(cwd, config.outDir, "examples", "tsconfig.json"))
   const exe = platform === "win32" ? "tsc.cmd" : "tsc"
   const command = Command.make(exe, "--noEmit", "--project", tsconfig)
+
   yield* _(Effect.logDebug("Running tsc on examples..."))
-  const exitCode = yield* _(executor.exitCode(command))
+
+  const [stdout, exitCode] = yield* _(
+    executor.start(command),
+    Effect.flatMap((process) =>
+      Effect.all([
+        process.stdout.pipe(
+          Stream.decodeText("utf-8"),
+          Stream.splitLines,
+          Stream.runCollect,
+          Effect.map((a) => Chunk.toReadonlyArray(a))
+        ),
+        process.exitCode
+      ], { concurrency: 2 })
+    )
+  )
+
   if (exitCode !== 0) {
     yield* _(
-      Effect.fail(
-        new DocgenError({ message: "Something went wrong while running tsc on examples" })
-      )
+      new DocgenError({
+        message: `Something went wrong while running tsc on examples:\n\n${stdout}`
+      })
     )
   }
 })
