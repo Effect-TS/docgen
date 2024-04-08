@@ -8,8 +8,10 @@ import * as CommandExecutor from "@effect/platform/CommandExecutor"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
+import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
@@ -273,8 +275,31 @@ const runTscOnExamples = Effect.gen(function*(_) {
   const tsconfig = path.normalize(path.join(cwd, config.outDir, "examples", "tsconfig.json"))
   const exe = platform === "win32" ? "tsc.cmd" : "tsc"
   const command = Command.make(exe, "--noEmit", "--project", tsconfig)
+
   yield* _(Effect.logDebug("Running tsc on examples..."))
-  yield* _(Effect.asUnit(executor.exitCode(command)))
+
+  const [stdout, exitCode] = yield* _(
+    executor.start(command),
+    Effect.flatMap((process) =>
+      Effect.all([
+        process.stdout.pipe(
+          Stream.decodeText("utf-8"),
+          Stream.splitLines,
+          Stream.runCollect,
+          Effect.map(Chunk.toReadonlyArray)
+        ),
+        process.exitCode
+      ], { concurrency: 2 })
+    )
+  )
+
+  if (exitCode !== 0) {
+    yield* _(
+      new DocgenError({
+        message: `Something went wrong while running tsc on examples:\n\n${stdout.join("\n")}`
+      })
+    )
+  }
 })
 
 /**
@@ -293,8 +318,33 @@ const runTsxOnExamples = Effect.gen(function*(_) {
   const index = path.join(examples, "index.ts")
   const exe = platform === "win32" ? "tsx.cmd" : "tsx"
   const command = Command.make(exe, "--tsconfig", tsconfig, index)
+
   yield* _(Effect.logDebug("Running tsx on examples..."))
-  yield* _(Effect.asUnit(executor.exitCode(command)))
+
+  const [stdout, exitCode] = yield* _(
+    executor.start(command),
+    Effect.flatMap((process) =>
+      Effect.all([
+        process.stderr.pipe(
+          Stream.decodeText("utf-8"),
+          Stream.splitLines,
+          Stream.runCollect,
+          Effect.map(Chunk.toReadonlyArray)
+        ),
+        process.exitCode
+      ], { concurrency: 2 })
+    )
+  )
+
+  if (exitCode !== 0) {
+    yield* _(
+      Effect.fail(
+        new DocgenError({
+          message: `Something went wrong while running tsx on examples:\n\n${stdout.join("\n")}`
+        })
+      )
+    )
+  }
 })
 
 const writeExamplesToOutDir = (examples: ReadonlyArray<File.File>) =>

@@ -42,12 +42,11 @@ Represents a file which can be optionally overwriteable.
 **Signature**
 
 ```ts
-export interface File
-  extends Data.Data<{
-    readonly path: string
-    readonly content: string
-    readonly isOverwriteable: boolean
-  }> {}
+export interface File {
+  readonly path: string
+  readonly content: string
+  readonly isOverwriteable: boolean
+}
 ```
 
 Added in v1.0.0

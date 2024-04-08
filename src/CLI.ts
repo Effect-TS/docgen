@@ -11,6 +11,7 @@ import * as ValidationError from "@effect/cli/ValidationError"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Configuration from "./Configuration.js"
@@ -175,7 +176,7 @@ export const docgenCommand = Command.make("docgen", options)
 
 /** @internal */
 export const cli = docgenCommand.pipe(
-  Command.withHandler(() => Core.program),
+  Command.withHandler(() => Effect.scoped(Core.program)),
   Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
   Command.run({
     name: "docgen",

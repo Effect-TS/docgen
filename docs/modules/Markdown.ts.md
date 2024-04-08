@@ -24,7 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<never, never, string>
+export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<string>
 ```
 
 **Example**
@@ -36,7 +36,6 @@ import { Option } from "effect"
 
 const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
 const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
-console.log(Markdown.printModule(m, 0))
 ```
 
 Added in v1.0.0
