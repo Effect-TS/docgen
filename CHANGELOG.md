@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.4.1
+
+### Patch Changes
+
+- b9bfab0: add reporting of `tsc` and `tsx` errors, closes #66
+
 ## 0.4.0
 
 ### Minor Changes
