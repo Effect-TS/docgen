@@ -273,9 +273,6 @@ const byCategory = Order.mapInput(
  *
  * const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
  * const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
- * console.log(Markdown.printModule(m, 0))
- * const a = b
- * assert.deepStrictEqual(1, 2)
  *
  * @category printers
  * @since 1.0.0

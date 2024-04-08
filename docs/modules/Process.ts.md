@@ -15,8 +15,8 @@ Added in v1.0.0
 - [layer](#layer)
   - [layer](#layer-1)
 - [service](#service)
-  - [Process](#process)
-  - [Process (interface)](#process-interface)
+  - [Process (class)](#process-class)
+  - [ProcessShape (interface)](#processshape-interface)
 
 ---
 
@@ -27,34 +27,34 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<never, never, Process>
+export declare const layer: Layer.Layer<Process, never, never>
 ```
 
 Added in v1.0.0
 
 # service
 
-## Process
+## Process (class)
 
 **Signature**
 
 ```ts
-export declare const Process: Context.Tag<Process, Process>
+export declare class Process
 ```
 
 Added in v1.0.0
 
-## Process (interface)
+## ProcessShape (interface)
 
 Represents a handle to the currently executing process.
 
 **Signature**
 
 ```ts
-export interface Process {
-  readonly cwd: Effect.Effect<never, never, string>
-  readonly platform: Effect.Effect<never, never, string>
-  readonly argv: Effect.Effect<never, never, Array<string>>
+export interface ProcessShape {
+  readonly cwd: Effect.Effect<string>
+  readonly platform: Effect.Effect<string>
+  readonly argv: Effect.Effect<Array<string>>
 }
 ```
 

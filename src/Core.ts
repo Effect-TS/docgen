@@ -286,7 +286,7 @@ const runTscOnExamples = Effect.gen(function*(_) {
           Stream.decodeText("utf-8"),
           Stream.splitLines,
           Stream.runCollect,
-          Effect.map((a) => Chunk.toReadonlyArray(a))
+          Effect.map(Chunk.toReadonlyArray)
         ),
         process.exitCode
       ], { concurrency: 2 })
@@ -296,7 +296,7 @@ const runTscOnExamples = Effect.gen(function*(_) {
   if (exitCode !== 0) {
     yield* _(
       new DocgenError({
-        message: `Something went wrong while running tsc on examples:\n\n${stdout}`
+        message: `Something went wrong while running tsc on examples:\n\n${stdout.join("\n")}`
       })
     )
   }
@@ -318,16 +318,34 @@ const runTsxOnExamples = Effect.gen(function*(_) {
   const index = path.join(examples, "index.ts")
   const exe = platform === "win32" ? "tsx.cmd" : "tsx"
   const command = Command.make(exe, "--tsconfig", tsconfig, index)
+
   yield* _(Effect.logDebug("Running tsx on examples..."))
-  const exitCode = yield* _(executor.exitCode(command))
+
+  const [stdout, exitCode] = yield* _(
+    executor.start(command),
+    Effect.flatMap((process) =>
+      Effect.all([
+        process.stderr.pipe(
+          Stream.decodeText("utf-8"),
+          Stream.splitLines,
+          Stream.runCollect,
+          Effect.map(Chunk.toReadonlyArray)
+        ),
+        process.exitCode
+      ], { concurrency: 2 })
+    )
+  )
+
   if (exitCode !== 0) {
     yield* _(
       Effect.fail(
-        new DocgenError({ message: "Something went wrong while running tsx on examples" })
+        new DocgenError({
+          message: `Something went wrong while running tsx on examples:\n\n${stdout.join("\n")}`
+        })
       )
     )
   }
-}).pipe(Effect.scoped)
+})
 
 const writeExamplesToOutDir = (examples: ReadonlyArray<File.File>) =>
   Effect.gen(function*(_) {
