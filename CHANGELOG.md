@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.4.2
+
+### Patch Changes
+
+- 619a0e3: use @effect/markdown-toc instead of github dependency
+
 ## 0.4.1
 
 ### Patch Changes
