@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@effect/cli": "0.35.17",
+    "@effect/markdown-toc": "^0.1.0",
     "@effect/platform": "0.48.15",
     "@effect/platform-node": "0.45.17",
     "@effect/schema": "0.64.11",
@@ -43,7 +44,6 @@
     "doctrine": "^3.0.0",
     "effect": "2.4.11",
     "glob": "^10.3.10",
-    "markdown-toc": "github:effect-ts/markdown-toc",
     "prettier": "^3.1.1",
     "ts-morph": "^21.0.1",
     "tsconfck": "^3.0.0"

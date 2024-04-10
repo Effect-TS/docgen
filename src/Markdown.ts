@@ -313,7 +313,7 @@ export const printModule = (
       Effect.tryPromise({
         try: () => {
           // @ts-ignore
-          return import("markdown-toc").then((m) => m.default)
+          return import("@effect/markdown-toc").then((m) => m.default)
         },
         catch: identity
       }).pipe(Effect.orDie)
