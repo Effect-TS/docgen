@@ -10,10 +10,10 @@ import * as Options from "@effect/cli/Options"
 import * as ValidationError from "@effect/cli/ValidationError"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
+import * as Array from "effect/Array"
 import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
-import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Configuration from "./Configuration.js"
 import * as Core from "./Core.js"
 import * as InternalVersion from "./internal/version.js"
@@ -105,7 +105,7 @@ const exclude = Options.text("exclude").pipe(
   Options.repeated,
   Options.withFallbackConfig(
     Config.array(Config.string("exclude")).pipe(
-      Config.withDefault(ReadonlyArray.empty<string>())
+      Config.withDefault(Array.empty<string>())
     )
   ),
   Options.withDescription(
@@ -114,7 +114,7 @@ const exclude = Options.text("exclude").pipe(
   )
 )
 
-const compilerOptionsSchema = Schema.record(Schema.string, Schema.unknown)
+const compilerOptionsSchema = Schema.Record(Schema.String, Schema.Unknown)
 
 const parseCompilerOptions = Options.file("parse-tsconfig-file", { exists: "yes" }).pipe(
   Options.withDescription("The TypeScript TSConfig file to use for parsing source files"),
@@ -125,7 +125,7 @@ const parseCompilerOptions = Options.file("parse-tsconfig-file", { exists: "yes"
         Schema.decodeUnknownEither(compilerOptionsSchema)(options).pipe(
           Either.mapLeft((e) => {
             const error = HelpDoc.p(
-              `Invalid TypeScript compiler options:\n${TreeFormatter.formatError(e)}`
+              `Invalid TypeScript compiler options:\n${TreeFormatter.formatErrorSync(e)}`
             )
             return ValidationError.invalidValue(error)
           })
@@ -145,7 +145,7 @@ const examplesCompilerOptions = Options.file("examples-tsconfig-file", { exists:
         Schema.decodeUnknownEither(compilerOptionsSchema)(options).pipe(
           Either.mapLeft((e) => {
             const error = HelpDoc.p(
-              `Invalid TypeScript compiler options:\n${TreeFormatter.formatError(e)}`
+              `Invalid TypeScript compiler options:\n${TreeFormatter.formatErrorSync(e)}`
             )
             return ValidationError.invalidValue(error)
           })
