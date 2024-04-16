@@ -4,13 +4,13 @@
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
 import * as doctrine from "doctrine"
+import * as Array from "effect/Array"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import { flow, pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
-import * as ReadonlyArray from "effect/ReadonlyArray"
-import * as ReadonlyRecord from "effect/ReadonlyRecord"
+import * as Record from "effect/Record"
 import * as String from "effect/String"
 import * as ast from "ts-morph"
 import * as Configuration from "./Configuration.js"
@@ -20,7 +20,7 @@ import * as Process from "./Process.js"
 
 /** @internal */
 export interface SourceShape {
-  readonly path: ReadonlyArray.NonEmptyReadonlyArray<string>
+  readonly path: Array.NonEmptyReadonlyArray<string>
   readonly sourceFile: ast.SourceFile
 }
 
@@ -29,17 +29,17 @@ export class Source extends Context.Tag("Source")<Source, SourceShape>() {}
 
 interface Comment {
   readonly description: Option.Option<string>
-  readonly tags: Record<string, ReadonlyArray.NonEmptyReadonlyArray<Option.Option<string>>>
+  readonly tags: Record<string, Array.NonEmptyReadonlyArray<Option.Option<string>>>
 }
 
-const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = ReadonlyArray.sort(
+const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = Array.sort(
   pipe(
     String.Order,
     Order.mapInput(({ name }: { name: string }) => name)
   )
 )
 
-const sortModulesByPath: <A extends Domain.Module>(self: Iterable<A>) => Array<A> = ReadonlyArray
+const sortModulesByPath: <A extends Domain.Module>(self: Iterable<A>) => Array<A> = Array
   .sort(Domain.ByPath)
 
 /**
@@ -47,13 +47,13 @@ const sortModulesByPath: <A extends Domain.Module>(self: Iterable<A>) => Array<A
  */
 export const stripImportTypes = (s: string): string => s.replace(/import\("((?!").)*"\)./g, "")
 
-const getJSDocText: (jsdocs: ReadonlyArray<ast.JSDoc>) => string = ReadonlyArray.matchRight({
+const getJSDocText: (jsdocs: ReadonlyArray<ast.JSDoc>) => string = Array.matchRight({
   onEmpty: () => "",
   onNonEmpty: (_, last) => last.getText()
 })
 
 const hasTag = (tag: string) => (comment: Comment) =>
-  pipe(comment.tags, ReadonlyRecord.get(tag), Option.isSome)
+  pipe(comment.tags, Record.get(tag), Option.isSome)
 
 const hasInternalTag = hasTag("internal")
 
@@ -68,9 +68,9 @@ export const parseComment = (text: string): Comment => {
   })
   const tags = pipe(
     annotation.tags,
-    ReadonlyArray.groupBy((tag) => tag.title),
-    ReadonlyRecord.map(
-      ReadonlyArray.map((tag) =>
+    Array.groupBy((tag) => tag.title),
+    Record.map(
+      Array.map((tag) =>
         pipe(
           Option.fromNullable(tag.description),
           Option.filter(String.isNonEmpty)
@@ -113,13 +113,13 @@ const getSinceTag = (name: string, comment: Comment) =>
   Effect.gen(function*(_) {
     const config = yield* _(Configuration.Configuration)
     const source = yield* _(Source)
-    const since = ReadonlyRecord.get(comment.tags, "since").pipe(
-      Option.flatMap(ReadonlyArray.headNonEmpty),
+    const since = Record.get(comment.tags, "since").pipe(
+      Option.flatMap(Array.headNonEmpty),
       Option.map(String.trim),
       Option.filter(String.isNonEmpty)
     )
     if (
-      Option.isNone(since) && (config.enforceVersion || ReadonlyRecord.has(comment.tags, "since"))
+      Option.isNone(since) && (config.enforceVersion || Record.has(comment.tags, "since"))
     ) {
       return yield* _(Effect.fail(getMissingTagError("@since", source.path, name)))
     }
@@ -129,13 +129,13 @@ const getSinceTag = (name: string, comment: Comment) =>
 const getCategoryTag = (name: string, comment: Comment) =>
   Effect.gen(function*(_) {
     const source = yield* _(Source)
-    const category = ReadonlyRecord.get(comment.tags, "category").pipe(
-      Option.flatMap(ReadonlyArray.headNonEmpty),
+    const category = Record.get(comment.tags, "category").pipe(
+      Option.flatMap(Array.headNonEmpty),
       Option.map(String.trim),
       Option.filter(String.isNonEmpty)
     )
     if (
-      Option.isNone(category) && (ReadonlyRecord.has(comment.tags, "category"))
+      Option.isNone(category) && (Record.has(comment.tags, "category"))
     ) {
       return yield* _(Effect.fail(getMissingTagError("@category", source.path, name)))
     }
@@ -162,11 +162,11 @@ const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
   Effect.gen(function*(_) {
     const config = yield* _(Configuration.Configuration)
     const source = yield* _(Source)
-    const examples = ReadonlyRecord.get(comment.tags, "example").pipe(
-      Option.map(ReadonlyArray.getSomes),
+    const examples = Record.get(comment.tags, "example").pipe(
+      Option.map(Array.getSomes),
       Option.getOrElse(() => [])
     )
-    if (ReadonlyArray.isEmptyArray(examples) && config.enforceExamples && !isModule) {
+    if (Array.isEmptyArray(examples) && config.enforceExamples && !isModule) {
       return yield* _(Effect.fail(getMissingTagError("@example", source.path, name)))
     }
     return examples
@@ -182,7 +182,7 @@ export const getDoc = (name: string, text: string, isModule = false) =>
     const category = yield* _(getCategoryTag(name, comment))
     const description = yield* _(getDescription(name, comment))
     const examples = yield* _(getExamplesTag(name, comment, isModule))
-    const deprecated = Option.isSome(ReadonlyRecord.get(comment.tags, "deprecated"))
+    const deprecated = Option.isSome(Record.get(comment.tags, "deprecated"))
     return Domain.createDoc(
       description,
       since,
@@ -212,7 +212,7 @@ const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
   })
 
 const parseInterfaceDeclarations = (interfaces: ReadonlyArray<ast.InterfaceDeclaration>) => {
-  const exportedInterfaces = ReadonlyArray.filter(
+  const exportedInterfaces = Array.filter(
     interfaces,
     (id) => id.isExported() && shouldNotIgnore(id.getJsDocs())
   )
@@ -253,7 +253,7 @@ const getFunctionDeclarationJSDocs = (
 ): Array<ast.JSDoc> =>
   pipe(
     fd.getOverloads(),
-    ReadonlyArray.matchLeft({
+    Array.matchLeft({
       onEmpty: () => fd.getJsDocs(),
       onNonEmpty: (firstOverload) => firstOverload.getJsDocs()
     })
@@ -274,12 +274,12 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
     const doc = yield* _(getDoc(name, text))
     const signatures = pipe(
       fd.getOverloads(),
-      ReadonlyArray.matchRight({
+      Array.matchRight({
         onEmpty: () => [getFunctionDeclarationSignature(fd)],
         onNonEmpty: (init, last) =>
           pipe(
             init.map(getFunctionDeclarationSignature),
-            ReadonlyArray.append(getFunctionDeclarationSignature(last))
+            Array.append(getFunctionDeclarationSignature(last))
           )
       })
     )
@@ -322,12 +322,12 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
 
 const getFunctionDeclarations = Effect.gen(function*(_) {
   const source = yield* _(Source)
-  const functions = ReadonlyArray.filter(
+  const functions = Array.filter(
     source.sourceFile.getFunctions(),
     (fd) => fd.isExported() && shouldNotIgnore(getFunctionDeclarationJSDocs(fd))
   )
   const arrows = pipe(
-    ReadonlyArray.filter(
+    Array.filter(
       source.sourceFile.getVariableDeclarations(),
       (vd) => {
         if (isVariableDeclarationList(vd.getParent())) {
@@ -380,7 +380,7 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
   })
 
 const parseTypeAliasDeclarations = (typeAliases: ReadonlyArray<ast.TypeAliasDeclaration>) => {
-  const exportedTypeAliases = ReadonlyArray.filter(
+  const exportedTypeAliases = Array.filter(
     typeAliases,
     (tad) => tad.isExported() && shouldNotIgnore(tad.getJsDocs())
   )
@@ -426,7 +426,7 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
 export const parseConstants = Effect.gen(function*(_) {
   const source = yield* _(Source)
   const variableDeclarations = pipe(
-    ReadonlyArray.filter(
+    Array.filter(
       source.sourceFile.getVariableDeclarations(),
       (vd) => {
         if (isVariableDeclarationList(vd.getParent())) {
@@ -451,7 +451,7 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
     const source = yield* _(Source)
     const name = es.compilerNode.name.text
     const type = stripImportTypes(es.getType().getText(es))
-    const ocommentRange = ReadonlyArray.head(es.getLeadingCommentRanges())
+    const ocommentRange = Array.head(es.getLeadingCommentRanges())
     if (Option.isNone(ocommentRange)) {
       return yield* _(
         Effect.fail(
@@ -485,7 +485,7 @@ const parseExportStar = (
     const name = es.getText()
     const namespace = ed.getNamespaceExport()?.getName()
     const signature = `export *${namespace === undefined ? "" : ` as ${namespace}`} from ${name}`
-    const ocommentRange = ReadonlyArray.head(ed.getLeadingCommentRanges())
+    const ocommentRange = Array.head(ed.getLeadingCommentRanges())
     if (Option.isNone(ocommentRange)) {
       return yield* _(
         Effect.fail(
@@ -521,8 +521,8 @@ const parseNamedExports = (ed: ast.ExportDeclaration) => {
   const namedExports = ed.getNamedExports()
   if (namedExports.length === 0) {
     return parseExportStar(ed).pipe(Effect.mapBoth({
-      onFailure: ReadonlyArray.of,
-      onSuccess: ReadonlyArray.of
+      onFailure: Array.of,
+      onSuccess: Array.of
     }))
   }
   return Effect.validateAll(namedExports, parseExportSpecifier)
@@ -536,8 +536,8 @@ export const parseExports = pipe(
   Effect.map(Source, (source) => source.sourceFile.getExportDeclarations()),
   Effect.flatMap((exportDeclarations) => Effect.validateAll(exportDeclarations, parseNamedExports)),
   Effect.mapBoth({
-    onFailure: ReadonlyArray.flatten,
-    onSuccess: ReadonlyArray.flatten
+    onFailure: Array.flatten,
+    onSuccess: Array.flatten
   })
 )
 
@@ -578,13 +578,13 @@ const parseModuleDeclaration = (
   })
 
 const parseModuleDeclarations = (namespaces: ReadonlyArray<ast.ModuleDeclaration>) => {
-  const exportedNamespaces = ReadonlyArray.filter(
+  const exportedNamespaces = Array.filter(
     namespaces,
     (md) => md.isExported() && shouldNotIgnore(md.getJsDocs())
   )
   return Effect.validateAll(exportedNamespaces, parseModuleDeclaration).pipe(
     Effect.mapBoth({
-      onFailure: ReadonlyArray.flatten,
+      onFailure: Array.flatten,
       onSuccess: sortByName
     })
   )
@@ -622,7 +622,7 @@ const parseMethod = (md: ast.MethodDeclaration) =>
     const overloads = md.getOverloads()
     const jsdocs = pipe(
       overloads,
-      ReadonlyArray.matchLeft({
+      Array.matchLeft({
         onEmpty: () => md.getJsDocs(),
         onNonEmpty: (x) => x.getJsDocs()
       })
@@ -632,12 +632,12 @@ const parseMethod = (md: ast.MethodDeclaration) =>
       const doc = yield* _(getDoc(name, text))
       const signatures = pipe(
         overloads,
-        ReadonlyArray.matchRight({
+        Array.matchRight({
           onEmpty: () => [getMethodSignature(md)],
           onNonEmpty: (init, last) =>
             pipe(
               init.map((md) => md.getText()),
-              ReadonlyArray.append(getMethodSignature(last))
+              Array.append(getMethodSignature(last))
             )
         })
       )
@@ -688,7 +688,7 @@ const parseProperty = (classname: string) => (pd: ast.PropertyDeclaration) =>
   })
 
 const parseProperties = (name: string, c: ast.ClassDeclaration) => {
-  const properties = ReadonlyArray.filter(
+  const properties = Array.filter(
     c.getProperties(),
     (pd) =>
       !pd.isStatic() && shouldNotIgnore(pd.getJsDocs()) && pipe(
@@ -726,7 +726,7 @@ const getClassName = (c: ast.ClassDeclaration) =>
 
 const getClassDoc = (name: string, c: ast.ClassDeclaration) => {
   const text = getJSDocText(c.getJsDocs())
-  return getDoc(name, text).pipe(Effect.mapError(ReadonlyArray.of))
+  return getDoc(name, text).pipe(Effect.mapError(Array.of))
 }
 
 const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
@@ -735,7 +735,7 @@ const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
     Effect.map((typeParameters) =>
       pipe(
         c.getConstructors(),
-        ReadonlyArray.matchLeft({
+        Array.matchLeft({
           onEmpty: () => `export declare class ${name}${typeParameters}`,
           onNonEmpty: (head) =>
             `export declare class ${name}${typeParameters} { ${
@@ -756,12 +756,12 @@ const parseClass = (c: ast.ClassDeclaration) =>
     const methods = yield* _(pipe(
       c.getInstanceMethods(),
       Effect.validateAll(parseMethod),
-      Effect.map(ReadonlyArray.getSomes)
+      Effect.map(Array.getSomes)
     ))
     const staticMethods = yield* _(pipe(
       c.getStaticMethods(),
       Effect.validateAll(parseMethod),
-      Effect.map(ReadonlyArray.getSomes)
+      Effect.map(Array.getSomes)
     ))
     const properties = yield* _(parseProperties(name, c))
     return Domain.createClass(
@@ -786,14 +786,14 @@ const parseClass = (c: ast.ClassDeclaration) =>
  */
 export const parseClasses = Effect.gen(function*(_) {
   const source = yield* _(Source)
-  const exportedClasses = ReadonlyArray.filter(
+  const exportedClasses = Array.filter(
     source.sourceFile.getClasses(),
     (cd) => cd.isExported() && shouldNotIgnore(cd.getJsDocs())
   )
   return yield* _(
     Effect.validateAll(exportedClasses, parseClass).pipe(
       Effect.mapBoth({
-        onFailure: ReadonlyArray.flatten,
+        onFailure: Array.flatten,
         onSuccess: sortByName
       })
     )
@@ -807,12 +807,12 @@ export const parseModuleDocumentation = Effect.gen(function*(_) {
   const config = yield* _(Configuration.Configuration)
   const source = yield* _(Source)
   const path = yield* _(Path.Path)
-  const name = path.parse(ReadonlyArray.lastNonEmpty(source.path)).name
+  const name = path.parse(Array.lastNonEmpty(source.path)).name
   // if any of the settings enforcing documentation are set to `true`, then
   // a module should have associated documentation
   const isDocumentationRequired = config.enforceDescriptions || config.enforceVersion
   const statements = source.sourceFile.getStatements()
-  const ofirstStatement = ReadonlyArray.head(statements)
+  const ofirstStatement = Array.head(statements)
   if (Option.isNone(ofirstStatement)) {
     if (isDocumentationRequired) {
       return yield* _(
@@ -823,7 +823,7 @@ export const parseModuleDocumentation = Effect.gen(function*(_) {
     }
   } else {
     const firstStatement = ofirstStatement.value
-    const ocommentRange = ReadonlyArray.head(firstStatement.getLeadingCommentRanges())
+    const ocommentRange = Array.head(firstStatement.getLeadingCommentRanges())
     if (Option.isNone(ocommentRange)) {
       if (isDocumentationRequired) {
         return yield* _(Effect.fail(
@@ -834,7 +834,7 @@ export const parseModuleDocumentation = Effect.gen(function*(_) {
       const commentRange = ocommentRange.value
       const text = commentRange.getText()
       const doc = yield* _(
-        getDoc("<module fileoverview>", text, true).pipe(Effect.mapError(ReadonlyArray.of))
+        getDoc("<module fileoverview>", text, true).pipe(Effect.mapError(Array.of))
       )
       return Domain.createNamedDoc(
         name,
@@ -895,7 +895,7 @@ export const parseFile = (project: ast.Project) =>
   Effect.flatMap(Path.Path, (_) => {
     const path = file.path.split(
       _.sep
-    ) as any as ReadonlyArray.NonEmptyReadonlyArray<string>
+    ) as any as Array.NonEmptyReadonlyArray<string>
     const sourceFile = project.getSourceFile(file.path)
     if (sourceFile !== undefined) {
       return pipe(
@@ -946,7 +946,7 @@ export const parseFiles = (files: ReadonlyArray<File.File>) =>
         Effect.validateAll(parseFile(project)),
         Effect.map(
           flow(
-            ReadonlyArray.filter((module) => !module.deprecated),
+            Array.filter((module) => !module.deprecated),
             sortModulesByPath
           )
         )

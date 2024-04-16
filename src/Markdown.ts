@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
+import * as Array from "effect/Array"
 import * as Effect from "effect/Effect"
 import { identity, pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
-import * as ReadonlyArray from "effect/ReadonlyArray"
-import * as ReadonlyRecord from "effect/ReadonlyRecord"
+import * as Record from "effect/Record"
 import * as String from "effect/String"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain.js"
@@ -98,13 +98,13 @@ const printProperty = (p: Domain.Property): string =>
   )
 
 const printStaticMethods = (methods: ReadonlyArray<Domain.Method>): string =>
-  ReadonlyArray.map(methods, (method) => printStaticMethod(method) + "\n\n").join("")
+  Array.map(methods, (method) => printStaticMethod(method) + "\n\n").join("")
 
 const printMethods = (methods: ReadonlyArray<Domain.Method>): string =>
-  ReadonlyArray.map(methods, (method) => printMethod(method) + "\n\n").join("")
+  Array.map(methods, (method) => printMethod(method) + "\n\n").join("")
 
 const printProperties = (properties: ReadonlyArray<Domain.Property>): string =>
-  ReadonlyArray.map(
+  Array.map(
     properties,
     (property) => printProperty(property) + "\n\n"
   ).join("")
@@ -216,12 +216,12 @@ export const printNamespace = (ns: Domain.Namespace, indentation: number): strin
       printExamples(ns.examples),
       printSince(ns.since)
     ),
-    ReadonlyArray.map(ns.interfaces, (i) => printInterface(i, indentation + 1) + "\n\n").join(""),
-    ReadonlyArray.map(
+    Array.map(ns.interfaces, (i) => printInterface(i, indentation + 1) + "\n\n").join(""),
+    Array.map(
       ns.typeAliases,
       (typeAlias) => printTypeAlias(typeAlias, indentation + 1) + "\n\n"
     ).join(""),
-    ReadonlyArray.map(
+    Array.map(
       ns.namespaces,
       (namespace) => printNamespace(namespace, indentation + 1) + "\n\n"
     ).join("")
@@ -248,7 +248,7 @@ export const print = (p: Printable): string => {
 }
 
 const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
-  ReadonlyArray.flatten([
+  Array.flatten([
     module.classes,
     module.constants,
     module.exports,
@@ -289,21 +289,21 @@ export const printModule = (
 
     const content = pipe(
       getPrintables(module),
-      ReadonlyArray.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
-      ReadonlyRecord.toEntries,
-      ReadonlyArray.sort(byCategory),
-      ReadonlyArray.map(([category, printables]) =>
+      Array.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
+      Record.toEntries,
+      Array.sort(byCategory),
+      Array.map(([category, printables]) =>
         [
           MarkdownPrinter.h1(category),
           ...pipe(
             printables,
-            ReadonlyArray.sort(
+            Array.sort(
               Order.mapInput(
                 String.Order,
                 (printable: Printable) => printable.name
               )
             ),
-            ReadonlyArray.map(print)
+            Array.map(print)
           )
         ].join("\n")
       )

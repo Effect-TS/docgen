@@ -8,9 +8,9 @@ import * as CommandExecutor from "@effect/platform/CommandExecutor"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
+import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
-import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
@@ -137,11 +137,11 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*(_) {
     const config = yield* _(Configuration.Configuration)
     const path = yield* _(Path.Path)
-    return ReadonlyArray.flatMap(modules, (module) => {
+    return Array.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
       const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<File.File> =>
-        ReadonlyArray.map(
+        Array.map(
           doc.examples,
           (content, i) =>
             File.createFile(
@@ -156,35 +156,35 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         )
 
       const moduleExamples = getFiles("module")(module)
-      const methodsExamples = ReadonlyArray.flatMap(module.classes, (c) =>
-        ReadonlyArray.flatten([
-          ReadonlyArray.flatMap(
+      const methodsExamples = Array.flatMap(module.classes, (c) =>
+        Array.flatten([
+          Array.flatMap(
             c.methods,
             getFiles(`${c.name}-method`)
           ),
-          ReadonlyArray.flatMap(
+          Array.flatMap(
             c.staticMethods,
             getFiles(`${c.name}-staticmethod`)
           )
         ]))
-      const interfacesExamples = ReadonlyArray.flatMap(
+      const interfacesExamples = Array.flatMap(
         module.interfaces,
         getFiles("interface")
       )
-      const typeAliasesExamples = ReadonlyArray.flatMap(
+      const typeAliasesExamples = Array.flatMap(
         module.typeAliases,
         getFiles("typealias")
       )
-      const constantsExamples = ReadonlyArray.flatMap(
+      const constantsExamples = Array.flatMap(
         module.constants,
         getFiles("constant")
       )
-      const functionsExamples = ReadonlyArray.flatMap(
+      const functionsExamples = Array.flatMap(
         module.functions,
         getFiles("function")
       )
 
-      return ReadonlyArray.flatten([
+      return Array.flatten([
         moduleExamples,
         methodsExamples,
         interfacesExamples,

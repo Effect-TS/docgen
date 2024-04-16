@@ -6,6 +6,7 @@ import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
+import * as Array from "effect/Array"
 import * as Config from "effect/Config"
 import * as ConfigProvider from "effect/ConfigProvider"
 import * as Context from "effect/Context"
@@ -13,7 +14,6 @@ import * as Effect from "effect/Effect"
 import { identity } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
-import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as tsconfck from "tsconfck"
 import { DocgenError } from "./Error.js"
 import * as Process from "./Process.js"
@@ -21,53 +21,53 @@ import * as Process from "./Process.js"
 const PACKAGE_JSON_FILE_NAME = "package.json"
 const CONFIG_FILE_NAME = "docgen.json"
 
-const compilerOptionsSchema = Schema.union(
-  Schema.string,
-  Schema.record(Schema.string, Schema.unknown)
+const compilerOptionsSchema = Schema.Union(
+  Schema.String,
+  Schema.Record(Schema.String, Schema.Unknown)
 )
 
 /**
  * @category service
  * @since 1.0.0
  */
-export const ConfigurationSchema = Schema.struct({
-  "$schema": Schema.optional(Schema.string),
-  projectHomepage: Schema.optional(Schema.string).annotations({
+export const ConfigurationSchema = Schema.Struct({
+  "$schema": Schema.optional(Schema.String),
+  projectHomepage: Schema.optional(Schema.String).annotations({
     description:
       "Will link to the project homepage from the Auxiliary Links of the generated documentation."
   }),
-  srcDir: Schema.optional(Schema.string).annotations({
+  srcDir: Schema.optional(Schema.String).annotations({
     description: "The directory in which docgen will search for TypeScript files to parse.",
     default: "src"
   }),
-  outDir: Schema.optional(Schema.string).annotations({
+  outDir: Schema.optional(Schema.String).annotations({
     description: "The directory to which docgen will generate its output markdown documents.",
     default: "docs"
   }),
-  theme: Schema.optional(Schema.string).annotations({
+  theme: Schema.optional(Schema.String).annotations({
     description:
       "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
     default: "mikearnaldi/just-the-docs"
   }),
-  enableSearch: Schema.optional(Schema.boolean).annotations({
+  enableSearch: Schema.optional(Schema.Boolean).annotations({
     description:
       "Whether or not search should be enabled for GitHub Docs in the generated _config.yml file.",
     default: true
   }),
-  enforceDescriptions: Schema.optional(Schema.boolean).annotations({
+  enforceDescriptions: Schema.optional(Schema.Boolean).annotations({
     description: "Whether or not descriptions for each module export should be required.",
     default: false
   }),
-  enforceExamples: Schema.optional(Schema.boolean).annotations({
+  enforceExamples: Schema.optional(Schema.Boolean).annotations({
     description:
       "Whether or not @example tags for each module export should be required. (Note: examples will not be enforced in module documentation)",
     default: false
   }),
-  enforceVersion: Schema.optional(Schema.boolean).annotations({
+  enforceVersion: Schema.optional(Schema.Boolean).annotations({
     description: "Whether or not @since tags for each module export should be required.",
     default: true
   }),
-  exclude: Schema.optional(Schema.array(Schema.string)).annotations({
+  exclude: Schema.optional(Schema.Array(Schema.String)).annotations({
     description:
       "An array of glob strings specifying files that should be excluded from the documentation.",
     default: []
@@ -149,7 +149,7 @@ const validateJsonFile = <A, I>(
       Schema.decodeUnknown(schema)(content),
       Effect.orDieWith((error) =>
         new DocgenError({
-          message: `[Configuration.validateJsonFile]\n${TreeFormatter.formatError(error)}`
+          message: `[Configuration.validateJsonFile]\n${TreeFormatter.formatErrorSync(error)}`
         })
       )
     )
@@ -220,11 +220,11 @@ const resolveCompilerOptions = (
   )
 }
 
-const JsonRecordSchema = Schema.parseJson(Schema.record(Schema.string, Schema.unknown))
+const JsonRecordSchema = Schema.parseJson(Schema.Record(Schema.String, Schema.Unknown))
 
-const PackageJsonSchema = Schema.struct({
-  name: Schema.string,
-  homepage: Schema.string
+const PackageJsonSchema = Schema.Struct({
+  name: Schema.String,
+  homepage: Schema.String
 })
 
 /** @internal */
@@ -260,11 +260,11 @@ export const load = (args: {
     const config = yield* _(readDocgenConfig(configPath))
 
     // Resolve the excluded files
-    const exclude = ReadonlyArray.match(args.exclude, {
+    const exclude = Array.match(args.exclude, {
       onEmpty: () =>
         Option.match(config, {
-          onNone: () => ReadonlyArray.empty<string>(),
-          onSome: ({ exclude }) => exclude || ReadonlyArray.empty<string>()
+          onNone: () => Array.empty<string>(),
+          onSome: ({ exclude }) => exclude || Array.empty<string>()
         }),
       onNonEmpty: identity
     })

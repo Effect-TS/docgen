@@ -1,11 +1,6 @@
 import { FileSystem, Path } from "@effect/platform"
 import { NodeFileSystem, NodePath } from "@effect/platform-node"
-import { Effect, Layer, ReadonlyRecord } from "effect"
-
-const excludedPrefixes = ["@effect", "effect", "chalk", "tsconfck", "ts-morph"]
-
-const excludeEffectPackages = (deps: Record<string, string>): Record<string, string> =>
-  ReadonlyRecord.filter(deps, (_, k) => !excludedPrefixes.some((_) => k.startsWith(_)))
+import { Effect, Layer } from "effect"
 
 const program = Effect.gen(function*(_) {
   const fs = yield* _(FileSystem.FileSystem)
@@ -22,8 +17,8 @@ const program = Effect.gen(function*(_) {
     main: "bin.cjs",
     bin: "bin.cjs",
     engines: json.engines,
-    dependencies: excludeEffectPackages(json.dependencies),
-    peerDependencies: excludeEffectPackages(json.peerDependencies),
+    dependencies: json.dependencies,
+    peerDependencies: json.peerDependencies,
     repository: json.repository,
     author: json.author,
     license: json.license,
