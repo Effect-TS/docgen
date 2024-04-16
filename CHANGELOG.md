@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.4.3
+
+### Patch Changes
+
+- 7add2b9: update dependencies
+
 ## 0.4.2
 
 ### Patch Changes
