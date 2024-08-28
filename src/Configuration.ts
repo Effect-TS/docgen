@@ -285,8 +285,20 @@ export const load = (args: {
       )
     )
 
+    const srcDir = Option.match(config, {
+      onNone: () => args.srcDir,
+      onSome: ({ srcDir }) => srcDir || args.srcDir,
+    })
+
+    const outDir = Option.match(config, {
+      onNone: () => args.outDir,
+      onSome: ({ outDir }) => outDir || args.outDir,
+    })
+    
     return Configuration.of({
       ...args,
+      srcDir,
+      outDir,
       projectName,
       projectHomepage,
       exclude,
