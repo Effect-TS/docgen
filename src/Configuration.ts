@@ -285,15 +285,15 @@ export const load = (args: {
       )
     )
 
-    const srcDir = Option.match(config, {
-      onNone: () => args.srcDir,
-      onSome: ({ srcDir }) => srcDir || args.srcDir,
-    })
+    const srcDir = config.pipe(
+      Option.flatMapNullable((config) => config.srcDir),
+      Option.getOrElse(() => args.srcDir)
+    )
 
-    const outDir = Option.match(config, {
-      onNone: () => args.outDir,
-      onSome: ({ outDir }) => outDir || args.outDir,
-    })
+    const outDir = config.pipe(
+      Option.flatMapNullable((config) => config.outDir),
+      Option.getOrElse(() => args.outDir)
+    )
     
     return Configuration.of({
       ...args,
