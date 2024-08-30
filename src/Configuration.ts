@@ -285,8 +285,20 @@ export const load = (args: {
       )
     )
 
+    const srcDir = config.pipe(
+      Option.flatMapNullable((config) => config.srcDir),
+      Option.getOrElse(() => args.srcDir)
+    )
+
+    const outDir = config.pipe(
+      Option.flatMapNullable((config) => config.outDir),
+      Option.getOrElse(() => args.outDir)
+    )
+    
     return Configuration.of({
       ...args,
+      srcDir,
+      outDir,
       projectName,
       projectHomepage,
       exclude,
