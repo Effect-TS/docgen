@@ -294,7 +294,7 @@ export const load = (args: {
       Option.flatMapNullable((config) => config.outDir),
       Option.getOrElse(() => args.outDir)
     )
-    
+
     return Configuration.of({
       ...args,
       srcDir,
