@@ -36,7 +36,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ConfigurationSchema: Schema.struct<{
+export declare const ConfigurationSchema: Schema.Struct<{
   $schema: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
   projectHomepage: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
   srcDir: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
