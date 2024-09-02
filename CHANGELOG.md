@@ -1,5 +1,12 @@
 # @effect/docgen
 
+## 0.4.4
+
+### Patch Changes
+
+- 00ce7a0: upgrade ts-morph to 23.0.0
+- 5b888e5: srcDir and outDir fields in docgen.json are currently ignored. With this patch, they are taken into account
+
 ## 0.4.3
 
 ### Patch Changes
