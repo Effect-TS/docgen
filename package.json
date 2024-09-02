@@ -23,7 +23,6 @@
   "homepage": "https://github.com/effect-ts/docgen",
   "scripts": {
     "prepare": "pnpm clean && pnpm build",
-    "update-version": "changeset version && pnpm install --no-frozen-lockfile && node ./scripts/version.mjs",
     "lint": "eslint src test",
     "lint-fix": "eslint src test --fix",
     "coverage": "vitest run --coverage",
@@ -32,7 +31,9 @@
     "clean": "rimraf dist coverage .tsbuildinfo",
     "build": "pnpm schema && tsup && tsx scripts/copy-package-json.ts",
     "schema": "tsx scripts/gen-schema.ts",
-    "docgen": "tsx src/bin.ts"
+    "docgen": "tsx src/bin.ts",
+    "changeset-version": "changeset version && node ./scripts/version.mjs",
+    "changeset-publish": "pnpm build && TEST_DIST= pnpm vitest && changeset publish"
   },
   "dependencies": {
     "@effect/markdown-toc": "^0.1.0",
