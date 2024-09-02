@@ -114,7 +114,7 @@ const exclude = Options.text("exclude").pipe(
   )
 )
 
-const compilerOptionsSchema = Schema.Record(Schema.String, Schema.Unknown)
+const compilerOptionsSchema = Schema.Record({ key: Schema.String, value: Schema.Unknown })
 
 const parseCompilerOptions = Options.file("parse-tsconfig-file", { exists: "yes" }).pipe(
   Options.withDescription("The TypeScript TSConfig file to use for parsing source files"),

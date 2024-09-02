@@ -23,7 +23,7 @@ const CONFIG_FILE_NAME = "docgen.json"
 
 const compilerOptionsSchema = Schema.Union(
   Schema.String,
-  Schema.Record(Schema.String, Schema.Unknown)
+  Schema.Record({ key: Schema.String, value: Schema.Unknown })
 )
 
 /**
@@ -220,7 +220,10 @@ const resolveCompilerOptions = (
   )
 }
 
-const JsonRecordSchema = Schema.parseJson(Schema.Record(Schema.String, Schema.Unknown))
+const JsonRecordSchema = Schema.parseJson(Schema.Record({
+  key: Schema.String,
+  value: Schema.Unknown
+}))
 
 const PackageJsonSchema = Schema.Struct({
   name: Schema.String,
