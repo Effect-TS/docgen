@@ -183,10 +183,8 @@ describe("Configuration", () => {
 ConfigurationSchema
 └─ ["projectHomepage"]
    └─ string | undefined
-      ├─ Union member
-      │  └─ Expected a string, actual 1
-      └─ Union member
-         └─ Expected undefined, actual 1`
+      ├─ Expected string, actual 1
+      └─ Expected undefined, actual 1`
         })
       )
     )
