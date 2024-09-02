@@ -170,7 +170,7 @@ describe("Configuration", () => {
   })
 
   it("should raise a validation error if docgen.json is not valid", async () => {
-    const cli = testCliFor(Effect.unit)
+    const cli = testCliFor(Effect.void)
     const result = await cli([]).pipe(
       Effect.provide(TestLive.pipe(Layer.provide(makeDocgenJson({ projectHomepage: 1 })))),
       Effect.runPromiseExit
