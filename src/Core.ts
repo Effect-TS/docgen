@@ -273,8 +273,10 @@ const runTscOnExamples = Effect.gen(function*(_) {
   const platform = yield* _(process.platform)
 
   const tsconfig = path.normalize(path.join(cwd, config.outDir, "examples", "tsconfig.json"))
-  const exe = platform === "win32" ? "tsc.cmd" : "tsc"
-  const command = Command.make(exe, "--noEmit", "--project", tsconfig)
+  const options = ["--noEmit", "--project", tsconfig]
+  const command = platform === "win32"
+    ? Command.runInShell(Command.make("tsc.cmd", ...options), true)
+    : Command.make("tsc", ...options)
 
   yield* _(Effect.logDebug("Running tsc on examples..."))
 
@@ -316,8 +318,10 @@ const runTsxOnExamples = Effect.gen(function*(_) {
   const examples = path.normalize(path.join(cwd, config.outDir, "examples"))
   const tsconfig = path.join(examples, "tsconfig.json")
   const index = path.join(examples, "index.ts")
-  const exe = platform === "win32" ? "tsx.cmd" : "tsx"
-  const command = Command.make(exe, "--tsconfig", tsconfig, index)
+  const options = ["--tsconfig", tsconfig, index]
+  const command = platform === "win32"
+    ? Command.runInShell(Command.make("tsx.cmd", ...options), true)
+    : Command.make("tsx", ...options)
 
   yield* _(Effect.logDebug("Running tsx on examples..."))
 
