@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.4.5
+
+### Patch Changes
+
+- 8959440: Fixes the type checking and execution of examples on Windows
+
 ## 0.4.4
 
 ### Patch Changes
