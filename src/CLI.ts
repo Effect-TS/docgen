@@ -156,6 +156,17 @@ const examplesCompilerOptions = Options.file("examples-tsconfig-file", { exists:
   Options.optional
 )
 
+const enableAI = Options.boolean("no-run-examples", {
+  ifPresent: false,
+  negationNames: ["run-examples"]
+}).pipe(
+  Options.withFallbackConfig(Config.boolean("enableAI")),
+  Options.withDefault(true),
+  Options.withDescription(
+    "Whether or not to generate AI documentation for the project"
+  )
+)
+
 const options = {
   projectHomepage,
   srcDir,
@@ -168,7 +179,8 @@ const options = {
   runExamples,
   exclude,
   parseCompilerOptions,
-  examplesCompilerOptions
+  examplesCompilerOptions,
+  enableAI
 }
 
 /** @internal */
