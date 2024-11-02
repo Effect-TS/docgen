@@ -530,6 +530,152 @@ describe("Parser", () => {
         )
       })
 
+      it("should parse examples even when enclosed in code blocks using backticks", () => {
+        expectSuccess(
+          `/**
+            * a description...
+            * @since 1.0.0
+            * @example
+            * \`\`\`ts
+            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+            * \`\`\`
+            * @example
+            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+            * @deprecated
+            */
+            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
+          Parser.parseFunctions,
+          [
+            {
+              _tag: "Function",
+              deprecated: true,
+              description: Option.some("a description..."),
+              name: "f",
+              signatures: [
+                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
+              ],
+              since: Option.some("1.0.0"),
+              examples: [
+                "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
+                "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })"
+              ],
+              category: Option.none()
+            }
+          ]
+        )
+      })
+
+      it("should parse multiline examples even when enclosed in code blocks  using backticks", () => {
+        expectSuccess(
+          `/**
+            * a description...
+            * @since 1.0.0
+            * @example
+            * \`\`\`ts
+            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+            * 
+            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+            * \`\`\`
+            * @deprecated
+            */
+            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
+          Parser.parseFunctions,
+          [
+            {
+              _tag: "Function",
+              deprecated: true,
+              description: Option.some("a description..."),
+              name: "f",
+              signatures: [
+                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
+              ],
+              since: Option.some("1.0.0"),
+              examples: [
+                String.stripMargin(
+                  `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+
+                   |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
+                )
+              ],
+              category: Option.none()
+            }
+          ]
+        )
+      })
+
+      it("should parse examples even when enclosed in code blocks using tildes", () => {
+        expectSuccess(
+          `/**
+            * a description...
+            * @since 1.0.0
+            * @example
+            * ~~~ts
+            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+            * ~~~
+            * @example
+            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+            * @deprecated
+            */
+            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
+          Parser.parseFunctions,
+          [
+            {
+              _tag: "Function",
+              deprecated: true,
+              description: Option.some("a description..."),
+              name: "f",
+              signatures: [
+                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
+              ],
+              since: Option.some("1.0.0"),
+              examples: [
+                "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
+                "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })"
+              ],
+              category: Option.none()
+            }
+          ]
+        )
+      })
+
+      it("should parse multiline examples even when enclosed in code blocks  using backticks", () => {
+        expectSuccess(
+          `/**
+            * a description...
+            * @since 1.0.0
+            * @example
+            * ~~~ts
+            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+            * 
+            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+            * ~~~
+            * @deprecated
+            */
+            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
+          Parser.parseFunctions,
+          [
+            {
+              _tag: "Function",
+              deprecated: true,
+              description: Option.some("a description..."),
+              name: "f",
+              signatures: [
+                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
+              ],
+              since: Option.some("1.0.0"),
+              examples: [
+                String.stripMargin(
+                  `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+
+                   |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
+                )
+              ],
+              category: Option.none()
+            }
+          ]
+        )
+      })
+
       it("should return a function declaration", () => {
         expectSuccess(
           `/**

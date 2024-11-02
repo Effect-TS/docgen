@@ -158,12 +158,17 @@ const getDescription = (name: string, comment: Comment) =>
     return comment.description
   })
 
+const mdCodeBlockStart = /^(```|~~~)[^\n]*\n/
+const mdCodeBlockEnd = /\n(```|~~~)$/
+const stripCodeBlocksFromExample = (example: string) =>
+  example.replace(mdCodeBlockStart, "").replace(mdCodeBlockEnd, "")
+
 const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
   Effect.gen(function*(_) {
     const config = yield* _(Configuration.Configuration)
     const source = yield* _(Source)
     const examples = Record.get(comment.tags, "example").pipe(
-      Option.map(Array.getSomes),
+      Option.map(flow(Array.getSomes, Array.map(stripCodeBlocksFromExample))),
       Option.getOrElse(() => [])
     )
     if (Array.isEmptyArray(examples) && config.enforceExamples && !isModule) {
