@@ -201,10 +201,9 @@ const getHeaderByIndentation = (indentation: number) => {
       return MarkdownPrinter.h2
     case 1:
       return MarkdownPrinter.h3
-    case 2:
+    default:
       return MarkdownPrinter.h4
   }
-  throw new Error(`[Markdown] Unsupported namespace nesting: ${indentation + 1}`)
 }
 
 /** @internal */
