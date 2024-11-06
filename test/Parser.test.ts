@@ -521,8 +521,8 @@ describe("Parser", () => {
               ],
               since: Option.some("1.0.0"),
               examples: [
-                "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })"
+                { body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })" },
+                { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
               category: Option.none()
             }
@@ -556,8 +556,11 @@ describe("Parser", () => {
               ],
               since: Option.some("1.0.0"),
               examples: [
-                "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })"
+                {
+                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
+                  fences: { start: "```ts", end: "```" }
+                },
+                { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
               category: Option.none()
             }
@@ -565,7 +568,7 @@ describe("Parser", () => {
         )
       })
 
-      it("should parse multiline examples even when enclosed in code blocks  using backticks", () => {
+      it("should parse multiline examples even when enclosed in code blocks using backticks", () => {
         expectSuccess(
           `/**
             * a description...
@@ -591,11 +594,14 @@ describe("Parser", () => {
               ],
               since: Option.some("1.0.0"),
               examples: [
-                String.stripMargin(
-                  `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+                {
+                  body: String.stripMargin(
+                    `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 
-                   |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
-                )
+                    |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
+                  ),
+                  fences: { start: "```ts", end: "```" }
+                }
               ],
               category: Option.none()
             }
@@ -629,8 +635,11 @@ describe("Parser", () => {
               ],
               since: Option.some("1.0.0"),
               examples: [
-                "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })"
+                {
+                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
+                  fences: { start: "~~~ts", end: "~~~" }
+                },
+                { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
               category: Option.none()
             }
@@ -638,7 +647,7 @@ describe("Parser", () => {
         )
       })
 
-      it("should parse multiline examples even when enclosed in code blocks  using backticks", () => {
+      it("should parse multiline examples even when enclosed in code blocks using backticks", () => {
         expectSuccess(
           `/**
             * a description...
@@ -664,11 +673,90 @@ describe("Parser", () => {
               ],
               since: Option.some("1.0.0"),
               examples: [
-                String.stripMargin(
-                  `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+                {
+                  body: String.stripMargin(
+                    `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 
-                   |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
-                )
+                    |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
+                  ),
+                  fences: { start: "~~~ts", end: "~~~" }
+                }
+              ],
+              category: Option.none()
+            }
+          ]
+        )
+      })
+
+      it("should  parse twoslash examples using backtick fences", () => {
+        expectSuccess(
+          `/**
+            * a description...
+            * @since 1.0.0
+            * @example
+            * \`\`\`ts twoslash
+            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+            * \`\`\`
+            * @example
+            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+            * @deprecated
+            */
+            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
+          Parser.parseFunctions,
+          [
+            {
+              _tag: "Function",
+              deprecated: true,
+              description: Option.some("a description..."),
+              name: "f",
+              signatures: [
+                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
+              ],
+              since: Option.some("1.0.0"),
+              examples: [
+                {
+                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
+                  fences: { start: "```ts twoslash", end: "```" }
+                },
+                { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
+              ],
+              category: Option.none()
+            }
+          ]
+        )
+      })
+
+      it("should  parse twoslash examples using tilde fences", () => {
+        expectSuccess(
+          `/**
+            * a description...
+            * @since 1.0.0
+            * @example
+            * ~~~ts twoslash
+            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+            * ~~~
+            * @example
+            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+            * @deprecated
+            */
+            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
+          Parser.parseFunctions,
+          [
+            {
+              _tag: "Function",
+              deprecated: true,
+              description: Option.some("a description..."),
+              name: "f",
+              signatures: [
+                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
+              ],
+              since: Option.some("1.0.0"),
+              examples: [
+                {
+                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
+                  fences: { start: "~~~ts twoslash", end: "~~~" }
+                },
+                { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
               category: Option.none()
             }
@@ -1532,7 +1620,7 @@ export const foo = 'foo'`,
                 description: Option.some("This is the foo export."),
                 since: Option.some("1.0.0"),
                 deprecated: false,
-                examples: [`import { foo } from 'test'\n\nconsole.log(foo)`],
+                examples: [{ body: `import { foo } from 'test'\n\nconsole.log(foo)` }],
                 category: Option.some("foo"),
                 signature: "export declare const foo: \"foo\""
               }

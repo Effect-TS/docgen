@@ -37,38 +37,21 @@ Added in v1.0.0
 
 ```ts
 export declare const ConfigurationSchema: Schema.Struct<{
-  $schema: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-  projectHomepage: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-  srcDir: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-  outDir: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-  theme: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-  enableSearch: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-  enforceDescriptions: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-  enforceExamples: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-  enforceVersion: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-  exclude: Schema.PropertySignature<
-    "?:",
-    readonly string[] | undefined,
-    never,
-    "?:",
-    readonly string[] | undefined,
-    never
+  $schema: Schema.optional<typeof Schema.String>
+  projectHomepage: Schema.optional<typeof Schema.String>
+  srcDir: Schema.optional<typeof Schema.String>
+  outDir: Schema.optional<typeof Schema.String>
+  theme: Schema.optional<typeof Schema.String>
+  enableSearch: Schema.optional<typeof Schema.Boolean>
+  enforceDescriptions: Schema.optional<typeof Schema.Boolean>
+  enforceExamples: Schema.optional<typeof Schema.Boolean>
+  enforceVersion: Schema.optional<typeof Schema.Boolean>
+  exclude: Schema.optional<Schema.Array$<typeof Schema.String>>
+  parseCompilerOptions: Schema.optional<
+    Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>
   >
-  parseCompilerOptions: Schema.PropertySignature<
-    "?:",
-    string | { readonly [x: string]: unknown } | undefined,
-    never,
-    "?:",
-    string | { readonly [x: string]: unknown } | undefined,
-    never
-  >
-  examplesCompilerOptions: Schema.PropertySignature<
-    "?:",
-    string | { readonly [x: string]: unknown } | undefined,
-    never,
-    "?:",
-    string | { readonly [x: string]: unknown } | undefined,
-    never
+  examplesCompilerOptions: Schema.optional<
+    Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>
   >
 }>
 ```

@@ -158,17 +158,30 @@ const getDescription = (name: string, comment: Comment) =>
     return comment.description
   })
 
-const mdCodeBlockStart = /^(```|~~~)[^\n]*\n/
-const mdCodeBlockEnd = /\n(```|~~~)$/
-const stripCodeBlocksFromExample = (example: string) =>
-  example.replace(mdCodeBlockStart, "").replace(mdCodeBlockEnd, "")
+const fencedExampleRegex =
+  /^(?<fenceStart>(```|~~~)[^\n]*)\n(?<body>[\S\s]*)(?<fenceEnd>\n(```|~~~))$/
+const parseExample = (body: string) => {
+  const example = fencedExampleRegex.exec(body)
+
+  if (example === null) {
+    return { body }
+  }
+
+  return {
+    body: example?.groups?.body ?? "",
+    fences: {
+      start: example?.groups?.fenceStart?.trim() ?? "```ts",
+      end: example?.groups?.fenceEnd?.trim() ?? "```"
+    }
+  }
+}
 
 const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
   Effect.gen(function*(_) {
     const config = yield* _(Configuration.Configuration)
     const source = yield* _(Source)
     const examples = Record.get(comment.tags, "example").pipe(
-      Option.map(flow(Array.getSomes, Array.map(stripCodeBlocksFromExample))),
+      Option.map(flow(Array.getSomes, Array.map(parseExample))),
       Option.getOrElse(() => [])
     )
     if (Array.isEmptyArray(examples) && config.enforceExamples && !isModule) {

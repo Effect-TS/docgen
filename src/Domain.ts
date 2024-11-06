@@ -25,7 +25,13 @@ export interface Module extends NamedDoc {
  * @category model
  * @since 1.0.0
  */
-export type Example = string
+export type Example = {
+  body: string
+  fences?: {
+    start: string
+    end: string
+  }
+}
 
 /**
  * @category model
