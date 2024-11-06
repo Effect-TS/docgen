@@ -1,2 +1,2 @@
 /** @internal */
-export const moduleVersion = "0.4.6"
+export const moduleVersion = "0.4.7"

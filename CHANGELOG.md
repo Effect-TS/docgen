@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.4.7
+
+### Patch Changes
+
+- e3ae139: Typecheck namespace examples
+
 ## 0.4.6
 
 ### Patch Changes
