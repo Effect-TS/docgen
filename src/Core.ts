@@ -183,6 +183,10 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         module.functions,
         getFiles("function")
       )
+      const namespacesExamples = Array.flatMap(
+        module.namespaces,
+        getFiles("namespace")
+      )
 
       return Array.flatten([
         moduleExamples,
@@ -190,7 +194,8 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         interfacesExamples,
         typeAliasesExamples,
         constantsExamples,
-        functionsExamples
+        functionsExamples,
+        namespacesExamples
       ])
     })
   })
