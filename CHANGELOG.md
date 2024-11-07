@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.5.0
+
+### Minor Changes
+
+- 8a0eb55: Support custom code fences when rendering examples
+
 ## 0.4.7
 
 ### Patch Changes
