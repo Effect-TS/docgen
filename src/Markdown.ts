@@ -25,8 +25,8 @@ const createHeaderPrinter = (level: number) => (content: string): string =>
 
 const MarkdownPrinter = {
   bold: (s: string) => `**${s}**`,
-  fence: (language: string, content: string) =>
-    "```" + language + "\n" + content + "\n" + "```\n\n",
+  fence: (start: string, content: string, end: string) =>
+    start + "\n" + content + "\n" + end + "\n\n",
   paragraph: (...content: ReadonlyArray<string>) => "\n" + content.join("") + "\n\n",
   strikethrough: (content: string) => `~~${content}~~`,
   h1: createHeaderPrinter(1),
@@ -56,17 +56,19 @@ const printDescription = (d: Option.Option<string>): string =>
 
 const printSignature = (s: string): string =>
   MarkdownPrinter.paragraph(MarkdownPrinter.bold("Signature")) +
-  MarkdownPrinter.paragraph(MarkdownPrinter.fence("ts", s))
+  MarkdownPrinter.paragraph(MarkdownPrinter.fence("```ts", s, "```"))
 
 const printSignatures = (ss: ReadonlyArray<string>): string =>
   MarkdownPrinter.paragraph(MarkdownPrinter.bold("Signature")) +
-  MarkdownPrinter.paragraph(MarkdownPrinter.fence("ts", ss.join("\n")))
+  MarkdownPrinter.paragraph(MarkdownPrinter.fence("```ts", ss.join("\n"), "```"))
 
-const printExamples = (es: ReadonlyArray<string>): string =>
+const printExamples = (es: ReadonlyArray<Domain.Example>): string =>
   es
-    .map((code) =>
+    .map(({ body, fences }) =>
       MarkdownPrinter.paragraph(MarkdownPrinter.bold("Example")) +
-      MarkdownPrinter.paragraph(MarkdownPrinter.fence("ts", code))
+      MarkdownPrinter.paragraph(
+        MarkdownPrinter.fence(fences?.start ?? "```ts", body, fences?.end ?? "```")
+      )
     )
     .join("\n\n")
 

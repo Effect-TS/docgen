@@ -252,7 +252,13 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Example = string
+export type Example = {
+  body: string
+  fences?: {
+    start: string
+    end: string
+  }
+}
 ```
 
 Added in v1.0.0

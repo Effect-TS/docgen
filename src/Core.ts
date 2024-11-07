@@ -150,7 +150,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
                 "examples",
                 `${prefix}-${exampleId}-${doc.name}-${i}.ts`
               ),
-              `${content}\n`,
+              `${content.body}\n`,
               true // make the file overwritable
             )
         )
