@@ -8,6 +8,7 @@ import * as CommandExecutor from "@effect/platform/CommandExecutor"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
+import { pipe } from "effect"
 import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
@@ -131,6 +132,32 @@ const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
   })
 
 /**
+ * Joins an array of strings with a "-" after dropping all empty strings.
+ */
+const filterJoin = (self: Array<string>) =>
+  pipe(
+    self,
+    Array.filter(String.isNonEmpty),
+    Array.join("-")
+  )
+
+/**
+ * Extracts deeply nested namespaces with their corresponding namespace prefix
+ * from a given namespace.
+ */
+const extractPrefixedNestedNamespaces = (
+  doc: Domain.Namespace,
+  prefix: string
+): ReadonlyArray<[string, Domain.Namespace]> => {
+  const newPrefix = String.isEmpty(prefix) ? doc.name : `${prefix}-${doc.name}`
+  const namespaces = Array.flatMap(
+    doc.namespaces,
+    (namespace) => extractPrefixedNestedNamespaces(namespace, newPrefix)
+  )
+  return Array.prepend(namespaces, [prefix, doc])
+}
+
+/**
  * Generates example files for the given modules.
  */
 const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
@@ -155,6 +182,9 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
             )
         )
 
+      const allPrefixedNamespaces = Array.flatMap(module.namespaces, (namespace) =>
+        extractPrefixedNestedNamespaces(namespace, ""))
+
       const moduleExamples = getFiles("module")(module)
       const methodsExamples = Array.flatMap(module.classes, (c) =>
         Array.flatten([
@@ -167,13 +197,33 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
             getFiles(`${c.name}-staticmethod`)
           )
         ]))
+      const allPrefixedInterfaces = [
+        ...module.interfaces.map((iface) =>
+          ["" as string, iface] as const
+        ),
+        ...Array.flatMap(allPrefixedNamespaces, ([prefix, namespace]) =>
+          namespace.interfaces.map((iface) =>
+            [filterJoin([prefix, namespace.name]), iface] as const
+          ))
+      ]
       const interfacesExamples = Array.flatMap(
-        module.interfaces,
-        getFiles("interface")
+        allPrefixedInterfaces,
+        ([ns, doc]) =>
+          getFiles(filterJoin(["interface", ns]))(doc)
       )
+      const allPrefixedTypeAliases = [
+        ...module.typeAliases.map((typeAlias) =>
+          ["" as string, typeAlias] as const
+        ),
+        ...Array.flatMap(allPrefixedNamespaces, ([prefix, namespace]) =>
+          namespace.typeAliases.map((typeAlias) =>
+            [filterJoin([prefix, namespace.name]), typeAlias] as const
+          ))
+      ]
       const typeAliasesExamples = Array.flatMap(
-        module.typeAliases,
-        getFiles("typealias")
+        allPrefixedTypeAliases,
+        ([ns, doc]) =>
+          getFiles(filterJoin(["typealias", ns]))(doc)
       )
       const constantsExamples = Array.flatMap(
         module.constants,
@@ -184,8 +234,9 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         getFiles("function")
       )
       const namespacesExamples = Array.flatMap(
-        module.namespaces,
-        getFiles("namespace")
+        allPrefixedNamespaces,
+        ([ns, doc]) =>
+          getFiles(filterJoin(["namespace", ns]))(doc)
       )
 
       return Array.flatten([
