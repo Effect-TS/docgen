@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.5.1
+
+### Patch Changes
+
+- 0b3b34e: Typecheck examples deeply nested within namespaces
+
 ## 0.5.0
 
 ### Minor Changes
