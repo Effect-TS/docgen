@@ -53,6 +53,7 @@ export declare const ConfigurationSchema: Schema.Struct<{
   examplesCompilerOptions: Schema.optional<
     Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>
   >
+  enableAI: Schema.optional<typeof Schema.Boolean>
 }>
 ```
 
@@ -77,6 +78,7 @@ export interface ConfigurationShape {
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
+  readonly enableAI: boolean
 }
 ```
 

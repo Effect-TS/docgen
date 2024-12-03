@@ -12,6 +12,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [accessors](#accessors)
+  - [printablesFromModule](#printablesfrommodule)
 - [constructors](#constructors)
   - [createClass](#createclass)
   - [createConstant](#createconstant)
@@ -37,12 +39,25 @@ Added in v1.0.0
   - [Module (interface)](#module-interface)
   - [NamedDoc (interface)](#nameddoc-interface)
   - [Namespace (interface)](#namespace-interface)
+  - [Printable (type alias)](#printable-type-alias)
   - [Property (interface)](#property-interface)
   - [TypeAlias (interface)](#typealias-interface)
 - [sorting](#sorting)
   - [ByPath](#bypath)
 
 ---
+
+# accessors
+
+## printablesFromModule
+
+**Signature**
+
+```ts
+export declare const printablesFromModule: (module: Module) => ReadonlyArray<Printable>
+```
+
+Added in v1.0.0
 
 # constructors
 
@@ -366,6 +381,16 @@ export interface Namespace extends NamedDoc {
   readonly typeAliases: ReadonlyArray<TypeAlias>
   readonly namespaces: ReadonlyArray<Namespace>
 }
+```
+
+Added in v1.0.0
+
+## Printable (type alias)
+
+**Signature**
+
+```ts
+export type Printable = Class | Constant | Export | Function | Interface | TypeAlias | Namespace
 ```
 
 Added in v1.0.0

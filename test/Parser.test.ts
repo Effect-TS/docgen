@@ -21,6 +21,7 @@ const defaultConfig: Configuration.ConfigurationShape = {
   srcDir: "src",
   outDir: "docs",
   theme: "pmarsceill/just-the-docs",
+  enableAI: true,
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,
