@@ -76,10 +76,11 @@ const printImportDescription = (
     ) +
     MarkdownPrinter.paragraph(
       MarkdownPrinter.fence(
-        "ts",
+        "```ts",
         `import * as ${module.name} from "${projectName}/${namespace}"
     // Can be accessed like this
-    ${module.name}.${method}`
+    ${module.name}.${method}`,
+        "```"
       )
     )
   )
