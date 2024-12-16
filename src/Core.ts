@@ -8,11 +8,11 @@ import * as CommandExecutor from "@effect/platform/CommandExecutor"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
-import { pipe } from "effect"
 import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
+import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
@@ -438,7 +438,8 @@ const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
     const yml = yield* _(getMarkdownConfigYML)
     const moduleFiles = yield* _(getModuleMarkdownFiles(modules))
     const aiFiles = yield* _(maybeGetAIMarkdownFiles(modules))
-    return [homepage, index, yml, ...moduleFiles, ...aiFiles]
+    const jsonFiles = yield* _(maybeGetJsonFiles(modules))
+    return [homepage, index, yml, ...moduleFiles, ...aiFiles, ...jsonFiles]
   })
 
 const getMarkdownHomepage = Effect.gen(function*(_) {
@@ -577,11 +578,51 @@ const getAIMarkdownFiles = (projectName: string, modules: ReadonlyArray<Domain.M
       })))
   })
 
+const getJsonFiles = (projectName: string, modules: ReadonlyArray<Domain.Module>) =>
+  Effect.gen(function*() {
+    const config = yield* Configuration.Configuration
+    const path = yield* Path.Path
+    const printables = pipe(
+      modules,
+      Array.bindTo("module"),
+      Array.bind("printable", ({ module }) => Domain.printablesFromModule(module)),
+      Array.map(({ module, printable }) => {
+        return {
+          _tag: printable._tag,
+          module: {
+            name: module.name,
+            path: module.path
+          },
+          project: projectName,
+          name: printable.name,
+          description: Option.getOrNull(printable.description),
+          deprecated: printable.deprecated,
+          examples: printable.examples.map((example) => example.body),
+          since: Option.getOrNull(printable.since),
+          category: Option.getOrNull(printable.category),
+          signature: "signature" in printable ? printable.signature : null
+        }
+      })
+    )
+
+    return [File.createFile(
+      path.join(config.outDir, "docs.json"),
+      JSON.stringify(printables, null, 2),
+      true
+    )]
+  })
+
 const maybeGetAIMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.flatMap(
     Configuration.Configuration,
     (config) =>
       config.enableAI ? getAIMarkdownFiles(config.projectName, modules) : Effect.succeed([])
+  )
+
+const maybeGetJsonFiles = (modules: ReadonlyArray<Domain.Module>) =>
+  Effect.flatMap(
+    Configuration.Configuration,
+    (config) => config.enableJson ? getJsonFiles(config.projectName, modules) : Effect.succeed([])
   )
 
 const writeMarkdown = (files: ReadonlyArray<File.File>) =>
