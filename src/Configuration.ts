@@ -79,6 +79,14 @@ export const ConfigurationSchema = Schema.Struct({
   examplesCompilerOptions: Schema.optional(compilerOptionsSchema).annotations({
     description: "tsconfig for the examples options (or path to a tsconfig)",
     default: {}
+  }),
+  enableAI: Schema.optional(Schema.Boolean).annotations({
+    description: "Whether or not to enable AI for the examples",
+    default: true
+  }),
+  enableJson: Schema.optional(Schema.Boolean).annotations({
+    description: "Whether or not to output JSON files",
+    default: true
   })
 }).annotations({ identifier: "ConfigurationSchema" })
 
@@ -100,6 +108,8 @@ export interface ConfigurationShape {
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
+  readonly enableAI: boolean
+  readonly enableJson: boolean
 }
 
 /**
@@ -244,6 +254,8 @@ export const load = (args: {
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Option.Option<string | Record<string, unknown>>
   readonly examplesCompilerOptions: Option.Option<string | Record<string, unknown>>
+  readonly enableAI: boolean
+  readonly enableJson: boolean
 }) =>
   Effect.gen(function*(_) {
     // Extract the requisite services

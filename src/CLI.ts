@@ -156,6 +156,28 @@ const examplesCompilerOptions = Options.file("examples-tsconfig-file", { exists:
   Options.optional
 )
 
+const enableAI = Options.boolean("no-enable-ai", {
+  ifPresent: false,
+  negationNames: ["enable-ai"]
+}).pipe(
+  Options.withFallbackConfig(Config.boolean("enableAI")),
+  Options.withDefault(true),
+  Options.withDescription(
+    "Whether or not to generate AI documentation for the project"
+  )
+)
+
+const enableJson = Options.boolean("no-enable-json", {
+  ifPresent: false,
+  negationNames: ["enable-json"]
+}).pipe(
+  Options.withFallbackConfig(Config.boolean("enableJson")),
+  Options.withDefault(true),
+  Options.withDescription(
+    "Whether or not to generate JSON output for the project"
+  )
+)
+
 const options = {
   projectHomepage,
   srcDir,
@@ -168,7 +190,9 @@ const options = {
   runExamples,
   exclude,
   parseCompilerOptions,
-  examplesCompilerOptions
+  examplesCompilerOptions,
+  enableAI,
+  enableJson
 }
 
 /** @internal */
