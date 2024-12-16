@@ -606,7 +606,7 @@ const getJsonFiles = (projectName: string, modules: ReadonlyArray<Domain.Module>
     )
 
     return [File.createFile(
-      path.join(config.outDir, "docs.json"),
+      path.join(config.outDir, `${projectName.replace("/", "-")}.json`),
       JSON.stringify(printables, null, 2),
       true
     )]

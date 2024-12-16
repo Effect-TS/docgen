@@ -100,6 +100,11 @@
           "type": "boolean",
           "description": "Whether or not to enable AI for the examples",
           "default": true
+        },
+        "enableJson": {
+          "type": "boolean",
+          "description": "Whether or not to output JSON files",
+          "default": true
         }
       },
       "additionalProperties": false
