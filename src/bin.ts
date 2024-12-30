@@ -12,13 +12,11 @@ import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import { cli } from "./CLI.js"
 import * as Configuration from "./Configuration.js"
-import { SimpleLogger } from "./Logger.js"
 import * as Process from "./Process.js"
 
 /** @internal */
 export const MainLive = Configuration.configProviderLayer.pipe(
   Layer.provideMerge(Layer.mergeAll(
-    Logger.replace(Logger.defaultLogger, SimpleLogger),
     Logger.minimumLogLevel(LogLevel.Info),
     Process.layer,
     NodeContext.layer
