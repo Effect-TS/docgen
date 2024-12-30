@@ -1,5 +1,11 @@
 # @effect/docgen
 
+## 0.5.2
+
+### Patch Changes
+
+- 3b595aa: Remove duplicate logger
+
 ## 0.5.1
 
 ### Patch Changes
