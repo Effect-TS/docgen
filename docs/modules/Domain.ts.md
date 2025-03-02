@@ -254,10 +254,6 @@ Added in v1.0.0
 ```ts
 export type Example = {
   body: string
-  fences?: {
-    start: string
-    end: string
-  }
 }
 ```
 

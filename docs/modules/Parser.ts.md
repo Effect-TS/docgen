@@ -42,7 +42,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseConstants: Effect.Effect<Domain.Constant[], string[], Configuration.Configuration | Source>
+export declare const parseConstants: Effect.Effect<
+  Domain.Constant[],
+  [string, ...string[]],
+  Configuration.Configuration | Source
+>
 ```
 
 Added in v1.0.0
@@ -52,7 +56,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseExports: Effect.Effect<Domain.Export[], string[], Configuration.Configuration | Source>
+export declare const parseExports: Effect.Effect<
+  Domain.Export[],
+  [string, ...string[]],
+  Configuration.Configuration | Source
+>
 ```
 
 Added in v1.0.0
@@ -64,7 +72,11 @@ Added in v1.0.0
 ```ts
 export declare const parseFiles: (
   files: ReadonlyArray<File.File>
-) => Effect.Effect<Domain.Module[], string[][], Process.Process | Configuration.Configuration | Path.Path>
+) => Effect.Effect<
+  Domain.Module[],
+  [string[], ...string[][]],
+  Process.Process | Configuration.Configuration | Path.Path
+>
 ```
 
 Added in v1.0.0
@@ -74,7 +86,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseFunctions: Effect.Effect<Domain.Function[], string[], Configuration.Configuration | Source>
+export declare const parseFunctions: Effect.Effect<
+  Domain.Function[],
+  [string, ...string[]],
+  Configuration.Configuration | Source
+>
 ```
 
 Added in v1.0.0
@@ -84,7 +100,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseInterfaces: Effect.Effect<Domain.Interface[], string[], Configuration.Configuration | Source>
+export declare const parseInterfaces: Effect.Effect<
+  Domain.Interface[],
+  [string, ...string[]],
+  Configuration.Configuration | Source
+>
 ```
 
 Added in v1.0.0
@@ -118,7 +138,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const parseTypeAliases: Effect.Effect<Domain.TypeAlias[], string[], Configuration.Configuration | Source>
+export declare const parseTypeAliases: Effect.Effect<
+  Domain.TypeAlias[],
+  [string, ...string[]],
+  Configuration.Configuration | Source
+>
 ```
 
 Added in v1.0.0

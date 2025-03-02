@@ -61,11 +61,9 @@ const printSignatures = (ss: ReadonlyArray<string>): string =>
 
 const printExamples = (es: ReadonlyArray<Domain.Example>): string =>
   es
-    .map(({ body, fences }) =>
+    .map(({ body }) =>
       MarkdownPrinter.paragraph(MarkdownPrinter.bold("Example")) +
-      MarkdownPrinter.paragraph(
-        MarkdownPrinter.fence(fences?.start ?? "```ts", body, fences?.end ?? "```")
-      )
+      MarkdownPrinter.paragraph(body)
     )
     .join("\n\n")
 
@@ -264,7 +262,12 @@ const byCategory = Order.mapInput(
 )
 
 /**
+ * Description...
+ *
  * @example
+ * **Example** (Title 1)
+ *
+ * ```ts
  * import * as Markdown from "@effect/docgen/Markdown"
  * import * as Domain from "@effect/docgen/Domain"
  * import { Option } from "effect"
@@ -272,6 +275,13 @@ const byCategory = Order.mapInput(
  * const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
  * const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
  * console.log(Markdown.printModule(m, 0))
+ * ```
+ *
+ * **Example** (Title 2)
+ *
+ * ~~~js
+ * const x = 1
+ * ~~~
  *
  * @category printers
  * @since 1.0.0

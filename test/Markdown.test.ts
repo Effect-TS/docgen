@@ -13,7 +13,11 @@ const testCases = {
       Option.some("a class"),
       Option.some("1.0.0"),
       false,
-      [{ body: "example 1", fences: { start: "```ts", end: "```" } }],
+      [{
+        body: `\`\`\`ts
+example 1
+\`\`\``
+      }],
       Option.some("category")
     ),
     "declare class A { constructor() }",
@@ -85,7 +89,11 @@ const testCases = {
       Option.some("a function"),
       Option.some("1.0.0"),
       true,
-      [{ body: "example 1", fences: { start: "```ts", end: "```" } }],
+      [{
+        body: `\`\`\`ts
+example 1
+\`\`\``
+      }],
       Option.none()
     ),
     ["declare const func: (test: string) => string"]

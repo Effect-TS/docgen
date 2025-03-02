@@ -152,21 +152,8 @@ const getDescription = (name: string, comment: Comment) =>
     return comment.description
   })
 
-const fencedExampleRegex = /^(?<fenceStart>(```|~~~)[^\n]*)\n(?<body>[\S\s]*)(?<fenceEnd>\n(```|~~~))$/
 const parseExample = (body: string) => {
-  const example = fencedExampleRegex.exec(body)
-
-  if (example === null) {
-    return { body }
-  }
-
-  return {
-    body: example?.groups?.body ?? "",
-    fences: {
-      start: example?.groups?.fenceStart?.trim() ?? "```ts",
-      end: example?.groups?.fenceEnd?.trim() ?? "```"
-    }
-  }
+  return { body }
 }
 
 const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>

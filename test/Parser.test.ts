@@ -560,8 +560,9 @@ describe("Parser", () => {
               since: Option.some("1.0.0"),
               examples: [
                 {
-                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                  fences: { start: "```ts", end: "```" }
+                  body: `\`\`\`ts
+assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+\`\`\``
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
@@ -598,12 +599,11 @@ describe("Parser", () => {
               since: Option.some("1.0.0"),
               examples: [
                 {
-                  body: String.stripMargin(
-                    `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+                  body: `\`\`\`ts
+assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 
-                    |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
-                  ),
-                  fences: { start: "```ts", end: "```" }
+assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+\`\`\``
                 }
               ],
               category: Option.none()
@@ -639,8 +639,9 @@ describe("Parser", () => {
               since: Option.some("1.0.0"),
               examples: [
                 {
-                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                  fences: { start: "~~~ts", end: "~~~" }
+                  body: `~~~ts
+assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+~~~`
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
@@ -677,12 +678,11 @@ describe("Parser", () => {
               since: Option.some("1.0.0"),
               examples: [
                 {
-                  body: String.stripMargin(
-                    `|assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+                  body: `~~~ts
+assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 
-                    |assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`
-                  ),
-                  fences: { start: "~~~ts", end: "~~~" }
+assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+~~~`
                 }
               ],
               category: Option.none()
@@ -718,8 +718,9 @@ describe("Parser", () => {
               since: Option.some("1.0.0"),
               examples: [
                 {
-                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                  fences: { start: "```ts twoslash", end: "```" }
+                  body: `\`\`\`ts twoslash
+assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+\`\`\``
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
@@ -756,8 +757,9 @@ describe("Parser", () => {
               since: Option.some("1.0.0"),
               examples: [
                 {
-                  body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })",
-                  fences: { start: "~~~ts twoslash", end: "~~~" }
+                  body: `~~~ts twoslash
+assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+~~~`
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],

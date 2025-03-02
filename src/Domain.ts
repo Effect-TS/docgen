@@ -27,10 +27,6 @@ export interface Module extends NamedDoc {
  */
 export type Example = {
   body: string
-  fences?: {
-    start: string
-    end: string
-  }
 }
 
 /**

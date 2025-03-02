@@ -156,6 +156,17 @@ const extractPrefixedNestedNamespaces = (
 }
 
 /**
+ * Extracts all fenced code blocks from markdown content.
+ * Handles both ``` and ~~~ fences.
+ */
+const extractFencedCode = (content: string): Array<string> => {
+  const fenceRegex = /(?:```|~~~)(\w*)\n([\s\S]*?)(?:```|~~~)/g
+  const matches = Array.fromIterable(content.matchAll(fenceRegex))
+
+  return Array.map(matches, (match: RegExpMatchArray) => match[2].trim())
+}
+
+/**
  * Generates example files for the given modules.
  */
 const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
@@ -166,18 +177,22 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
       const prefix = module.path.join("-")
 
       const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<File.File> =>
-        Array.map(
+        Array.flatMap(
           doc.examples,
-          (content, i) =>
-            File.createFile(
-              path.join(
-                config.outDir,
-                "examples",
-                `${prefix}-${exampleId}-${doc.name}-${i}.ts`
-              ),
-              `${content.body}\n`,
-              true // make the file overwritable
-            )
+          (content, i) => {
+            const examples = extractFencedCode(content.body)
+            return examples.map((example, j) => {
+              return File.createFile(
+                path.join(
+                  config.outDir,
+                  "examples",
+                  `${prefix}-${exampleId}-${doc.name}-${i}-${j}.ts`
+                ),
+                example,
+                true // make the file overwritable
+              )
+            })
+          }
         )
 
       const allPrefixedNamespaces = Array.flatMap(module.namespaces, (namespace) =>

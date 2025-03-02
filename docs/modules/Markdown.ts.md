@@ -21,6 +21,8 @@ Added in v1.0.0
 
 ## printModule
 
+Description...
+
 **Signature**
 
 ```ts
@@ -28,6 +30,8 @@ export declare const printModule: (module: Domain.Module, order: number) => Effe
 ```
 
 **Example**
+
+**Example** (Title 1)
 
 ```ts
 import * as Markdown from "@effect/docgen/Markdown"
@@ -37,6 +41,12 @@ import { Option } from "effect"
 const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
 const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 console.log(Markdown.printModule(m, 0))
+```
+
+**Example** (Title 2)
+
+```js
+const x = 1
 ```
 
 Added in v1.0.0
