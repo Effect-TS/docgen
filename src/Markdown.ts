@@ -71,8 +71,8 @@ const printStaticMethod = (m: Domain.Method): string =>
   MarkdownPrinter.paragraph(
     MarkdownPrinter.h3(printTitle(m.name, m.deprecated, "(static method)")),
     printDescription(m.description),
-    printSignatures(m.signatures),
     printExamples(m.examples),
+    printSignatures(m.signatures),
     printSince(m.since)
   )
 
@@ -80,8 +80,8 @@ const printMethod = (m: Domain.Method): string =>
   MarkdownPrinter.paragraph(
     MarkdownPrinter.h3(printTitle(m.name, m.deprecated, "(method)")),
     printDescription(m.description),
-    printSignatures(m.signatures),
     printExamples(m.examples),
+    printSignatures(m.signatures),
     printSince(m.since)
   )
 
@@ -89,8 +89,8 @@ const printProperty = (p: Domain.Property): string =>
   MarkdownPrinter.paragraph(
     MarkdownPrinter.h3(printTitle(p.name, p.deprecated, "(property)")),
     printDescription(p.description),
-    printSignature(p.signature),
     printExamples(p.examples),
+    printSignature(p.signature),
     printSince(p.since)
   )
 
@@ -133,8 +133,8 @@ export const printClass = (model: Domain.Class): string =>
     MarkdownPrinter.paragraph(
       MarkdownPrinter.h2(printTitle(model.name, model.deprecated, "(class)")),
       printDescription(model.description),
-      printSignature(model.signature),
       printExamples(model.examples),
+      printSignature(model.signature),
       printSince(model.since)
     ),
     printStaticMethods(model.staticMethods),
@@ -147,8 +147,8 @@ export const printConstant = (model: Domain.Constant): string =>
   MarkdownPrinter.paragraph(
     MarkdownPrinter.h2(printTitle(model.name, model.deprecated)),
     printDescription(model.description),
-    printSignature(model.signature),
     printExamples(model.examples),
+    printSignature(model.signature),
     printSince(model.since)
   )
 
@@ -157,8 +157,8 @@ export const printExport = (model: Domain.Export): string =>
   MarkdownPrinter.paragraph(
     MarkdownPrinter.h2(printTitle(model.name, model.deprecated)),
     printDescription(model.description),
-    printSignature(model.signature),
     printExamples(model.examples),
+    printSignature(model.signature),
     printSince(model.since)
   )
 
@@ -167,8 +167,8 @@ export const printFunction = (model: Domain.Function): string =>
   MarkdownPrinter.paragraph(
     MarkdownPrinter.h2(printTitle(model.name, model.deprecated)),
     printDescription(model.description),
-    printSignatures(model.signatures),
     printExamples(model.examples),
+    printSignatures(model.signatures),
     printSince(model.since)
   )
 
@@ -177,8 +177,8 @@ export const printInterface = (model: Domain.Interface, indentation: number): st
   MarkdownPrinter.paragraph(
     getHeaderByIndentation(indentation)(printTitle(model.name, model.deprecated, "(interface)")),
     printDescription(model.description),
-    printSignature(model.signature),
     printExamples(model.examples),
+    printSignature(model.signature),
     printSince(model.since)
   )
 
@@ -187,8 +187,8 @@ export const printTypeAlias = (model: Domain.TypeAlias, indentation: number): st
   MarkdownPrinter.paragraph(
     getHeaderByIndentation(indentation)(printTitle(model.name, model.deprecated, "(type alias)")),
     printDescription(model.description),
-    printSignature(model.signature),
     printExamples(model.examples),
+    printSignature(model.signature),
     printSince(model.since)
   )
 

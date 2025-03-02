@@ -6,7 +6,7 @@ parent: Modules
 
 ## Configuration overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
@@ -29,7 +29,7 @@ Added in v1.0.0
 export declare class Configuration
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## ConfigurationSchema
 
@@ -56,7 +56,7 @@ export declare const ConfigurationSchema: Schema.Struct<{
 }>
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## ConfigurationShape (interface)
 
@@ -80,4 +80,4 @@ export interface ConfigurationShape {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0

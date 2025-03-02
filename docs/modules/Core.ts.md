@@ -6,7 +6,7 @@ parent: Modules
 
 ## Core overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 

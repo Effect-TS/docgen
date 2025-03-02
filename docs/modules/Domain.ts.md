@@ -6,7 +6,7 @@ parent: Modules
 
 ## Domain overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
@@ -60,7 +60,7 @@ export declare const createClass: (
 ) => Class
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createConstant
 
@@ -70,7 +70,7 @@ Added in v1.0.0
 export declare const createConstant: (doc: NamedDoc, signature: string) => Constant
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createDoc
 
@@ -86,7 +86,7 @@ export declare const createDoc: (
 ) => Doc
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createExport
 
@@ -96,7 +96,7 @@ Added in v1.0.0
 export declare const createExport: (doc: NamedDoc, signature: string) => Export
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createFunction
 
@@ -106,7 +106,7 @@ Added in v1.0.0
 export declare const createFunction: (doc: NamedDoc, signatures: ReadonlyArray<string>) => Function
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createInterface
 
@@ -116,7 +116,7 @@ Added in v1.0.0
 export declare const createInterface: (doc: NamedDoc, signature: string) => Interface
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createMethod
 
@@ -126,7 +126,7 @@ Added in v1.0.0
 export declare const createMethod: (doc: NamedDoc, signatures: ReadonlyArray<string>) => Method
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createModule
 
@@ -146,7 +146,7 @@ export declare const createModule: (
 ) => Module
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createNamedDoc
 
@@ -163,7 +163,7 @@ export declare const createNamedDoc: (
 ) => NamedDoc
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createNamespace
 
@@ -178,7 +178,7 @@ export declare const createNamespace: (
 ) => Namespace
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createProperty
 
@@ -188,7 +188,7 @@ Added in v1.0.0
 export declare const createProperty: (doc: NamedDoc, signature: string) => Property
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## createTypeAlias
 
@@ -198,7 +198,7 @@ Added in v1.0.0
 export declare const createTypeAlias: (doc: NamedDoc, signature: string) => TypeAlias
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 # model
 
@@ -216,7 +216,7 @@ export interface Class extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Constant (interface)
 
@@ -229,7 +229,7 @@ export interface Constant extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Doc (interface)
 
@@ -245,7 +245,7 @@ export interface Doc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Example (type alias)
 
@@ -257,7 +257,7 @@ export type Example = {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Export (interface)
 
@@ -280,7 +280,7 @@ export interface Export extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Function (interface)
 
@@ -293,7 +293,7 @@ export interface Function extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Interface (interface)
 
@@ -306,7 +306,7 @@ export interface Interface extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Method (interface)
 
@@ -318,7 +318,7 @@ export interface Method extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Module (interface)
 
@@ -337,7 +337,7 @@ export interface Module extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## NamedDoc (interface)
 
@@ -349,7 +349,7 @@ export interface NamedDoc extends Doc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Namespace (interface)
 
@@ -364,7 +364,7 @@ export interface Namespace extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## Property (interface)
 
@@ -376,7 +376,7 @@ export interface Property extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## TypeAlias (interface)
 
@@ -389,7 +389,7 @@ export interface TypeAlias extends NamedDoc {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 # sorting
 
@@ -404,4 +404,4 @@ The file path is converted to lowercase before comparison.
 export declare const ByPath: Order.Order<Module>
 ```
 
-Added in v1.0.0
+Since v1.0.0

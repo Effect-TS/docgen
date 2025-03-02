@@ -6,7 +6,7 @@ parent: Modules
 
 ## Parser overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
@@ -35,7 +35,7 @@ Added in v1.0.0
 export declare const parseClasses: Effect.Effect<Domain.Class[], string[], Configuration.Configuration | Source>
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseConstants
 
@@ -49,7 +49,7 @@ export declare const parseConstants: Effect.Effect<
 >
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseExports
 
@@ -63,7 +63,7 @@ export declare const parseExports: Effect.Effect<
 >
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseFiles
 
@@ -79,7 +79,7 @@ export declare const parseFiles: (
 >
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseFunctions
 
@@ -93,7 +93,7 @@ export declare const parseFunctions: Effect.Effect<
 >
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseInterfaces
 
@@ -107,7 +107,7 @@ export declare const parseInterfaces: Effect.Effect<
 >
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseModule
 
@@ -121,7 +121,7 @@ export declare const parseModule: Effect.Effect<
 >
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseNamespaces
 
@@ -131,7 +131,7 @@ Added in v1.0.0
 export declare const parseNamespaces: Effect.Effect<Domain.Namespace[], string[], Configuration.Configuration | Source>
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## parseTypeAliases
 
@@ -145,4 +145,4 @@ export declare const parseTypeAliases: Effect.Effect<
 >
 ```
 
-Added in v1.0.0
+Since v1.0.0

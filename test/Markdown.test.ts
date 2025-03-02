@@ -217,18 +217,18 @@ Since v1.0.3
 
 a class
 
+**Example**
+
+\`\`\`ts
+example 1
+\`\`\`
+
 **Signature**
 
 \`\`\`ts
 declare class A {
   constructor()
 }
-\`\`\`
-
-**Example**
-
-\`\`\`ts
-example 1
 \`\`\`
 
 Since v1.0.0
@@ -310,16 +310,16 @@ Since v1.0.0
 
 a function
 
-**Signature**
-
-\`\`\`ts
-declare const func: (test: string) => string
-\`\`\`
-
 **Example**
 
 \`\`\`ts
 example 1
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+declare const func: (test: string) => string
 \`\`\`
 
 Since v1.0.0
@@ -436,18 +436,18 @@ Since v1.0.0
 
 a class
 
+**Example**
+
+\`\`\`ts
+example 1
+\`\`\`
+
 **Signature**
 
 \`\`\`ts
 declare class A {
   constructor()
 }
-\`\`\`
-
-**Example**
-
-\`\`\`ts
-example 1
 \`\`\`
 
 Since v1.0.0
@@ -550,16 +550,16 @@ Since v1.0.3
 
 a function
 
-**Signature**
-
-\`\`\`ts
-declare const func: (test: string) => string
-\`\`\`
-
 **Example**
 
 \`\`\`ts
 example 1
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+declare const func: (test: string) => string
 \`\`\`
 
 Since v1.0.0

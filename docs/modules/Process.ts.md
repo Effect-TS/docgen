@@ -6,7 +6,7 @@ parent: Modules
 
 ## Process overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
@@ -30,7 +30,7 @@ Added in v1.0.0
 export declare const layer: Layer.Layer<Process, never, never>
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 # service
 
@@ -42,7 +42,7 @@ Added in v1.0.0
 export declare class Process
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 ## ProcessShape (interface)
 
@@ -58,4 +58,4 @@ export interface ProcessShape {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0

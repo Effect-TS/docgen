@@ -6,7 +6,7 @@ parent: Modules
 
 ## File overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
@@ -31,7 +31,7 @@ By default files are readonly (`isOverwriteable = false`).
 export declare const createFile: (path: string, content: string, isOverwriteable?: boolean) => File
 ```
 
-Added in v1.0.0
+Since v1.0.0
 
 # model
 
@@ -49,4 +49,4 @@ export interface File {
 }
 ```
 
-Added in v1.0.0
+Since v1.0.0

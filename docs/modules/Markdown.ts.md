@@ -6,7 +6,7 @@ parent: Modules
 
 ## Markdown overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
@@ -22,12 +22,6 @@ Added in v1.0.0
 ## printModule
 
 Description...
-
-**Signature**
-
-```ts
-export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<string>
-```
 
 **Example**
 
@@ -49,4 +43,10 @@ console.log(Markdown.printModule(m, 0))
 const x = 1
 ```
 
-Added in v1.0.0
+**Signature**
+
+```ts
+export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<string>
+```
+
+Since v1.0.0
