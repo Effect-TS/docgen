@@ -25,13 +25,11 @@ const makeDocgenJson = (config: Record<string, unknown>) => Layer.succeed(Docgen
 
 const TestFileSystem = Layer.effect(
   FileSystem.FileSystem,
-  Effect.gen(function*(_) {
-    const path = yield* _(Path.Path)
+  Effect.gen(function*() {
+    const path = yield* Path.Path
 
-    const docgenJson = yield* _(
-      Effect.contextWith((context: Context.Context<never>) =>
-        Option.getOrElse(Context.getOption(context, DocgenJsonTag), () => ({} as DocgenJson))
-      )
+    const docgenJson = yield* Effect.contextWith((context: Context.Context<never>) =>
+      Option.getOrElse(Context.getOption(context, DocgenJsonTag), () => ({} as DocgenJson))
     )
 
     const readFileString: FileSystem.FileSystem["readFileString"] = (filePath) => {
@@ -105,8 +103,8 @@ const testCliFor = (program: Effect.Effect<void, never, Configuration.Configurat
 
 describe("Configuration", () => {
   it("should use the default configuration if no configuration is provided", () => {
-    const program = Effect.gen(function*(_) {
-      const config = yield* _(Configuration.Configuration)
+    const program = Effect.gen(function*() {
+      const config = yield* Configuration.Configuration
       assert.deepStrictEqual(config, {
         projectName: "name",
         projectHomepage: "homepage",
@@ -140,8 +138,8 @@ describe("Configuration", () => {
       target: "ES2022",
       lib: ["ES2022", "DOM"]
     }
-    const program = Effect.gen(function*(_) {
-      const config = yield* _(Configuration.Configuration)
+    const program = Effect.gen(function*() {
+      const config = yield* Configuration.Configuration
       assert.deepStrictEqual(config, {
         projectName: "name",
         projectHomepage: "myproject",
