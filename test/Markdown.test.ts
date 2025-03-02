@@ -217,8 +217,6 @@ Since v1.0.3
 
 a class
 
-**Example**
-
 \`\`\`ts
 example 1
 \`\`\`
@@ -309,8 +307,6 @@ Since v1.0.0
       `## ~~func~~
 
 a function
-
-**Example**
 
 \`\`\`ts
 example 1
@@ -436,8 +432,6 @@ Since v1.0.0
 
 a class
 
-**Example**
-
 \`\`\`ts
 example 1
 \`\`\`
@@ -549,8 +543,6 @@ Since v1.0.3
 ## ~~func~~
 
 a function
-
-**Example**
 
 \`\`\`ts
 example 1

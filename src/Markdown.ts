@@ -61,10 +61,7 @@ const printSignatures = (ss: ReadonlyArray<string>): string =>
 
 const printExamples = (es: ReadonlyArray<Domain.Example>): string =>
   es
-    .map(({ body }) =>
-      MarkdownPrinter.paragraph(MarkdownPrinter.bold("Example")) +
-      MarkdownPrinter.paragraph(body)
-    )
+    .map(({ body }) => MarkdownPrinter.paragraph(body))
     .join("\n\n")
 
 const printStaticMethod = (m: Domain.Method): string =>

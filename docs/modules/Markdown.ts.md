@@ -23,8 +23,6 @@ Since v1.0.0
 
 Description...
 
-**Example**
-
 **Example** (Title 1)
 
 ```ts twoslash title="Title 1"
