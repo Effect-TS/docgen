@@ -5,8 +5,9 @@ import * as Parser from "@effect/docgen/Parser"
 import { Path } from "@effect/platform"
 import chalk from "chalk"
 import { Effect, Exit, Option, String } from "effect"
+import * as assert from "node:assert/strict"
 import * as ast from "ts-morph"
-import { assert, describe, expect, it } from "vitest"
+import { describe, it } from "vitest"
 
 let testCounter = 0
 
@@ -42,14 +43,15 @@ const expectFailure = <A, E>(
   failure: E,
   config?: Partial<Configuration.ConfigurationShape>
 ) => {
-  expect(
+  assert.deepStrictEqual(
     eff.pipe(
       Effect.provideService(Parser.Source, getParser(sourceText)),
       Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
       Effect.provide(Path.layer),
       Effect.runSyncExit
-    )
-  ).toEqual(Exit.fail(failure))
+    ),
+    Exit.fail(failure)
+  )
 }
 
 const expectSuccess = <A, E>(
@@ -58,15 +60,16 @@ const expectSuccess = <A, E>(
   a: A,
   config?: Partial<Configuration.ConfigurationShape>
 ) => {
-  expect(
+  assert.deepStrictEqual(
     eff
       .pipe(
         Effect.provideService(Parser.Source, getParser(sourceText)),
         Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
         Effect.provide(Path.layer),
         Effect.runSyncExit
-      )
-  ).toEqual(Exit.succeed(a))
+      ),
+    Exit.succeed(a)
+  )
 }
 
 describe("Parser", () => {
@@ -576,7 +579,7 @@ describe("Parser", () => {
             * @example
             * \`\`\`ts
             * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            * 
+            *
             * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
             * \`\`\`
             * @deprecated
@@ -655,7 +658,7 @@ describe("Parser", () => {
             * @example
             * ~~~ts
             * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            * 
+            *
             * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
             * ~~~
             * @deprecated
@@ -1477,7 +1480,8 @@ describe("Parser", () => {
           Effect.provideService(Configuration.Configuration, defaultConfig),
           Effect.runSyncExit
         )
-        expect(actual).toEqual(
+        assert.deepStrictEqual(
+          actual,
           Exit.succeed([
             {
               _tag: "Export",
@@ -1515,7 +1519,8 @@ describe("Parser", () => {
           Effect.runSyncExit
         )
 
-        expect(actual).toEqual(
+        assert.deepStrictEqual(
+          actual,
           Exit.succeed([
             {
               _tag: "Export",
@@ -1553,7 +1558,8 @@ describe("Parser", () => {
           Effect.runSyncExit
         )
 
-        expect(actual).toEqual(
+        assert.deepStrictEqual(
+          actual,
           Exit.succeed([
             {
               _tag: "Export",

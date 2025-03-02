@@ -14,7 +14,8 @@ import * as Exit from "effect/Exit"
 import { hole } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
-import { assert, describe, it } from "vitest"
+import * as assert from "node:assert/strict"
+import { describe, it } from "vitest"
 
 type DocgenJson = Record<string, unknown>
 

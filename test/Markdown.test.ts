@@ -3,7 +3,8 @@ import * as Markdown from "@effect/docgen/Markdown"
 import * as Effect from "effect/Effect"
 import { flow } from "effect/Function"
 import * as Option from "effect/Option"
-import { assert, describe, it } from "vitest"
+import * as assert from "node:assert/strict"
+import { describe, it } from "vitest"
 
 const testCases = {
   class: Domain.createClass(
