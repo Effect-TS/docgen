@@ -261,14 +261,6 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
   })
 
 /**
- * Adds an import statement for the `assert` module to the beginning of the given code, if it doesn't already exist.
- */
-const addAssertImport = (code: string): string =>
-  code.indexOf("assert.") !== -1
-    ? `import * as assert from 'assert'\n${code}`
-    : code
-
-/**
  * Replaces the project name in the given source code imports with the configured project name.
  */
 const replaceProjectName = (source: string) =>
@@ -292,8 +284,7 @@ const handleImports = (files: ReadonlyArray<File.File>) =>
   Effect.forEach(files, (file) =>
     Effect.gen(function*() {
       const source = yield* replaceProjectName(file.content)
-      const content = addAssertImport(source)
-      return File.createFile(file.path, content, file.isOverwriteable)
+      return File.createFile(file.path, source, file.isOverwriteable)
     }))
 
 /**
