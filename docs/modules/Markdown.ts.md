@@ -33,7 +33,7 @@ export declare const printModule: (module: Domain.Module, order: number) => Effe
 
 **Example** (Title 1)
 
-```ts
+```ts twoslash title="Title 1"
 import * as Markdown from "@effect/docgen/Markdown"
 import * as Domain from "@effect/docgen/Domain"
 import { Option } from "effect"
@@ -45,7 +45,7 @@ console.log(Markdown.printModule(m, 0))
 
 **Example** (Title 2)
 
-```js
+```js twoslash title="Title 2"
 const x = 1
 ```
 

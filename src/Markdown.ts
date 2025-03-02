@@ -267,7 +267,7 @@ const byCategory = Order.mapInput(
  * @example
  * **Example** (Title 1)
  *
- * ```ts
+ * ```ts twoslash title="Title 1"
  * import * as Markdown from "@effect/docgen/Markdown"
  * import * as Domain from "@effect/docgen/Domain"
  * import { Option } from "effect"
@@ -279,7 +279,7 @@ const byCategory = Order.mapInput(
  *
  * **Example** (Title 2)
  *
- * ~~~js
+ * ~~~js twoslash title="Title 2"
  * const x = 1
  * ~~~
  *

@@ -157,10 +157,10 @@ const extractPrefixedNestedNamespaces = (
 
 /**
  * Extracts all fenced code blocks from markdown content.
- * Handles both ``` and ~~~ fences.
+ * Handles both ``` and ~~~ fences, including any metadata like language, title, and other attributes.
  */
 const extractFencedCode = (content: string): Array<string> => {
-  const fenceRegex = /(?:```|~~~)(\w*)\n([\s\S]*?)(?:```|~~~)/g
+  const fenceRegex = /(?:```|~~~)(.*?)\n([\s\S]*?)(?:```|~~~)/g
   const matches = Array.fromIterable(content.matchAll(fenceRegex))
 
   return Array.map(matches, (match: RegExpMatchArray) => match[2].trim())
