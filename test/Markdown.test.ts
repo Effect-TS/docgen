@@ -180,7 +180,7 @@ describe("Markdown", () => {
       await Effect.runPromise(print(testCases.namespace, 0)),
       `## A (namespace)
 
-Added in v1.0.0
+Since v1.0.0
 
 ### B (type alias)
 
@@ -190,11 +190,11 @@ Added in v1.0.0
 export type B = string
 \`\`\`
 
-Added in v1.0.1
+Since v1.0.1
 
 ### C (namespace)
 
-Added in v1.0.2
+Since v1.0.2
 
 #### D (type alias)
 
@@ -204,7 +204,7 @@ Added in v1.0.2
 export type D = number
 \`\`\`
 
-Added in v1.0.3
+Since v1.0.3
 `
     )
   })
@@ -231,7 +231,7 @@ declare class A {
 example 1
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ### staticTest (static method)
 
@@ -241,7 +241,7 @@ Added in v1.0.0
 static testStatic(): string;
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ### hasOwnProperty (function) (method)
 
@@ -251,7 +251,7 @@ Added in v1.0.0
 hasOwnProperty(): boolean
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ### foo (property)
 
@@ -261,7 +261,7 @@ Added in v1.0.0
 foo: string
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 `
     )
   })
@@ -280,7 +280,7 @@ the test
 declare const test: string
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 `
     )
   })
@@ -297,7 +297,7 @@ Added in v1.0.0
 export declare const test: typeof test
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 `
     )
   })
@@ -322,7 +322,7 @@ declare const func: (test: string) => string
 example 1
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 `
     )
   })
@@ -339,7 +339,7 @@ Added in v1.0.0
 export interface A extends Record<string, unknown> {}
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 `
     )
   })
@@ -356,7 +356,7 @@ Added in v1.0.0
 export type A = number
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 `
     )
 
@@ -405,7 +405,7 @@ parent: Modules
 
 ## tests overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
@@ -450,7 +450,7 @@ declare class A {
 example 1
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ### staticTest (static method)
 
@@ -460,7 +460,7 @@ Added in v1.0.0
 static testStatic(): string;
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ### hasOwnProperty (function) (method)
 
@@ -470,7 +470,7 @@ Added in v1.0.0
 hasOwnProperty(): boolean
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ### foo (property)
 
@@ -480,7 +480,7 @@ Added in v1.0.0
 foo: string
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 # constants
 
@@ -494,7 +494,7 @@ the test
 declare const test: string
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 # utils
 
@@ -506,7 +506,7 @@ Added in v1.0.0
 export interface A extends Record<string, unknown> {}
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ## A (type alias)
 
@@ -516,11 +516,11 @@ Added in v1.0.0
 export type A = number
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ## A (namespace)
 
-Added in v1.0.0
+Since v1.0.0
 
 ### B (type alias)
 
@@ -530,11 +530,11 @@ Added in v1.0.0
 export type B = string
 \`\`\`
 
-Added in v1.0.1
+Since v1.0.1
 
 ### C (namespace)
 
-Added in v1.0.2
+Since v1.0.2
 
 #### D (type alias)
 
@@ -544,7 +544,7 @@ Added in v1.0.2
 export type D = number
 \`\`\`
 
-Added in v1.0.3
+Since v1.0.3
 
 ## ~~func~~
 
@@ -562,7 +562,7 @@ declare const func: (test: string) => string
 example 1
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 
 ## test
 
@@ -572,7 +572,7 @@ Added in v1.0.0
 export declare const test: typeof test
 \`\`\`
 
-Added in v1.0.0
+Since v1.0.0
 `
     )
 
@@ -588,7 +588,7 @@ parent: Modules
 
 ## tests overview
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 

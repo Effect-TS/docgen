@@ -35,7 +35,7 @@ const MarkdownPrinter = {
 
 const printSince: (v: Option.Option<string>) => string = Option.match({
   onNone: () => "",
-  onSome: (v) => MarkdownPrinter.paragraph(`Added in v${v}`)
+  onSome: (v) => MarkdownPrinter.paragraph(`Since v${v}`)
 })
 
 const printTitle = (s: string, deprecated: boolean, type?: string): string => {
