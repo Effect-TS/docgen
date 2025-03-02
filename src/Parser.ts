@@ -52,8 +52,7 @@ const getJSDocText: (jsdocs: ReadonlyArray<ast.JSDoc>) => string = Array.matchRi
   onNonEmpty: (_, last) => last.getText()
 })
 
-const hasTag = (tag: string) => (comment: Comment) =>
-  pipe(comment.tags, Record.get(tag), Option.isSome)
+const hasTag = (tag: string) => (comment: Comment) => pipe(comment.tags, Record.get(tag), Option.isSome)
 
 const hasInternalTag = hasTag("internal")
 
@@ -106,13 +105,12 @@ const getMissingTagError = (
   tag: string,
   path: ReadonlyArray<string>,
   name: string
-): string =>
-  `Missing ${chalk.bold(tag)} tag in ${chalk.bold(path.join("/") + "#" + name)} documentation`
+): string => `Missing ${chalk.bold(tag)} tag in ${chalk.bold(path.join("/") + "#" + name)} documentation`
 
 const getSinceTag = (name: string, comment: Comment) =>
-  Effect.gen(function*(_) {
-    const config = yield* _(Configuration.Configuration)
-    const source = yield* _(Source)
+  Effect.gen(function*() {
+    const config = yield* Configuration.Configuration
+    const source = yield* Source
     const since = Record.get(comment.tags, "since").pipe(
       Option.flatMap(Array.headNonEmpty),
       Option.map(String.trim),
@@ -121,14 +119,14 @@ const getSinceTag = (name: string, comment: Comment) =>
     if (
       Option.isNone(since) && (config.enforceVersion || Record.has(comment.tags, "since"))
     ) {
-      return yield* _(Effect.fail(getMissingTagError("@since", source.path, name)))
+      return yield* Effect.fail(getMissingTagError("@since", source.path, name))
     }
     return since
   })
 
 const getCategoryTag = (name: string, comment: Comment) =>
-  Effect.gen(function*(_) {
-    const source = yield* _(Source)
+  Effect.gen(function*() {
+    const source = yield* Source
     const category = Record.get(comment.tags, "category").pipe(
       Option.flatMap(Array.headNonEmpty),
       Option.map(String.trim),
@@ -137,29 +135,24 @@ const getCategoryTag = (name: string, comment: Comment) =>
     if (
       Option.isNone(category) && (Record.has(comment.tags, "category"))
     ) {
-      return yield* _(Effect.fail(getMissingTagError("@category", source.path, name)))
+      return yield* Effect.fail(getMissingTagError("@category", source.path, name))
     }
     return category
   })
 
 const getDescription = (name: string, comment: Comment) =>
-  Effect.gen(function*(_) {
-    const config = yield* _(Configuration.Configuration)
-    const source = yield* _(Source)
+  Effect.gen(function*() {
+    const config = yield* Configuration.Configuration
+    const source = yield* Source
     if (Option.isNone(comment.description) && config.enforceDescriptions) {
-      return yield* _(
-        Effect.fail(
-          `Missing ${chalk.bold("description")} in ${
-            chalk.bold(source.path.join("/") + "#" + name)
-          } documentation`
-        )
+      return yield* Effect.fail(
+        `Missing ${chalk.bold("description")} in ${chalk.bold(source.path.join("/") + "#" + name)} documentation`
       )
     }
     return comment.description
   })
 
-const fencedExampleRegex =
-  /^(?<fenceStart>(```|~~~)[^\n]*)\n(?<body>[\S\s]*)(?<fenceEnd>\n(```|~~~))$/
+const fencedExampleRegex = /^(?<fenceStart>(```|~~~)[^\n]*)\n(?<body>[\S\s]*)(?<fenceEnd>\n(```|~~~))$/
 const parseExample = (body: string) => {
   const example = fencedExampleRegex.exec(body)
 
@@ -177,15 +170,15 @@ const parseExample = (body: string) => {
 }
 
 const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
-  Effect.gen(function*(_) {
-    const config = yield* _(Configuration.Configuration)
-    const source = yield* _(Source)
+  Effect.gen(function*() {
+    const config = yield* Configuration.Configuration
+    const source = yield* Source
     const examples = Record.get(comment.tags, "example").pipe(
       Option.map(flow(Array.getSomes, Array.map(parseExample))),
       Option.getOrElse(() => [])
     )
     if (Array.isEmptyArray(examples) && config.enforceExamples && !isModule) {
-      return yield* _(Effect.fail(getMissingTagError("@example", source.path, name)))
+      return yield* Effect.fail(getMissingTagError("@example", source.path, name))
     }
     return examples
   })
@@ -194,12 +187,12 @@ const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
  * @internal
  */
 export const getDoc = (name: string, text: string, isModule = false) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const comment = parseComment(text)
-    const since = yield* _(getSinceTag(name, comment))
-    const category = yield* _(getCategoryTag(name, comment))
-    const description = yield* _(getDescription(name, comment))
-    const examples = yield* _(getExamplesTag(name, comment, isModule))
+    const since = yield* getSinceTag(name, comment)
+    const category = yield* getCategoryTag(name, comment)
+    const description = yield* getDescription(name, comment)
+    const examples = yield* getExamplesTag(name, comment, isModule)
     const deprecated = Option.isSome(Record.get(comment.tags, "deprecated"))
     return Domain.createDoc(
       description,
@@ -211,10 +204,10 @@ export const getDoc = (name: string, text: string, isModule = false) =>
   })
 
 const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const name = id.getName()
     const text = getJSDocText(id.getJsDocs())
-    const doc = yield* _(getDoc(name, text))
+    const doc = yield* getDoc(name, text)
     const signature = id.getText()
     return Domain.createInterface(
       Domain.createNamedDoc(
@@ -278,18 +271,17 @@ const getFunctionDeclarationJSDocs = (
   )
 
 const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
-  Effect.gen(function*(_) {
-    const source = yield* _(Source)
-    const name = yield* _(pipe(
+  Effect.gen(function*() {
+    const source = yield* Source
+    const name = yield* pipe(
       Option.fromNullable(fd.getName()),
       Option.flatMap(Option.liftPredicate((name) => name.length > 0)),
       Effect.mapError(
-        () =>
-          `Missing ${chalk.bold("function name")} in module ${chalk.bold(source.path.join("/"))}`
+        () => `Missing ${chalk.bold("function name")} in module ${chalk.bold(source.path.join("/"))}`
       )
-    ))
+    )
     const text = getJSDocText(getFunctionDeclarationJSDocs(fd))
-    const doc = yield* _(getDoc(name, text))
+    const doc = yield* getDoc(name, text)
     const signatures = pipe(
       fd.getOverloads(),
       Array.matchRight({
@@ -315,11 +307,11 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
   })
 
 const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const vs: any = vd.getParent().getParent()
     const name = vd.getName()
     const text = getJSDocText(vs.getJsDocs())
-    const doc = yield* _(getDoc(name, text))
+    const doc = yield* getDoc(name, text)
     const signature = `export declare const ${name}: ${
       stripImportTypes(
         vd.getType().getText(vd)
@@ -338,8 +330,8 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
     )
   })
 
-const getFunctionDeclarations = Effect.gen(function*(_) {
-  const source = yield* _(Source)
+const getFunctionDeclarations = Effect.gen(function*() {
+  const source = yield* Source
   const functions = Array.filter(
     source.sourceFile.getFunctions(),
     (fd) => fd.isExported() && shouldNotIgnore(getFunctionDeclarationJSDocs(fd))
@@ -369,20 +361,18 @@ const getFunctionDeclarations = Effect.gen(function*(_) {
  * @category parsers
  * @since 1.0.0
  */
-export const parseFunctions = Effect.gen(function*(_) {
-  const { arrows, functions } = yield* _(getFunctionDeclarations)
-  const functionDeclarations = yield* _(Effect.validateAll(functions, parseFunctionDeclaration))
-  const functionVariableDeclarations = yield* _(
-    Effect.validateAll(arrows, parseFunctionVariableDeclaration)
-  )
+export const parseFunctions = Effect.gen(function*() {
+  const { arrows, functions } = yield* getFunctionDeclarations
+  const functionDeclarations = yield* Effect.validateAll(functions, parseFunctionDeclaration)
+  const functionVariableDeclarations = yield* Effect.validateAll(arrows, parseFunctionVariableDeclaration)
   return [...functionDeclarations, ...functionVariableDeclarations]
 })
 
 const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const name = ta.getName()
     const text = getJSDocText(ta.getJsDocs())
-    const doc = yield* _(getDoc(name, text))
+    const doc = yield* getDoc(name, text)
     const signature = ta.getText()
     return Domain.createTypeAlias(
       Domain.createNamedDoc(
@@ -417,11 +407,11 @@ export const parseTypeAliases = Effect.flatMap(
 )
 
 const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const vs: any = vd.getParent().getParent()
     const name = vd.getName()
     const text = getJSDocText(vs.getJsDocs())
-    const doc = yield* _(getDoc(name, text))
+    const doc = yield* getDoc(name, text)
     const type = stripImportTypes(vd.getType().getText(vd))
     const signature = `export declare const ${name}: ${type}`
     return Domain.createConstant(
@@ -441,8 +431,8 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
  * @category parsers
  * @since 1.0.0
  */
-export const parseConstants = Effect.gen(function*(_) {
-  const source = yield* _(Source)
+export const parseConstants = Effect.gen(function*() {
+  const source = yield* Source
   const variableDeclarations = pipe(
     Array.filter(
       source.sourceFile.getVariableDeclarations(),
@@ -461,25 +451,23 @@ export const parseConstants = Effect.gen(function*(_) {
       }
     )
   )
-  return yield* _(Effect.validateAll(variableDeclarations, parseConstantVariableDeclaration))
+  return yield* Effect.validateAll(variableDeclarations, parseConstantVariableDeclaration)
 })
 
 const parseExportSpecifier = (es: ast.ExportSpecifier) =>
-  Effect.gen(function*(_) {
-    const source = yield* _(Source)
+  Effect.gen(function*() {
+    const source = yield* Source
     const name = es.compilerNode.name.text
     const type = stripImportTypes(es.getType().getText(es))
     const ocommentRange = Array.head(es.getLeadingCommentRanges())
     if (Option.isNone(ocommentRange)) {
-      return yield* _(
-        Effect.fail(
-          `Missing ${chalk.bold(name)} documentation in ${chalk.bold(source.path.join("/"))}`
-        )
+      return yield* Effect.fail(
+        `Missing ${chalk.bold(name)} documentation in ${chalk.bold(source.path.join("/"))}`
       )
     }
     const commentRange = ocommentRange.value
     const text = commentRange.getText()
-    const doc = yield* _(getDoc(name, text))
+    const doc = yield* getDoc(name, text)
     const signature = `export declare const ${name}: ${type}`
     return Domain.createExport(
       Domain.createNamedDoc(
@@ -497,23 +485,21 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
 const parseExportStar = (
   ed: ast.ExportDeclaration
 ): Effect.Effect<Domain.Export, string, Source | Configuration.Configuration> =>
-  Effect.gen(function*(_) {
-    const source = yield* _(Source)
+  Effect.gen(function*() {
+    const source = yield* Source
     const es = ed.getModuleSpecifier()!
     const name = es.getText()
     const namespace = ed.getNamespaceExport()?.getName()
     const signature = `export *${namespace === undefined ? "" : ` as ${namespace}`} from ${name}`
     const ocommentRange = Array.head(ed.getLeadingCommentRanges())
     if (Option.isNone(ocommentRange)) {
-      return yield* _(
-        Effect.fail(
-          `Missing ${chalk.bold(signature)} documentation in ${chalk.bold(source.path.join("/"))}`
-        )
+      return yield* Effect.fail(
+        `Missing ${chalk.bold(signature)} documentation in ${chalk.bold(source.path.join("/"))}`
       )
     }
     const commentRange = ocommentRange.value
     const text = commentRange.getText()
-    const doc = yield* _(getDoc(name, text))
+    const doc = yield* getDoc(name, text)
     return Domain.createExport(
       Domain.createNamedDoc(
         `From ${name}`,
@@ -574,11 +560,11 @@ const parseModuleDeclaration = (
       ed.getTypeAliases()
     )
     const getNamespaces = parseModuleDeclarations(ed.getModules())
-    return Effect.gen(function*(_) {
-      const info = yield* _(getInfo)
-      const interfaces = yield* _(getInterfaces)
-      const typeAliases = yield* _(getTypeAliases)
-      const namespaces = yield* _(getNamespaces)
+    return Effect.gen(function*() {
+      const info = yield* getInfo
+      const interfaces = yield* getInterfaces
+      const typeAliases = yield* getTypeAliases
+      const namespaces = yield* getNamespaces
       return Domain.createNamespace(
         Domain.createNamedDoc(
           name,
@@ -635,7 +621,7 @@ const getMethodSignature = (md: ast.MethodDeclaration): string =>
   )
 
 const parseMethod = (md: ast.MethodDeclaration) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const name = md.getName()
     const overloads = md.getOverloads()
     const jsdocs = pipe(
@@ -647,7 +633,7 @@ const parseMethod = (md: ast.MethodDeclaration) =>
     )
     if (shouldNotIgnore(jsdocs)) {
       const text = getJSDocText(jsdocs)
-      const doc = yield* _(getDoc(name, text))
+      const doc = yield* getDoc(name, text)
       const signatures = pipe(
         overloads,
         Array.matchRight({
@@ -677,10 +663,10 @@ const parseMethod = (md: ast.MethodDeclaration) =>
   })
 
 const parseProperty = (classname: string) => (pd: ast.PropertyDeclaration) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const name = pd.getName()
     const text = getJSDocText(pd.getJsDocs())
-    const doc = yield* _(getDoc(`${classname}#${name}`, text))
+    const doc = yield* getDoc(`${classname}#${name}`, text)
     const type = stripImportTypes(pd.getType().getText(pd))
     const readonly = pipe(
       Option.fromNullable(
@@ -767,21 +753,21 @@ const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
   )
 
 const parseClass = (c: ast.ClassDeclaration) =>
-  Effect.gen(function*(_) {
-    const name = yield* _(getClassName(c))
-    const doc = yield* _(getClassDoc(name, c))
-    const signature = yield* _(getClassDeclarationSignature(name, c))
-    const methods = yield* _(pipe(
+  Effect.gen(function*() {
+    const name = yield* getClassName(c)
+    const doc = yield* getClassDoc(name, c)
+    const signature = yield* getClassDeclarationSignature(name, c)
+    const methods = yield* pipe(
       c.getInstanceMethods(),
       Effect.validateAll(parseMethod),
       Effect.map(Array.getSomes)
-    ))
-    const staticMethods = yield* _(pipe(
+    )
+    const staticMethods = yield* pipe(
       c.getStaticMethods(),
       Effect.validateAll(parseMethod),
       Effect.map(Array.getSomes)
-    ))
-    const properties = yield* _(parseProperties(name, c))
+    )
+    const properties = yield* parseProperties(name, c)
     return Domain.createClass(
       Domain.createNamedDoc(
         name,
@@ -802,29 +788,27 @@ const parseClass = (c: ast.ClassDeclaration) =>
  * @category parsers
  * @since 1.0.0
  */
-export const parseClasses = Effect.gen(function*(_) {
-  const source = yield* _(Source)
+export const parseClasses = Effect.gen(function*() {
+  const source = yield* Source
   const exportedClasses = Array.filter(
     source.sourceFile.getClasses(),
     (cd) => cd.isExported() && shouldNotIgnore(cd.getJsDocs())
   )
-  return yield* _(
-    Effect.validateAll(exportedClasses, parseClass).pipe(
-      Effect.mapBoth({
-        onFailure: Array.flatten,
-        onSuccess: sortByName
-      })
-    )
+  return yield* Effect.validateAll(exportedClasses, parseClass).pipe(
+    Effect.mapBoth({
+      onFailure: Array.flatten,
+      onSuccess: sortByName
+    })
   )
 })
 
 /**
  * @internal
  */
-export const parseModuleDocumentation = Effect.gen(function*(_) {
-  const config = yield* _(Configuration.Configuration)
-  const source = yield* _(Source)
-  const path = yield* _(Path.Path)
+export const parseModuleDocumentation = Effect.gen(function*() {
+  const config = yield* Configuration.Configuration
+  const source = yield* Source
+  const path = yield* Path.Path
   const name = path.parse(Array.lastNonEmpty(source.path)).name
   // if any of the settings enforcing documentation are set to `true`, then
   // a module should have associated documentation
@@ -833,10 +817,8 @@ export const parseModuleDocumentation = Effect.gen(function*(_) {
   const ofirstStatement = Array.head(statements)
   if (Option.isNone(ofirstStatement)) {
     if (isDocumentationRequired) {
-      return yield* _(
-        Effect.fail(
-          [`Empty ${chalk.bold(source.path.join("/"))} module`]
-        )
+      return yield* Effect.fail(
+        [`Empty ${chalk.bold(source.path.join("/"))} module`]
       )
     }
   } else {
@@ -844,16 +826,14 @@ export const parseModuleDocumentation = Effect.gen(function*(_) {
     const ocommentRange = Array.head(firstStatement.getLeadingCommentRanges())
     if (Option.isNone(ocommentRange)) {
       if (isDocumentationRequired) {
-        return yield* _(Effect.fail(
+        return yield* Effect.fail(
           [`Missing ${chalk.bold("documentation")} in ${chalk.bold(source.path.join("/"))} module`]
-        ))
+        )
       }
     } else {
       const commentRange = ocommentRange.value
       const text = commentRange.getText()
-      const doc = yield* _(
-        getDoc("<module fileoverview>", text, true).pipe(Effect.mapError(Array.of))
-      )
+      const doc = yield* getDoc("<module fileoverview>", text, true).pipe(Effect.mapError(Array.of))
       return Domain.createNamedDoc(
         name,
         doc.description,
@@ -878,16 +858,16 @@ export const parseModuleDocumentation = Effect.gen(function*(_) {
  * @category parsers
  * @since 1.0.0
  */
-export const parseModule = Effect.gen(function*(_) {
-  const source = yield* _(Source)
-  const doc = yield* _(parseModuleDocumentation)
-  const interfaces = yield* _(parseInterfaces)
-  const functions = yield* _(parseFunctions)
-  const typeAliases = yield* _(parseTypeAliases)
-  const classes = yield* _(parseClasses)
-  const constants = yield* _(parseConstants)
-  const exports = yield* _(parseExports)
-  const namespaces = yield* _(parseNamespaces)
+export const parseModule = Effect.gen(function*() {
+  const source = yield* Source
+  const doc = yield* parseModuleDocumentation
+  const interfaces = yield* parseInterfaces
+  const functions = yield* parseFunctions
+  const typeAliases = yield* parseTypeAliases
+  const classes = yield* parseClasses
+  const constants = yield* parseConstants
+  const exports = yield* parseExports
+  const namespaces = yield* parseNamespaces
   return Domain.createModule(
     doc,
     source.path,
@@ -925,10 +905,10 @@ export const parseFile = (project: ast.Project) =>
   })
 
 const createProject = (files: ReadonlyArray<File.File>) =>
-  Effect.gen(function*(_) {
-    const config = yield* _(Configuration.Configuration)
-    const process = yield* _(Process.Process)
-    const cwd = yield* _(process.cwd)
+  Effect.gen(function*() {
+    const config = yield* Configuration.Configuration
+    const process = yield* Process.Process
+    const cwd = yield* process.cwd
     // Convert the raw config into a format that TS/TS-Morph expects
     const parsed = ast.ts.parseJsonConfigFileContent(
       {

@@ -16,7 +16,7 @@ import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import { assert, describe, it } from "vitest"
 
-interface DocgenJson extends Record<string, unknown> {}
+type DocgenJson = Record<string, unknown>
 
 class DocgenJsonTag extends Context.Tag("DocgenJsonTag")<DocgenJsonTag, DocgenJson>() {}
 

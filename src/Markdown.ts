@@ -20,13 +20,11 @@ type Printable =
   | Domain.TypeAlias
   | Domain.Namespace
 
-const createHeaderPrinter = (level: number) => (content: string): string =>
-  "#".repeat(level) + " " + content + "\n\n"
+const createHeaderPrinter = (level: number) => (content: string): string => "#".repeat(level) + " " + content + "\n\n"
 
 const MarkdownPrinter = {
   bold: (s: string) => `**${s}**`,
-  fence: (start: string, content: string, end: string) =>
-    start + "\n" + content + "\n" + end + "\n\n",
+  fence: (start: string, content: string, end: string) => start + "\n" + content + "\n" + end + "\n\n",
   paragraph: (...content: ReadonlyArray<string>) => "\n" + content.join("") + "\n\n",
   strikethrough: (content: string) => `~~${content}~~`,
   h1: createHeaderPrinter(1),
@@ -51,8 +49,7 @@ const printTitle = (s: string, deprecated: boolean, type?: string): string => {
   )
 }
 
-const printDescription = (d: Option.Option<string>): string =>
-  MarkdownPrinter.paragraph(Option.getOrElse(d, () => ""))
+const printDescription = (d: Option.Option<string>): string => MarkdownPrinter.paragraph(Option.getOrElse(d, () => ""))
 
 const printSignature = (s: string): string =>
   MarkdownPrinter.paragraph(MarkdownPrinter.bold("Signature")) +
@@ -283,7 +280,7 @@ export const printModule = (
   module: Domain.Module,
   order: number
 ): Effect.Effect<string> =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const header = printMeta(module.path.slice(1).join("/"), order)
 
     const description = MarkdownPrinter.paragraph(printModuleDescription(module))
@@ -310,22 +307,20 @@ export const printModule = (
       )
     ).join("\n")
 
-    const toc = yield* _(
-      Effect.tryPromise({
-        try: () => {
-          // @ts-ignore
-          return import("@effect/markdown-toc").then((m) => m.default)
-        },
-        catch: identity
-      }).pipe(Effect.orDie)
-    )
+    const toc = yield* Effect.tryPromise({
+      try: () => {
+        // @ts-ignore
+        return import("@effect/markdown-toc").then((m) => m.default)
+      },
+      catch: identity
+    }).pipe(Effect.orDie)
 
     const tableOfContents = (content: string) =>
       "<h2 class=\"text-delta\">Table of contents</h2>\n\n"
       + toc(content).content
       + "\n\n"
 
-    return yield* _(prettify(
+    return yield* prettify(
       [
         header,
         description,
@@ -334,7 +329,7 @@ export const printModule = (
         "---\n",
         content
       ].join("\n")
-    ))
+    )
   })
 
 const defaultPrettierOptions: Prettier.Options = {
