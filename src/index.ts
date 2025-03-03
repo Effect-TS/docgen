@@ -26,8 +26,3 @@ export * as Markdown from "./Markdown.js"
  * @since 0.6.0
  */
 export * as Parser from "./Parser.js"
-
-/**
- * @since 0.6.0
- */
-export * as Process from "./Process.js"

@@ -72,11 +72,7 @@ Since v0.6.0
 ```ts
 export declare const parseFiles: (
   files: ReadonlyArray<Domain.File>
-) => Effect.Effect<
-  Domain.Module[],
-  [string[], ...string[][]],
-  Process.Process | Configuration.Configuration | Path.Path
->
+) => Effect.Effect<Domain.Module[], [string[], ...string[][]], Configuration.Configuration | Domain.Process | Path.Path>
 ```
 
 Since v0.6.0

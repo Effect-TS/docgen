@@ -15,8 +15,8 @@ import * as Option from "effect/Option"
 import * as ParseResult from "effect/ParseResult"
 import * as Schema from "effect/Schema"
 import * as tsconfck from "tsconfck"
+import * as Domain from "./Domain.js"
 import { DocgenError } from "./Domain.js"
-import * as Process from "./Process.js"
 
 const PACKAGE_JSON_FILE_NAME = "package.json"
 const CONFIG_FILE_NAME = "docgen.json"
@@ -170,11 +170,11 @@ const readDocgenConfig = (
 const readTSConfig = (fileName: string): Effect.Effect<
   { readonly [x: string]: unknown },
   never,
-  Path.Path | Process.Process
+  Path.Path | Domain.Process
 > =>
   Effect.gen(function*() {
     const path = yield* Path.Path
-    const process = yield* Process.Process
+    const process = yield* Domain.Process
     const cwd = yield* process.cwd
     return yield* pipe(
       Effect.promise(() => tsconfck.parse(path.resolve(cwd, fileName))).pipe(
@@ -197,7 +197,7 @@ const resolveCompilerOptions = (
   configKey: string,
   fromCLI: Option.Option<string | Record<string, unknown>>,
   fromDocgenJson: Option.Option<string | Record<string, unknown>>
-): Effect.Effect<{ readonly [x: string]: unknown }, never, Path.Path | Process.Process> => {
+): Effect.Effect<{ readonly [x: string]: unknown }, never, Path.Path | Domain.Process> => {
   const fromConfigProvider = loadCompilerOptions(configKey)
   return fromCLI.pipe(
     Effect.orElse(() => fromConfigProvider),
@@ -239,7 +239,7 @@ export const load = (args: {
 }) =>
   Effect.gen(function*() {
     // Extract the requisite services
-    const process = yield* Process.Process
+    const process = yield* Domain.Process
     const cwd = yield* process.cwd
     const path = yield* Path.Path
 
@@ -301,7 +301,7 @@ export const load = (args: {
 /** @internal */
 export const configProviderLayer = Layer.scopedDiscard(Effect.gen(function*() {
   // Extract the requisite services
-  const process = yield* Process.Process
+  const process = yield* Domain.Process
   const cwd = yield* process.cwd
   const path = yield* Path.Path
   // Attempt to load the `docgen.json` configuration file

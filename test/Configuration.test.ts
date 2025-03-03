@@ -1,8 +1,7 @@
 import * as Command from "@effect/cli/Command"
 import * as CLI from "@effect/docgen/CLI"
 import * as Configuration from "@effect/docgen/Configuration"
-import { DocgenError } from "@effect/docgen/Domain"
-import * as Process from "@effect/docgen/Process"
+import * as Domain from "@effect/docgen/Domain"
 import * as NodeCommandExecutor from "@effect/platform-node/NodeCommandExecutor"
 import * as NodeTerminal from "@effect/platform-node/NodeTerminal"
 import * as Error from "@effect/platform/Error"
@@ -88,7 +87,7 @@ const TestLive = Configuration.configProviderLayer.pipe(
   Layer.provideMerge(Layer.mergeAll(
     NodeCommandExecutor.layer.pipe(Layer.provide(TestFileSystem)),
     Path.layer,
-    Process.layer,
+    Domain.Process.Default,
     NodeTerminal.layer,
     TestFileSystem
   ))
@@ -177,7 +176,7 @@ describe("Configuration", () => {
     assert.deepStrictEqual(
       result,
       Exit.die(
-        new DocgenError({
+        new Domain.DocgenError({
           message: `[Configuration.validateJsonFile]
 ConfigurationSchema
 └─ ["projectHomepage"]

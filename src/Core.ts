@@ -20,7 +20,6 @@ import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
 import { printModule } from "./Markdown.js"
 import * as Parser from "./Parser.js"
-import * as Process from "./Process.js"
 
 /**
  * Find all files matching the specified `glob` pattern, optionally excluding
@@ -68,7 +67,7 @@ const writeFileToOutDir = (file: Domain.File) =>
     const config = yield* Configuration.Configuration
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
-    const process = yield* Process.Process
+    const process = yield* Domain.Process
     const cwd = yield* process.cwd
     const fileName = path.relative(path.join(cwd, config.outDir), file.path)
 
@@ -306,7 +305,7 @@ const cleanupExamples = Effect.gen(function*() {
  */
 const runTscOnExamples = Effect.gen(function*() {
   const config = yield* Configuration.Configuration
-  const process = yield* Process.Process
+  const process = yield* Domain.Process
   const executor = yield* CommandExecutor.CommandExecutor
   const cwd = yield* process.cwd
   const path = yield* Path.Path
@@ -348,7 +347,7 @@ const runTscOnExamples = Effect.gen(function*() {
 const runTsxOnExamples = Effect.gen(function*() {
   const config = yield* Configuration.Configuration
   const path = yield* Path.Path
-  const process = yield* Process.Process
+  const process = yield* Domain.Process
   const executor = yield* CommandExecutor.CommandExecutor
   const cwd = yield* process.cwd
   const platform = yield* process.platform
@@ -398,7 +397,7 @@ const writeExamplesToOutDir = (examples: ReadonlyArray<Domain.File>) =>
 const createExamplesTsConfigJson = Effect.gen(function*() {
   yield* Effect.logDebug("Writing examples tsconfig...")
   const config = yield* Configuration.Configuration
-  const process = yield* Process.Process
+  const process = yield* Domain.Process
   const cwd = yield* process.cwd
   const path = yield* Path.Path
   yield* writeFileToOutDir(
@@ -421,7 +420,7 @@ const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
 
 const getMarkdownHomepage = Effect.gen(function*() {
   const config = yield* Configuration.Configuration
-  const process = yield* Process.Process
+  const process = yield* Domain.Process
   const cwd = yield* process.cwd
   const path = yield* Path.Path
   return new Domain.File(
@@ -439,7 +438,7 @@ const getMarkdownHomepage = Effect.gen(function*() {
 
 const getMarkdownIndex = Effect.gen(function*() {
   const config = yield* Configuration.Configuration
-  const process = yield* Process.Process
+  const process = yield* Domain.Process
   const cwd = yield* process.cwd
   const path = yield* Path.Path
   return new Domain.File(
@@ -478,7 +477,7 @@ const getHomepageNavigationHeader = (config: Configuration.ConfigurationShape): 
 
 const getMarkdownConfigYML = Effect.gen(function*() {
   const config = yield* Configuration.Configuration
-  const process = yield* Process.Process
+  const process = yield* Domain.Process
   const fs = yield* FileSystem.FileSystem
   const cwd = yield* process.cwd
   const path = yield* Path.Path

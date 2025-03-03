@@ -18,7 +18,6 @@ Since v0.6.0
   - [From "./Domain.js"](#from-domainjs)
   - [From "./Markdown.js"](#from-markdownjs)
   - [From "./Parser.js"](#from-parserjs)
-  - [From "./Process.js"](#from-processjs)
 
 ---
 
@@ -80,18 +79,6 @@ Re-exports all named exports from the "./Parser.js" module as `Parser`.
 
 ```ts
 export * as Parser from "./Parser.js"
-```
-
-Since v0.6.0
-
-## From "./Process.js"
-
-Re-exports all named exports from the "./Process.js" module as `Process`.
-
-**Signature**
-
-```ts
-export * as Process from "./Process.js"
 ```
 
 Since v0.6.0

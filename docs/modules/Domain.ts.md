@@ -35,6 +35,8 @@ Since v0.6.0
   - [Property (class)](#property-class)
   - [TypeAlias (class)](#typealias-class)
     - [\_tag (property)](#_tag-property-6)
+- [service](#service)
+  - [Process (class)](#process-class)
 - [sorting](#sorting)
   - [ByPath](#bypath)
 - [symbol](#symbol)
@@ -333,6 +335,20 @@ Since v0.6.0
 
 ```ts
 readonly _tag: "TypeAlias"
+```
+
+Since v0.6.0
+
+# service
+
+## Process (class)
+
+Represents a handle to the currently executing process.
+
+**Signature**
+
+```ts
+export declare class Process
 ```
 
 Since v0.6.0

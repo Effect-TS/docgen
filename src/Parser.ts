@@ -15,7 +15,6 @@ import * as String from "effect/String"
 import * as ast from "ts-morph"
 import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
-import * as Process from "./Process.js"
 
 /** @internal */
 export interface SourceShape {
@@ -907,7 +906,7 @@ export const parseFile = (project: ast.Project) =>
 const createProject = (files: ReadonlyArray<Domain.File>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
-    const process = yield* Process.Process
+    const process = yield* Domain.Process
     const cwd = yield* process.cwd
     // Convert the raw config into a format that TS/TS-Morph expects
     const parsed = ast.ts.parseJsonConfigFileContent(

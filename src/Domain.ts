@@ -3,6 +3,7 @@
  */
 
 import * as Data from "effect/Data"
+import * as Effect from "effect/Effect"
 import type * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as String from "effect/String"
@@ -273,3 +274,17 @@ export class DocgenError extends Data.TaggedError("DocgenError")<{
   readonly message: string
 }> {
 }
+
+/**
+ * Represents a handle to the currently executing process.
+ *
+ * @category service
+ * @since 0.6.0
+ */
+export class Process extends Effect.Service<Process>()("Process", {
+  succeed: {
+    cwd: Effect.sync(() => process.cwd()),
+    platform: Effect.sync(() => process.platform),
+    argv: Effect.sync(() => process.argv)
+  }
+}) {}
