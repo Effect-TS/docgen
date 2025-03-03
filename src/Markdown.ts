@@ -271,6 +271,12 @@ const byCategory = Order.mapInput(
  * export const a: string = "a"
  * ```
  *
+ * ```text
+ * ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌────────┐
+ * │ input │───►│ func1 │───►│ func2 │───►│  ...  │───►│ funcN │───►│ result │
+ * └───────┘    └───────┘    └───────┘    └───────┘    └───────┘    └────────┘
+ * ```
+ *
  * @example
  * **Example** (Title 1)
  *

@@ -167,7 +167,12 @@ const extractFencedCode = (content: string): Array<string> => {
   const matches = Array.fromIterable(content.matchAll(fenceRegex))
 
   return matches
-    .filter((match) => !match[1].includes("skip-type-checking"))
+    .filter((match) => {
+      const meta = match[1].toLocaleLowerCase()
+      const isTypeScript = meta.startsWith("ts") || meta.startsWith("typescript")
+      const isSkipTypeChecking = meta.includes("skip-type-checking")
+      return isTypeScript && !isSkipTypeChecking
+    })
     .map((match) => match[2].trim())
 }
 
