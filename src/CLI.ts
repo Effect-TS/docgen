@@ -173,7 +173,10 @@ const options = {
 /** @internal */
 export const docgenCommand = Command.make("docgen", options)
 
-/** @internal */
+/**
+ * @category CLI
+ * @since 0.6.0
+ */
 export const cli = docgenCommand.pipe(
   Command.withHandler(() => Effect.scoped(Core.program)),
   Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
