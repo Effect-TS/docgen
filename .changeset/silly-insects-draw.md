@@ -8,3 +8,4 @@
 - Reorder signature and example sections in Markdown generation
 - Remove redundant "Example" header in Markdown generation
 - runExamples is not false by default
+- Extract examples from descriptions (disable with `skip-type-checking` metadata on fenced code blocks)

@@ -263,7 +263,7 @@ Since v1.0.0
 
 These are manual exports, like:
 
-```ts
+```ts skip-type-checking
 const _null = ...
 
 export {

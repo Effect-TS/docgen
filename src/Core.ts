@@ -12,6 +12,7 @@ import { pipe } from "effect"
 import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
@@ -165,7 +166,9 @@ const extractFencedCode = (content: string): Array<string> => {
   const fenceRegex = /(?:```|~~~)(.*?)\n([\s\S]*?)(?:```|~~~)/g
   const matches = Array.fromIterable(content.matchAll(fenceRegex))
 
-  return Array.map(matches, (match: RegExpMatchArray) => match[2].trim())
+  return matches
+    .filter((match) => !match[1].includes("skip-type-checking"))
+    .map((match) => match[2].trim())
 }
 
 /**
@@ -178,24 +181,27 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
     return Array.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
-      const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<File.File> =>
-        Array.flatMap(
-          doc.examples,
-          (content, i) => {
-            const examples = extractFencedCode(content.body)
-            return examples.map((example, j) => {
-              return File.createFile(
-                path.join(
-                  config.outDir,
-                  "examples",
-                  `${prefix}-${exampleId}-${doc.name}-${i}-${j}.ts`
-                ),
-                example,
-                true // make the file overwritable
-              )
-            })
+      const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<File.File> => {
+        const descriptionExamples = doc.description.pipe(
+          Option.map(extractFencedCode),
+          Option.getOrElse((): Array<string> => [])
+        )
+        const examples = descriptionExamples.concat(doc.examples.flatMap((e) => extractFencedCode(e.body)))
+        return Array.map(
+          examples,
+          (example, i) => {
+            return File.createFile(
+              path.join(
+                config.outDir,
+                "examples",
+                `${prefix}-${exampleId}-${doc.name}-${i}.ts`
+              ),
+              example,
+              true // make the file overwritable
+            )
           }
         )
+      }
 
       const allPrefixedNamespaces = Array.flatMap(module.namespaces, (namespace) =>
         extractPrefixedNestedNamespaces(namespace, ""))

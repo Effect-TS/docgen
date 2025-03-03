@@ -262,7 +262,7 @@ const byCategory = Order.mapInput(
  * Description...
  *
  * ```ts
- * const a: string = 1
+ * export const a: string = "a"
  * ```
  *
  * @example
@@ -280,7 +280,7 @@ const byCategory = Order.mapInput(
  * **Example** (Title 2)
  *
  * ~~~js twoslash title="Title 2"
- * const a: string = "a"
+ * export const a: string = "b"
  * ~~~
  *
  * @category printers

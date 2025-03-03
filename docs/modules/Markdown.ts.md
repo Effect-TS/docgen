@@ -24,7 +24,7 @@ Since v1.0.0
 Description...
 
 ```ts
-const a: string = 1
+export const a: string = "a"
 ```
 
 **Example** (Title 1)
@@ -41,7 +41,7 @@ console.log(Markdown.printModule(m, 0))
 **Example** (Title 2)
 
 ```js twoslash title="Title 2"
-const a: string = "a"
+export const a: string = "b"
 ```
 
 **Signature**
