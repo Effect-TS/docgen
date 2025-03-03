@@ -1,5 +1,5 @@
 /**
- * @since 1.0.0
+ * @since 0.6.0
  */
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
@@ -152,8 +152,8 @@ const getDescription = (name: string, comment: Comment) =>
     return comment.description
   })
 
-const parseExample = (body: string) => {
-  return { body }
+const parseExample = (body: string): Domain.Example => {
+  return new Domain.Example(body)
 }
 
 const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
@@ -181,7 +181,7 @@ export const getDoc = (name: string, text: string, isModule = false) =>
     const description = yield* getDescription(name, comment)
     const examples = yield* getExamplesTag(name, comment, isModule)
     const deprecated = Option.isSome(Record.get(comment.tags, "deprecated"))
-    return Domain.createDoc(
+    return new Domain.Doc(
       description,
       since,
       deprecated,
@@ -196,8 +196,8 @@ const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
     const text = getJSDocText(id.getJsDocs())
     const doc = yield* getDoc(name, text)
     const signature = id.getText()
-    return Domain.createInterface(
-      Domain.createNamedDoc(
+    return new Domain.Interface(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -221,7 +221,7 @@ const parseInterfaceDeclarations = (interfaces: ReadonlyArray<ast.InterfaceDecla
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseInterfaces = Effect.flatMap(
   Source,
@@ -286,8 +286,8 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
       Option.map(Array.getSomes),
       Option.getOrElse(() => [])
     )
-    return Domain.createFunction(
-      Domain.createNamedDoc(
+    return new Domain.Function(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -317,8 +317,8 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
       Option.map(Array.getSomes),
       Option.getOrElse(() => [])
     )
-    return Domain.createFunction(
-      Domain.createNamedDoc(
+    return new Domain.Function(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -360,7 +360,7 @@ const getFunctionDeclarations = Effect.gen(function*() {
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseFunctions = Effect.gen(function*() {
   const { arrows, functions } = yield* getFunctionDeclarations
@@ -375,8 +375,8 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
     const text = getJSDocText(ta.getJsDocs())
     const doc = yield* getDoc(name, text)
     const signature = ta.getText()
-    return Domain.createTypeAlias(
-      Domain.createNamedDoc(
+    return new Domain.TypeAlias(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -400,7 +400,7 @@ const parseTypeAliasDeclarations = (typeAliases: ReadonlyArray<ast.TypeAliasDecl
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseTypeAliases = Effect.flatMap(
   Source,
@@ -415,8 +415,8 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
     const doc = yield* getDoc(name, text)
     const type = stripImportTypes(vd.getType().getText(vd))
     const signature = `export declare const ${name}: ${type}`
-    return Domain.createConstant(
-      Domain.createNamedDoc(
+    return new Domain.Constant(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -430,7 +430,7 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseConstants = Effect.gen(function*() {
   const source = yield* Source
@@ -470,8 +470,8 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
     const text = commentRange.getText()
     const doc = yield* getDoc(name, text)
     const signature = `export declare const ${name}: ${type}`
-    return Domain.createExport(
-      Domain.createNamedDoc(
+    return new Domain.Export(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -501,8 +501,8 @@ const parseExportStar = (
     const commentRange = ocommentRange.value
     const text = commentRange.getText()
     const doc = yield* getDoc(name, text)
-    return Domain.createExport(
-      Domain.createNamedDoc(
+    return new Domain.Export(
+      new Domain.NamedDoc(
         `From ${name}`,
         doc.description.pipe(
           Option.orElse(() =>
@@ -535,7 +535,7 @@ const parseNamedExports = (ed: ast.ExportDeclaration) => {
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseExports = pipe(
   Effect.map(Source, (source) => source.sourceFile.getExportDeclarations()),
@@ -566,8 +566,8 @@ const parseModuleDeclaration = (
       const interfaces = yield* getInterfaces
       const typeAliases = yield* getTypeAliases
       const namespaces = yield* getNamespaces
-      return Domain.createNamespace(
-        Domain.createNamedDoc(
+      return new Domain.Namespace(
+        new Domain.NamedDoc(
           name,
           info.description,
           info.since,
@@ -597,7 +597,7 @@ const parseModuleDeclarations = (namespaces: ReadonlyArray<ast.ModuleDeclaration
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseNamespaces: Effect.Effect<
   Array<Domain.Namespace>,
@@ -647,8 +647,8 @@ const parseMethod = (md: ast.MethodDeclaration) =>
         })
       )
       return Option.some(
-        Domain.createMethod(
-          Domain.createNamedDoc(
+        new Domain.Method(
+          new Domain.NamedDoc(
             name,
             doc.description,
             doc.since,
@@ -679,8 +679,8 @@ const parseProperty = (classname: string) => (pd: ast.PropertyDeclaration) =>
       })
     )
     const signature = `${readonly}${name}: ${type}`
-    return Domain.createProperty(
-      Domain.createNamedDoc(
+    return new Domain.Property(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -769,8 +769,8 @@ const parseClass = (c: ast.ClassDeclaration) =>
       Effect.map(Array.getSomes)
     )
     const properties = yield* parseProperties(name, c)
-    return Domain.createClass(
-      Domain.createNamedDoc(
+    return new Domain.Class(
+      new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -787,7 +787,7 @@ const parseClass = (c: ast.ClassDeclaration) =>
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseClasses = Effect.gen(function*() {
   const source = yield* Source
@@ -835,7 +835,7 @@ export const parseModuleDocumentation = Effect.gen(function*() {
       const commentRange = ocommentRange.value
       const text = commentRange.getText()
       const doc = yield* getDoc("<module fileoverview>", text, true).pipe(Effect.mapError(Array.of))
-      return Domain.createNamedDoc(
+      return new Domain.NamedDoc(
         name,
         doc.description,
         doc.since,
@@ -845,7 +845,7 @@ export const parseModuleDocumentation = Effect.gen(function*() {
       )
     }
   }
-  return Domain.createNamedDoc(
+  return new Domain.NamedDoc(
     name,
     Option.none(),
     Option.none(),
@@ -857,7 +857,7 @@ export const parseModuleDocumentation = Effect.gen(function*() {
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseModule = Effect.gen(function*() {
   const source = yield* Source
@@ -869,7 +869,7 @@ export const parseModule = Effect.gen(function*() {
   const constants = yield* parseConstants
   const exports = yield* parseExports
   const namespaces = yield* parseNamespaces
-  return Domain.createModule(
+  return new Domain.Module(
     doc,
     source.path,
     classes,
@@ -935,7 +935,7 @@ const createProject = (files: ReadonlyArray<File.File>) =>
 
 /**
  * @category parsers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const parseFiles = (files: ReadonlyArray<File.File>) =>
   createProject(files).pipe(

@@ -1,5 +1,5 @@
 /**
- * @since 1.0.0
+ * @since 0.6.0
  */
 
 import * as Context from "effect/Context"
@@ -10,7 +10,7 @@ import * as Layer from "effect/Layer"
  * Represents a handle to the currently executing process.
  *
  * @category service
- * @since 1.0.0
+ * @since 0.6.0
  */
 export interface ProcessShape {
   readonly cwd: Effect.Effect<string>
@@ -20,13 +20,13 @@ export interface ProcessShape {
 
 /**
  * @category service
- * @since 1.0.0
+ * @since 0.6.0
  */
 export class Process extends Context.Tag("Process")<Process, ProcessShape>() {}
 
 /**
  * @category layer
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const layer = Layer.succeed(
   Process,

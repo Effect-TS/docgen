@@ -1,5 +1,5 @@
 /**
- * @since 1.0.0
+ * @since 0.6.0
  */
 
 import * as FileSystem from "@effect/platform/FileSystem"
@@ -28,7 +28,7 @@ const compilerOptionsSchema = Schema.Union(
 
 /**
  * @category service
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const ConfigurationSchema = Schema.Struct({
   "$schema": Schema.optional(Schema.String),
@@ -80,7 +80,7 @@ export const ConfigurationSchema = Schema.Struct({
 
 /**
  * @category service
- * @since 1.0.0
+ * @since 0.6.0
  */
 export interface ConfigurationShape {
   readonly projectName: string
@@ -100,7 +100,7 @@ export interface ConfigurationShape {
 
 /**
  * @category service
- * @since 1.0.0
+ * @since 0.6.0
  */
 export class Configuration extends Context.Tag("Configuration")<Configuration, ConfigurationShape>() {}
 

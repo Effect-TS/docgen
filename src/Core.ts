@@ -1,5 +1,5 @@
 /**
- * @since 1.0.0
+ * @since 0.6.0
  */
 
 import * as NodePath from "@effect/platform-node/NodePath"

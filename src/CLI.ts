@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * @since 1.0.0
+ * @since 0.6.0
  */
 
 import * as Command from "@effect/cli/Command"

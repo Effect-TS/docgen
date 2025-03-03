@@ -6,264 +6,116 @@ parent: Modules
 
 ## Domain overview
 
-Since v1.0.0
+Since v0.6.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [constructors](#constructors)
-  - [createClass](#createclass)
-  - [createConstant](#createconstant)
-  - [createDoc](#createdoc)
-  - [createExport](#createexport)
-  - [createFunction](#createfunction)
-  - [createInterface](#createinterface)
-  - [createMethod](#createmethod)
-  - [createModule](#createmodule)
-  - [createNamedDoc](#createnameddoc)
-  - [createNamespace](#createnamespace)
-  - [createProperty](#createproperty)
-  - [createTypeAlias](#createtypealias)
 - [model](#model)
-  - [Class (interface)](#class-interface)
-  - [Constant (interface)](#constant-interface)
-  - [Doc (interface)](#doc-interface)
-  - [Example (type alias)](#example-type-alias)
-  - [Export (interface)](#export-interface)
-  - [Function (interface)](#function-interface)
-  - [Interface (interface)](#interface-interface)
-  - [Method (interface)](#method-interface)
-  - [Module (interface)](#module-interface)
-  - [NamedDoc (interface)](#nameddoc-interface)
-  - [Namespace (interface)](#namespace-interface)
-  - [Property (interface)](#property-interface)
-  - [TypeAlias (interface)](#typealias-interface)
+  - [Class (class)](#class-class)
+    - [\_tag (property)](#_tag-property)
+  - [Constant (class)](#constant-class)
+    - [\_tag (property)](#_tag-property-1)
+  - [Doc (class)](#doc-class)
+  - [Example (class)](#example-class)
+  - [Export (class)](#export-class)
+    - [\_tag (property)](#_tag-property-2)
+  - [Function (class)](#function-class)
+    - [\_tag (property)](#_tag-property-3)
+  - [Interface (class)](#interface-class)
+    - [\_tag (property)](#_tag-property-4)
+  - [Method (class)](#method-class)
+  - [Module (class)](#module-class)
+  - [NamedDoc (class)](#nameddoc-class)
+  - [Namespace (class)](#namespace-class)
+    - [\_tag (property)](#_tag-property-5)
+  - [Property (class)](#property-class)
+  - [TypeAlias (class)](#typealias-class)
+    - [\_tag (property)](#_tag-property-6)
 - [sorting](#sorting)
   - [ByPath](#bypath)
 
 ---
 
-# constructors
-
-## createClass
-
-**Signature**
-
-```ts
-export declare const createClass: (
-  doc: NamedDoc,
-  signature: string,
-  methods: ReadonlyArray<Method>,
-  staticMethods: ReadonlyArray<Method>,
-  properties: ReadonlyArray<Property>
-) => Class
-```
-
-Since v1.0.0
-
-## createConstant
-
-**Signature**
-
-```ts
-export declare const createConstant: (doc: NamedDoc, signature: string) => Constant
-```
-
-Since v1.0.0
-
-## createDoc
-
-**Signature**
-
-```ts
-export declare const createDoc: (
-  description: Option.Option<string>,
-  since: Option.Option<string>,
-  deprecated: boolean,
-  examples: ReadonlyArray<Example>,
-  category: Option.Option<string>
-) => Doc
-```
-
-Since v1.0.0
-
-## createExport
-
-**Signature**
-
-```ts
-export declare const createExport: (doc: NamedDoc, signature: string) => Export
-```
-
-Since v1.0.0
-
-## createFunction
-
-**Signature**
-
-```ts
-export declare const createFunction: (
-  doc: NamedDoc,
-  signatures: ReadonlyArray<string>,
-  throws: ReadonlyArray<string>
-) => Function
-```
-
-Since v1.0.0
-
-## createInterface
-
-**Signature**
-
-```ts
-export declare const createInterface: (doc: NamedDoc, signature: string) => Interface
-```
-
-Since v1.0.0
-
-## createMethod
-
-**Signature**
-
-```ts
-export declare const createMethod: (doc: NamedDoc, signatures: ReadonlyArray<string>) => Method
-```
-
-Since v1.0.0
-
-## createModule
-
-**Signature**
-
-```ts
-export declare const createModule: (
-  doc: NamedDoc,
-  path: ReadonlyArray<string>,
-  classes: ReadonlyArray<Class>,
-  interfaces: ReadonlyArray<Interface>,
-  functions: ReadonlyArray<Function>,
-  typeAliases: ReadonlyArray<TypeAlias>,
-  constants: ReadonlyArray<Constant>,
-  exports: ReadonlyArray<Export>,
-  namespaces: ReadonlyArray<Namespace>
-) => Module
-```
-
-Since v1.0.0
-
-## createNamedDoc
-
-**Signature**
-
-```ts
-export declare const createNamedDoc: (
-  name: string,
-  description: Option.Option<string>,
-  since: Option.Option<string>,
-  deprecated: boolean,
-  examples: ReadonlyArray<Example>,
-  category: Option.Option<string>
-) => NamedDoc
-```
-
-Since v1.0.0
-
-## createNamespace
-
-**Signature**
-
-```ts
-export declare const createNamespace: (
-  doc: NamedDoc,
-  interfaces: ReadonlyArray<Interface>,
-  typeAliases: ReadonlyArray<TypeAlias>,
-  namespaces: ReadonlyArray<Namespace>
-) => Namespace
-```
-
-Since v1.0.0
-
-## createProperty
-
-**Signature**
-
-```ts
-export declare const createProperty: (doc: NamedDoc, signature: string) => Property
-```
-
-Since v1.0.0
-
-## createTypeAlias
-
-**Signature**
-
-```ts
-export declare const createTypeAlias: (doc: NamedDoc, signature: string) => TypeAlias
-```
-
-Since v1.0.0
-
 # model
 
-## Class (interface)
+## Class (class)
 
 **Signature**
 
 ```ts
-export interface Class extends NamedDoc {
-  readonly _tag: "Class"
-  readonly signature: string
-  readonly methods: ReadonlyArray<Method>
-  readonly staticMethods: ReadonlyArray<Method>
-  readonly properties: ReadonlyArray<Property>
-}
+export declare class Class { constructor(
+    doc: NamedDoc,
+    readonly signature: string,
+    readonly methods: ReadonlyArray<Method>,
+    readonly staticMethods: ReadonlyArray<Method>,
+    readonly properties: ReadonlyArray<Property>
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Constant (interface)
+### \_tag (property)
 
 **Signature**
 
 ```ts
-export interface Constant extends NamedDoc {
-  readonly _tag: "Constant"
-  readonly signature: string
-}
+readonly _tag: "Class"
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Doc (interface)
+## Constant (class)
 
 **Signature**
 
 ```ts
-export interface Doc {
-  readonly description: Option.Option<string>
-  readonly since: Option.Option<string>
-  readonly deprecated: boolean
-  readonly examples: ReadonlyArray<Example>
-  readonly category: Option.Option<string>
-}
+export declare class Constant { constructor(
+    doc: NamedDoc,
+    readonly signature: string
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Example (type alias)
+### \_tag (property)
 
 **Signature**
 
 ```ts
-export type Example = {
-  body: string
-}
+readonly _tag: "Constant"
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Export (interface)
+## Doc (class)
+
+**Signature**
+
+```ts
+export declare class Doc { constructor(
+    readonly description: Option.Option<string>,
+    readonly since: Option.Option<string>,
+    readonly deprecated: boolean,
+    readonly examples: ReadonlyArray<Example>,
+    readonly category: Option.Option<string>
+  ) }
+```
+
+Since v0.6.0
+
+## Example (class)
+
+**Signature**
+
+```ts
+export declare class Example { constructor(readonly body: string) }
+```
+
+Since v0.6.0
+
+## Export (class)
 
 These are manual exports, like:
 
@@ -278,123 +130,181 @@ export {
 **Signature**
 
 ```ts
-export interface Export extends NamedDoc {
-  readonly _tag: "Export"
-  readonly signature: string
-}
+export declare class Export { constructor(
+    doc: NamedDoc,
+    readonly signature: string
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Function (interface)
+### \_tag (property)
 
 **Signature**
 
 ```ts
-export interface Function extends NamedDoc {
-  readonly _tag: "Function"
-  readonly signatures: ReadonlyArray<string>
-  readonly throws: ReadonlyArray<string>
-}
+readonly _tag: "Export"
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Interface (interface)
+## Function (class)
 
 **Signature**
 
 ```ts
-export interface Interface extends NamedDoc {
-  readonly _tag: "Interface"
-  readonly signature: string
-}
+export declare class Function { constructor(
+    doc: NamedDoc,
+    readonly signatures: ReadonlyArray<string>,
+    readonly throws: ReadonlyArray<string>
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Method (interface)
+### \_tag (property)
 
 **Signature**
 
 ```ts
-export interface Method extends NamedDoc {
-  readonly signatures: ReadonlyArray<string>
-}
+readonly _tag: "Function"
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Module (interface)
+## Interface (class)
 
 **Signature**
 
 ```ts
-export interface Module extends NamedDoc {
-  readonly path: ReadonlyArray<string>
-  readonly classes: ReadonlyArray<Class>
-  readonly interfaces: ReadonlyArray<Interface>
-  readonly functions: ReadonlyArray<Function>
-  readonly typeAliases: ReadonlyArray<TypeAlias>
-  readonly constants: ReadonlyArray<Constant>
-  readonly exports: ReadonlyArray<Export>
-  readonly namespaces: ReadonlyArray<Namespace>
-}
+export declare class Interface { constructor(
+    doc: NamedDoc,
+    readonly signature: string
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## NamedDoc (interface)
+### \_tag (property)
 
 **Signature**
 
 ```ts
-export interface NamedDoc extends Doc {
-  readonly name: string
-}
+readonly _tag: "Interface"
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Namespace (interface)
+## Method (class)
 
 **Signature**
 
 ```ts
-export interface Namespace extends NamedDoc {
-  readonly _tag: "Namespace"
-  readonly interfaces: ReadonlyArray<Interface>
-  readonly typeAliases: ReadonlyArray<TypeAlias>
-  readonly namespaces: ReadonlyArray<Namespace>
-}
+export declare class Method { constructor(
+    doc: NamedDoc,
+    readonly signatures: ReadonlyArray<string>
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## Property (interface)
+## Module (class)
 
 **Signature**
 
 ```ts
-export interface Property extends NamedDoc {
-  readonly signature: string
-}
+export declare class Module { constructor(
+    doc: NamedDoc,
+    readonly path: ReadonlyArray<string>,
+    readonly classes: ReadonlyArray<Class>,
+    readonly interfaces: ReadonlyArray<Interface>,
+    readonly functions: ReadonlyArray<Function>,
+    readonly typeAliases: ReadonlyArray<TypeAlias>,
+    readonly constants: ReadonlyArray<Constant>,
+    readonly exports: ReadonlyArray<Export>,
+    readonly namespaces: ReadonlyArray<Namespace>
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
 
-## TypeAlias (interface)
+## NamedDoc (class)
 
 **Signature**
 
 ```ts
-export interface TypeAlias extends NamedDoc {
-  readonly _tag: "TypeAlias"
-  readonly signature: string
-}
+export declare class NamedDoc { constructor(
+    readonly name: string,
+    description: Option.Option<string>,
+    since: Option.Option<string>,
+    deprecated: boolean,
+    examples: ReadonlyArray<Example>,
+    category: Option.Option<string>
+  ) }
 ```
 
-Since v1.0.0
+Since v0.6.0
+
+## Namespace (class)
+
+**Signature**
+
+```ts
+export declare class Namespace { constructor(
+    doc: NamedDoc,
+    readonly interfaces: ReadonlyArray<Interface>,
+    readonly typeAliases: ReadonlyArray<TypeAlias>,
+    readonly namespaces: ReadonlyArray<Namespace>
+  ) }
+```
+
+Since v0.6.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "Namespace"
+```
+
+Since v0.6.0
+
+## Property (class)
+
+**Signature**
+
+```ts
+export declare class Property { constructor(
+    doc: NamedDoc,
+    readonly signature: string
+  ) }
+```
+
+Since v0.6.0
+
+## TypeAlias (class)
+
+**Signature**
+
+```ts
+export declare class TypeAlias { constructor(
+    doc: NamedDoc,
+    readonly signature: string
+  ) }
+```
+
+Since v0.6.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "TypeAlias"
+```
+
+Since v0.6.0
 
 # sorting
 
@@ -409,4 +319,4 @@ The file path is converted to lowercase before comparison.
 export declare const ByPath: Order.Order<Module>
 ```
 
-Since v1.0.0
+Since v0.6.0

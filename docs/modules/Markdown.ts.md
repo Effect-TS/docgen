@@ -6,7 +6,7 @@ parent: Modules
 
 ## Markdown overview
 
-Since v1.0.0
+Since v0.6.0
 
 ---
 
@@ -44,8 +44,8 @@ export const a: string = "a"
 import { Domain, Markdown } from "@effect/docgen"
 import { Option } from "effect"
 
-const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
-const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
+const doc = new Domain.NamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
+const m = new Domain.Module(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 console.log(Markdown.printModule(m, 0))
 ```
 
@@ -61,4 +61,4 @@ export const a: string = "b"
 export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<string>
 ```
 
-Since v1.0.0
+Since v0.6.0

@@ -1,5 +1,5 @@
 /**
- * @since 1.0.0
+ * @since 0.6.0
  */
 
 import * as Data from "effect/Data"
@@ -8,7 +8,7 @@ import * as Data from "effect/Data"
  * Represents a file which can be optionally overwriteable.
  *
  * @category model
- * @since 1.0.0
+ * @since 0.6.0
  */
 export interface File {
   readonly path: string
@@ -20,7 +20,7 @@ export interface File {
  * By default files are readonly (`isOverwriteable = false`).
  *
  * @category constructors
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const createFile = (path: string, content: string, isOverwriteable = false): File =>
   Data.struct({ path, content, isOverwriteable })

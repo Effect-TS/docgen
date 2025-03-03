@@ -1,5 +1,5 @@
 /**
- * @since 1.0.0
+ * @since 0.6.0
  */
 import * as Array from "effect/Array"
 import * as Effect from "effect/Effect"
@@ -284,8 +284,8 @@ const byCategory = Order.mapInput(
  * import { Domain, Markdown } from "@effect/docgen"
  * import { Option } from "effect"
  *
- * const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
- * const m = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
+ * const doc = new Domain.NamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
+ * const m = new Domain.Module(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
  * console.log(Markdown.printModule(m, 0))
  * ```
  *
@@ -299,7 +299,7 @@ const byCategory = Order.mapInput(
  * @throws `Error2` - Description 2
  *
  * @category printers
- * @since 1.0.0
+ * @since 0.6.0
  */
 export const printModule = (
   module: Domain.Module,

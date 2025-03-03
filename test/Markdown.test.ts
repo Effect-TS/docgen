@@ -7,23 +7,23 @@ import * as assert from "node:assert/strict"
 import { describe, it } from "vitest"
 
 const testCases = {
-  class: Domain.createClass(
-    Domain.createNamedDoc(
+  class: new Domain.Class(
+    new Domain.NamedDoc(
       "A",
       Option.some("a class"),
       Option.some("1.0.0"),
       false,
-      [{
-        body: `\`\`\`ts
+      [
+        new Domain.Example(`\`\`\`ts
 example 1
-\`\`\``
-      }],
+\`\`\``)
+      ],
       Option.some("category")
     ),
     "declare class A { constructor() }",
     [
-      Domain.createMethod(
-        Domain.createNamedDoc(
+      new Domain.Method(
+        new Domain.NamedDoc(
           "hasOwnProperty",
           Option.none(),
           Option.some("1.0.0"),
@@ -35,8 +35,8 @@ example 1
       )
     ],
     [
-      Domain.createMethod(
-        Domain.createNamedDoc(
+      new Domain.Method(
+        new Domain.NamedDoc(
           "staticTest",
           Option.none(),
           Option.some("1.0.0"),
@@ -48,8 +48,8 @@ example 1
       )
     ],
     [
-      Domain.createProperty(
-        Domain.createNamedDoc(
+      new Domain.Property(
+        new Domain.NamedDoc(
           "foo",
           Option.none(),
           Option.some("1.0.0"),
@@ -61,8 +61,8 @@ example 1
       )
     ]
   ),
-  constant: Domain.createConstant(
-    Domain.createNamedDoc(
+  constant: new Domain.Constant(
+    new Domain.NamedDoc(
       "test",
       Option.some("the test"),
       Option.some("1.0.0"),
@@ -72,8 +72,8 @@ example 1
     ),
     "declare const test: string"
   ),
-  export: Domain.createExport(
-    Domain.createNamedDoc(
+  export: new Domain.Export(
+    new Domain.NamedDoc(
       "test",
       Option.none(),
       Option.some("1.0.0"),
@@ -83,24 +83,24 @@ example 1
     ),
     "export declare const test: typeof test"
   ),
-  function: Domain.createFunction(
-    Domain.createNamedDoc(
+  function: new Domain.Function(
+    new Domain.NamedDoc(
       "func",
       Option.some("a function"),
       Option.some("1.0.0"),
       true,
-      [{
-        body: `\`\`\`ts
+      [
+        new Domain.Example(`\`\`\`ts
 example 1
-\`\`\``
-      }],
+\`\`\``)
+      ],
       Option.none()
     ),
     ["declare const func: (test: string) => string"],
     []
   ),
-  interface: Domain.createInterface(
-    Domain.createNamedDoc(
+  interface: new Domain.Interface(
+    new Domain.NamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -110,8 +110,8 @@ example 1
     ),
     "export interface A extends Record<string, unknown> {}"
   ),
-  typeAlias: Domain.createTypeAlias(
-    Domain.createNamedDoc(
+  typeAlias: new Domain.TypeAlias(
+    new Domain.NamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -121,8 +121,8 @@ example 1
     ),
     "export type A = number"
   ),
-  namespace: Domain.createNamespace(
-    Domain.createNamedDoc(
+  namespace: new Domain.Namespace(
+    new Domain.NamedDoc(
       "A",
       Option.none(),
       Option.some("1.0.0"),
@@ -132,8 +132,8 @@ example 1
     ),
     [],
     [
-      Domain.createTypeAlias(
-        Domain.createNamedDoc(
+      new Domain.TypeAlias(
+        new Domain.NamedDoc(
           "B",
           Option.none(),
           Option.some("1.0.1"),
@@ -145,8 +145,8 @@ example 1
       )
     ],
     [
-      Domain.createNamespace(
-        Domain.createNamedDoc(
+      new Domain.Namespace(
+        new Domain.NamedDoc(
           "C",
           Option.none(),
           Option.some("1.0.2"),
@@ -156,8 +156,8 @@ example 1
         ),
         [],
         [
-          Domain.createTypeAlias(
-            Domain.createNamedDoc(
+          new Domain.TypeAlias(
+            new Domain.NamedDoc(
               "D",
               Option.none(),
               Option.some("1.0.3"),
@@ -371,7 +371,7 @@ export type A = number
   })
 
   it("printModule", async () => {
-    const doc = Domain.createNamedDoc(
+    const doc = new Domain.NamedDoc(
       "tests",
       Option.none(),
       Option.some("1.0.0"),
@@ -381,7 +381,7 @@ export type A = number
     )
     assert.strictEqual(
       await Effect.runPromise(Markdown.printModule(
-        Domain.createModule(
+        new Domain.Module(
           doc,
           ["src", "tests.ts"],
           [testCases.class],
@@ -569,7 +569,7 @@ Since v1.0.0
 `
     )
 
-    const empty = Domain.createModule(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
+    const empty = new Domain.Module(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 
     assert.strictEqual(
       await Effect.runPromise(Markdown.printModule(empty, 1)),

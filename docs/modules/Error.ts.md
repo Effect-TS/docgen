@@ -6,7 +6,7 @@ parent: Modules
 
 ## Error overview
 
-Since v1.0.0
+Since v0.6.0
 
 ---
 
@@ -30,7 +30,7 @@ Since v1.0.0
 export declare class DocgenError
 ```
 
-Since v1.0.0
+Since v0.6.0
 
 # symbol
 
@@ -42,7 +42,7 @@ Since v1.0.0
 export declare const DocgenErrorTypeId: typeof DocgenErrorTypeId
 ```
 
-Since v1.0.0
+Since v0.6.0
 
 ## DocgenErrorTypeId (type alias)
 
@@ -52,4 +52,4 @@ Since v1.0.0
 export type DocgenErrorTypeId = typeof DocgenErrorTypeId
 ```
 
-Since v1.0.0
+Since v0.6.0

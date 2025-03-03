@@ -6,7 +6,7 @@ parent: Modules
 
 ## CLI overview
 
-Since v1.0.0
+Since v0.6.0
 
 ---
 
