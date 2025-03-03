@@ -261,12 +261,15 @@ const byCategory = Order.mapInput(
 /**
  * Description...
  *
+ * ```ts
+ * const a: string = 1
+ * ```
+ *
  * @example
  * **Example** (Title 1)
  *
  * ```ts twoslash title="Title 1"
- * import * as Markdown from "@effect/docgen/Markdown"
- * import * as Domain from "@effect/docgen/Domain"
+ * import { Domain, Markdown } from "@effect/docgen"
  * import { Option } from "effect"
  *
  * const doc = Domain.createNamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
@@ -277,7 +280,7 @@ const byCategory = Order.mapInput(
  * **Example** (Title 2)
  *
  * ~~~js twoslash title="Title 2"
- * const x = 1
+ * const a: string = "a"
  * ~~~
  *
  * @category printers

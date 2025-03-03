@@ -114,11 +114,10 @@ const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
       yield* Effect.logInfo("Typechecking examples...")
       yield* cleanupExamples
       const files = yield* getExampleFiles(modules)
-      const examples = yield* handleImports(files)
-      const len = examples.length
+      const len = files.length
       if (len > 0) {
         yield* Effect.logInfo(`${len} example(s) found`)
-        yield* writeExamplesToOutDir(examples)
+        yield* writeExamplesToOutDir(files)
         yield* createExamplesTsConfigJson
         yield* runTscOnExamples
         yield* runTsxOnExamples
@@ -259,33 +258,6 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
       ])
     })
   })
-
-/**
- * Replaces the project name in the given source code imports with the configured project name.
- */
-const replaceProjectName = (source: string) =>
-  Effect.gen(function*() {
-    const config = yield* Configuration.Configuration
-    const importRegex = (projectName: string) =>
-      new RegExp(
-        `from (?<quote>['"])${projectName}(?:/lib)?(?:/(?<path>.*))?\\k<quote>`,
-        "g"
-      )
-
-    const out = source.replace(importRegex(config.projectName), (...args) => {
-      const groups: { path?: string } = args[args.length - 1]
-      return `from '../../src${groups.path ? `/${groups.path}` : ""}'`
-    })
-
-    return out
-  })
-
-const handleImports = (files: ReadonlyArray<File.File>) =>
-  Effect.forEach(files, (file) =>
-    Effect.gen(function*() {
-      const source = yield* replaceProjectName(file.content)
-      return File.createFile(file.path, source, file.isOverwriteable)
-    }))
 
 /**
  * Generates an entry point file for the given examples.
