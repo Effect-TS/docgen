@@ -103,7 +103,11 @@ Since v1.0.0
 **Signature**
 
 ```ts
-export declare const createFunction: (doc: NamedDoc, signatures: ReadonlyArray<string>) => Function
+export declare const createFunction: (
+  doc: NamedDoc,
+  signatures: ReadonlyArray<string>,
+  throws: ReadonlyArray<string>
+) => Function
 ```
 
 Since v1.0.0
@@ -290,6 +294,7 @@ Since v1.0.0
 export interface Function extends NamedDoc {
   readonly _tag: "Function"
   readonly signatures: ReadonlyArray<string>
+  readonly throws: ReadonlyArray<string>
 }
 ```
 

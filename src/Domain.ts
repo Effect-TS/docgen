@@ -93,6 +93,7 @@ export interface Interface extends NamedDoc {
 export interface Function extends NamedDoc {
   readonly _tag: "Function"
   readonly signatures: ReadonlyArray<string>
+  readonly throws: ReadonlyArray<string>
 }
 
 /**
@@ -252,10 +253,15 @@ export const createInterface = (doc: NamedDoc, signature: string): Interface => 
  * @category constructors
  * @since 1.0.0
  */
-export const createFunction = (doc: NamedDoc, signatures: ReadonlyArray<string>): Function => ({
+export const createFunction = (
+  doc: NamedDoc,
+  signatures: ReadonlyArray<string>,
+  throws: ReadonlyArray<string>
+): Function => ({
   _tag: "Function",
   ...doc,
-  signatures
+  signatures,
+  throws
 })
 
 /**

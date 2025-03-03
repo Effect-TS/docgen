@@ -494,7 +494,8 @@ describe("Parser", () => {
               ],
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -527,7 +528,8 @@ describe("Parser", () => {
                 { body: "assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })" },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -566,7 +568,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -606,7 +609,8 @@ assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
 \`\`\``
                 }
               ],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -645,7 +649,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -685,7 +690,8 @@ assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
 ~~~`
                 }
               ],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -724,7 +730,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -763,7 +770,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 },
                 { body: "assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })" }
               ],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -787,7 +795,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
               ],
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -813,7 +822,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
               ],
               since: Option.some("1.0.0"),
               examples: [],
-              category: Option.none()
+              category: Option.none(),
+              throws: []
             }
           ]
         )
@@ -842,7 +852,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
               signatures: [
                 "export declare function f(a: Int, b: Int): { [key: string]: number }",
                 "export declare function f(a: number, b: number): { [key: string]: number }"
-              ]
+              ],
+              throws: []
             }
           ]
         )

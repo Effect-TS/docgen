@@ -27,6 +27,11 @@ Description...
 export const a: string = "a"
 ```
 
+**Throws**
+
+- `Error1` - Description 1
+- `Error2` - Description 2
+
 **Example** (Title 1)
 
 ```ts twoslash title="Title 1"

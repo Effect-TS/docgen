@@ -38,6 +38,11 @@ const printSince: (v: Option.Option<string>) => string = Option.match({
   onSome: (v) => MarkdownPrinter.paragraph(`Since v${v}`)
 })
 
+const printThrows = (throws: ReadonlyArray<string>): string =>
+  throws.length === 0
+    ? ""
+    : MarkdownPrinter.paragraph(MarkdownPrinter.bold("Throws") + "\n\n" + throws.map((t) => `- ${t}`).join("\n"))
+
 const printTitle = (s: string, deprecated: boolean, type?: string): string => {
   const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
   const title = deprecated ? MarkdownPrinter.strikethrough(name) : name
@@ -164,6 +169,7 @@ export const printFunction = (model: Domain.Function): string =>
   MarkdownPrinter.paragraph(
     MarkdownPrinter.h2(printTitle(model.name, model.deprecated)),
     printDescription(model.description),
+    printThrows(model.throws),
     printExamples(model.examples),
     printSignatures(model.signatures),
     printSince(model.since)
@@ -282,6 +288,9 @@ const byCategory = Order.mapInput(
  * ~~~js twoslash title="Title 2"
  * export const a: string = "b"
  * ~~~
+ *
+ * @throws `Error1` - Description 1
+ * @throws `Error2` - Description 2
  *
  * @category printers
  * @since 1.0.0

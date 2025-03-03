@@ -96,7 +96,8 @@ example 1
       }],
       Option.none()
     ),
-    ["declare const func: (test: string) => string"]
+    ["declare const func: (test: string) => string"],
+    []
   ),
   interface: Domain.createInterface(
     Domain.createNamedDoc(

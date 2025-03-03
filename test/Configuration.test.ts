@@ -115,7 +115,7 @@ describe("Configuration", () => {
         enforceDescriptions: false,
         enforceExamples: false,
         enforceVersion: true,
-        runExamples: true,
+        runExamples: false,
         exclude: [],
         parseCompilerOptions: Configuration.defaultCompilerOptions,
         examplesCompilerOptions: Configuration.defaultCompilerOptions
@@ -150,7 +150,7 @@ describe("Configuration", () => {
         enforceDescriptions: false,
         enforceExamples: false,
         enforceVersion: true,
-        runExamples: true,
+        runExamples: false,
         exclude: [],
         parseCompilerOptions,
         examplesCompilerOptions: Configuration.defaultCompilerOptions

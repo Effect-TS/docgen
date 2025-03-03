@@ -280,6 +280,12 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
           )
       })
     )
+    // TODO: parseComment is called twice, here and in getDoc
+    const comment = parseComment(text)
+    const throws: Array<string> = Option.fromNullable(comment.tags["throws"]).pipe(
+      Option.map(Array.getSomes),
+      Option.getOrElse(() => [])
+    )
     return Domain.createFunction(
       Domain.createNamedDoc(
         name,
@@ -289,7 +295,8 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
         doc.examples,
         doc.category
       ),
-      signatures
+      signatures,
+      throws
     )
   })
 
@@ -304,6 +311,12 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
         vd.getType().getText(vd)
       )
     }`
+    // TODO: parseComment is called twice, here and in getDoc
+    const comment = parseComment(text)
+    const throws: Array<string> = Option.fromNullable(comment.tags["throws"]).pipe(
+      Option.map(Array.getSomes),
+      Option.getOrElse(() => [])
+    )
     return Domain.createFunction(
       Domain.createNamedDoc(
         name,
@@ -313,7 +326,8 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
         doc.examples,
         doc.category
       ),
-      [signature]
+      [signature],
+      throws
     )
   })
 
