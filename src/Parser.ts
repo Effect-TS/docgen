@@ -26,8 +26,8 @@ export interface SourceShape {
 export class Source extends Context.Tag("Source")<Source, SourceShape>() {}
 
 interface Comment {
-  readonly description: Option.Option<string>
-  readonly tags: Record<string, Array.NonEmptyReadonlyArray<Option.Option<string>>>
+  readonly description: string | undefined
+  readonly tags: Record<string, Array.NonEmptyReadonlyArray<string | undefined>>
 }
 
 const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = Array.sort(
@@ -70,14 +70,16 @@ export const parseComment = (text: string): Comment => {
       Array.map((tag) =>
         pipe(
           Option.fromNullable(tag.description),
-          Option.filter(String.isNonEmpty)
+          Option.filter(String.isNonEmpty),
+          Option.getOrUndefined
         )
       )
     )
   )
   const description = pipe(
     Option.fromNullable(annotation.description),
-    Option.filter(String.isNonEmpty)
+    Option.filter(String.isNonEmpty),
+    Option.getOrUndefined
   )
   return { description, tags }
 }
@@ -110,7 +112,7 @@ const getSinceTag = (name: string, comment: Comment) =>
     const config = yield* Configuration.Configuration
     const source = yield* Source
     const since = Record.get(comment.tags, "since").pipe(
-      Option.flatMap(Array.headNonEmpty),
+      Option.flatMap((tags) => Option.fromNullable(Array.headNonEmpty(tags))),
       Option.map(String.trim),
       Option.filter(String.isNonEmpty)
     )
@@ -119,14 +121,14 @@ const getSinceTag = (name: string, comment: Comment) =>
     ) {
       return yield* Effect.fail(getMissingTagError("@since", source.path, name))
     }
-    return since
+    return Option.getOrUndefined(since)
   })
 
 const getCategoryTag = (name: string, comment: Comment) =>
   Effect.gen(function*() {
     const source = yield* Source
     const category = Record.get(comment.tags, "category").pipe(
-      Option.flatMap(Array.headNonEmpty),
+      Option.flatMap((tags) => Option.fromNullable(Array.headNonEmpty(tags))),
       Option.map(String.trim),
       Option.filter(String.isNonEmpty)
     )
@@ -135,14 +137,14 @@ const getCategoryTag = (name: string, comment: Comment) =>
     ) {
       return yield* Effect.fail(getMissingTagError("@category", source.path, name))
     }
-    return category
+    return Option.getOrUndefined(category)
   })
 
 const getDescription = (name: string, comment: Comment) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
     const source = yield* Source
-    if (Option.isNone(comment.description) && config.enforceDescriptions) {
+    if (comment.description === undefined && config.enforceDescriptions) {
       return yield* Effect.fail(
         `Missing ${chalk.bold("description")} in ${chalk.bold(source.path.join("/") + "#" + name)} documentation`
       )
@@ -159,7 +161,7 @@ const getExamplesTag = (name: string, comment: Comment, isModule: boolean) =>
     const config = yield* Configuration.Configuration
     const source = yield* Source
     const examples = Record.get(comment.tags, "example").pipe(
-      Option.map(flow(Array.getSomes, Array.map(parseExample))),
+      Option.map((tags) => tags.filter((tag) => tag !== undefined).map(parseExample)),
       Option.getOrElse(() => [])
     )
     if (Array.isEmptyArray(examples) && config.enforceExamples && !isModule) {
@@ -281,7 +283,7 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
     // TODO: parseComment is called twice, here and in getDoc
     const comment = parseComment(text)
     const throws: Array<string> = Option.fromNullable(comment.tags["throws"]).pipe(
-      Option.map(Array.getSomes),
+      Option.map((tags) => tags.filter((tag) => tag !== undefined)),
       Option.getOrElse(() => [])
     )
     return new Domain.Function(
@@ -312,7 +314,7 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
     // TODO: parseComment is called twice, here and in getDoc
     const comment = parseComment(text)
     const throws: Array<string> = Option.fromNullable(comment.tags["throws"]).pipe(
-      Option.map(Array.getSomes),
+      Option.map((tags) => tags.filter((tag) => tag !== undefined)),
       Option.getOrElse(() => [])
     )
     return new Domain.Function(
@@ -502,19 +504,11 @@ const parseExportStar = (
     return new Domain.Export(
       new Domain.NamedDoc(
         `From ${name}`,
-        doc.description.pipe(
-          Option.orElse(() =>
-            Option.some(
-              `Re-exports all named exports from the ${name} module${
-                namespace === undefined ? "" : ` as \`${namespace}\``
-              }.`
-            )
-          )
-        ),
+        doc.description,
         doc.since,
         doc.deprecated,
         doc.examples,
-        doc.category.pipe(Option.orElse(() => Option.some("exports")))
+        doc.category
       ),
       signature
     )
@@ -845,11 +839,11 @@ export const parseModuleDocumentation = Effect.gen(function*() {
   }
   return new Domain.NamedDoc(
     name,
-    Option.none(),
-    Option.none(),
+    undefined,
+    undefined,
     false,
     [],
-    Option.none()
+    undefined
   )
 })
 

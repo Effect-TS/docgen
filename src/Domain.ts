@@ -4,7 +4,6 @@
 
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
-import type * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as String from "effect/String"
 
@@ -22,11 +21,11 @@ export class Example {
  */
 export class Doc {
   constructor(
-    readonly description: Option.Option<string>,
-    readonly since: Option.Option<string>,
+    readonly description: string | undefined,
+    readonly since: string | undefined,
     readonly deprecated: boolean,
     readonly examples: ReadonlyArray<Example>,
-    readonly category: Option.Option<string>
+    readonly category: string | undefined
   ) {}
 }
 
@@ -37,11 +36,11 @@ export class Doc {
 export class NamedDoc extends Doc {
   constructor(
     readonly name: string,
-    description: Option.Option<string>,
-    since: Option.Option<string>,
+    description: string | undefined,
+    since: string | undefined,
     deprecated: boolean,
     examples: ReadonlyArray<Example>,
-    category: Option.Option<string>
+    category: string | undefined
   ) {
     super(description, since, deprecated, examples, category)
   }

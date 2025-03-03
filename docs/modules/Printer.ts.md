@@ -44,7 +44,7 @@ export const a: string = "a"
 import { Domain, Printer } from "@effect/docgen"
 import { Option } from "effect"
 
-const doc = new Domain.NamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
+const doc = new Domain.NamedDoc("tests", undefined, "1.0.0", false, [], undefined)
 const m = new Domain.Module(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 console.log(Printer.printModule(m, 0))
 ```

@@ -2,7 +2,6 @@ import * as Domain from "@effect/docgen/Domain"
 import * as Printer from "@effect/docgen/Printer"
 import * as Effect from "effect/Effect"
 import { flow } from "effect/Function"
-import * as Option from "effect/Option"
 import * as assert from "node:assert/strict"
 import { describe, it } from "vitest"
 
@@ -10,26 +9,26 @@ const testCases = {
   class: new Domain.Class(
     new Domain.NamedDoc(
       "A",
-      Option.some("a class"),
-      Option.some("1.0.0"),
+      "a class",
+      "1.0.0",
       false,
       [
         new Domain.Example(`\`\`\`ts
 example 1
 \`\`\``)
       ],
-      Option.some("category")
+      "category"
     ),
     "declare class A { constructor() }",
     [
       new Domain.Method(
         new Domain.NamedDoc(
           "hasOwnProperty",
-          Option.none(),
-          Option.some("1.0.0"),
+          undefined,
+          "1.0.0",
           false,
           [],
-          Option.none()
+          undefined
         ),
         ["hasOwnProperty(): boolean"]
       )
@@ -38,11 +37,11 @@ example 1
       new Domain.Method(
         new Domain.NamedDoc(
           "staticTest",
-          Option.none(),
-          Option.some("1.0.0"),
+          undefined,
+          "1.0.0",
           false,
           [],
-          Option.none()
+          undefined
         ),
         ["static testStatic(): string;"]
       )
@@ -51,11 +50,11 @@ example 1
       new Domain.Property(
         new Domain.NamedDoc(
           "foo",
-          Option.none(),
-          Option.some("1.0.0"),
+          undefined,
+          "1.0.0",
           false,
           [],
-          Option.none()
+          undefined
         ),
         "foo: string"
       )
@@ -64,37 +63,37 @@ example 1
   constant: new Domain.Constant(
     new Domain.NamedDoc(
       "test",
-      Option.some("the test"),
-      Option.some("1.0.0"),
+      "the test",
+      "1.0.0",
       false,
       [],
-      Option.some("constants")
+      "constants"
     ),
     "declare const test: string"
   ),
   export: new Domain.Export(
     new Domain.NamedDoc(
       "test",
-      Option.none(),
-      Option.some("1.0.0"),
+      undefined,
+      "1.0.0",
       false,
       [],
-      Option.none()
+      undefined
     ),
     "export declare const test: typeof test"
   ),
   function: new Domain.Function(
     new Domain.NamedDoc(
       "func",
-      Option.some("a function"),
-      Option.some("1.0.0"),
+      "a function",
+      "1.0.0",
       true,
       [
         new Domain.Example(`\`\`\`ts
 example 1
 \`\`\``)
       ],
-      Option.none()
+      undefined
     ),
     ["declare const func: (test: string) => string"],
     []
@@ -102,44 +101,44 @@ example 1
   interface: new Domain.Interface(
     new Domain.NamedDoc(
       "A",
-      Option.none(),
-      Option.some("1.0.0"),
+      undefined,
+      "1.0.0",
       false,
       [],
-      Option.none()
+      undefined
     ),
     "export interface A extends Record<string, unknown> {}"
   ),
   typeAlias: new Domain.TypeAlias(
     new Domain.NamedDoc(
       "A",
-      Option.none(),
-      Option.some("1.0.0"),
+      undefined,
+      "1.0.0",
       false,
       [],
-      Option.none()
+      undefined
     ),
     "export type A = number"
   ),
   namespace: new Domain.Namespace(
     new Domain.NamedDoc(
       "A",
-      Option.none(),
-      Option.some("1.0.0"),
+      undefined,
+      "1.0.0",
       false,
       [],
-      Option.none()
+      undefined
     ),
     [],
     [
       new Domain.TypeAlias(
         new Domain.NamedDoc(
           "B",
-          Option.none(),
-          Option.some("1.0.1"),
+          undefined,
+          "1.0.1",
           false,
           [],
-          Option.none()
+          undefined
         ),
         "export type B = string"
       )
@@ -148,22 +147,22 @@ example 1
       new Domain.Namespace(
         new Domain.NamedDoc(
           "C",
-          Option.none(),
-          Option.some("1.0.2"),
+          undefined,
+          "1.0.2",
           false,
           [],
-          Option.none()
+          undefined
         ),
         [],
         [
           new Domain.TypeAlias(
             new Domain.NamedDoc(
               "D",
-              Option.none(),
-              Option.some("1.0.3"),
+              undefined,
+              "1.0.3",
               false,
               [],
-              Option.none()
+              undefined
             ),
             "export type D = number"
           )
@@ -358,7 +357,7 @@ Since v1.0.0
     )
 
     assert.strictEqual(
-      await Effect.runPromise(print({ ...testCases.typeAlias, since: Option.none() }, 0)),
+      await Effect.runPromise(print({ ...testCases.typeAlias, since: undefined }, 0)),
       `## A (type alias)
 
 **Signature**
@@ -373,11 +372,11 @@ export type A = number
   it("printModule", async () => {
     const doc = new Domain.NamedDoc(
       "tests",
-      Option.none(),
-      Option.some("1.0.0"),
+      undefined,
+      "1.0.0",
       false,
       [],
-      Option.none()
+      undefined
     )
     assert.strictEqual(
       await Effect.runPromise(Printer.printModule(

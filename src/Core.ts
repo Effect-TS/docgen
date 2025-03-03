@@ -12,7 +12,6 @@ import { pipe } from "effect"
 import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
-import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
@@ -184,10 +183,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
       const prefix = module.path.join("-")
 
       const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<Domain.File> => {
-        const descriptionExamples = doc.description.pipe(
-          Option.map(extractFencedCode),
-          Option.getOrElse((): Array<string> => [])
-        )
+        const descriptionExamples = doc.description ? extractFencedCode(doc.description) : []
         const examples = descriptionExamples.concat(doc.examples.flatMap((e) => extractFencedCode(e.body)))
         return Array.map(
           examples,

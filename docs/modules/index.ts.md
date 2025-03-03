@@ -12,7 +12,7 @@ Since v0.6.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [exports](#exports)
+- [utils](#utils)
   - [From "./Configuration.js"](#from-configurationjs)
   - [From "./Core.js"](#from-corejs)
   - [From "./Domain.js"](#from-domainjs)
@@ -21,11 +21,9 @@ Since v0.6.0
 
 ---
 
-# exports
+# utils
 
 ## From "./Configuration.js"
-
-Re-exports all named exports from the "./Configuration.js" module as `Configuration`.
 
 **Signature**
 
@@ -37,8 +35,6 @@ Since v0.6.0
 
 ## From "./Core.js"
 
-Re-exports all named exports from the "./Core.js" module as `Core`.
-
 **Signature**
 
 ```ts
@@ -48,8 +44,6 @@ export * as Core from "./Core.js"
 Since v0.6.0
 
 ## From "./Domain.js"
-
-Re-exports all named exports from the "./Domain.js" module as `Domain`.
 
 **Signature**
 
@@ -61,8 +55,6 @@ Since v0.6.0
 
 ## From "./Parser.js"
 
-Re-exports all named exports from the "./Parser.js" module as `Parser`.
-
 **Signature**
 
 ```ts
@@ -72,8 +64,6 @@ export * as Parser from "./Parser.js"
 Since v0.6.0
 
 ## From "./Printer.js"
-
-Re-exports all named exports from the "./Printer.js" module as `Printer`.
 
 **Signature**
 

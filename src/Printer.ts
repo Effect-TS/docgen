@@ -40,10 +40,7 @@ const Markdown = {
   h4: createHeaderPrinter(4)
 }
 
-const printSince: (v: Option.Option<string>) => string = Option.match({
-  onNone: () => "",
-  onSome: (v) => Markdown.p(`Since v${v}`)
-})
+const printSince = (v: string | undefined): string => v ? Markdown.p(`Since v${v}`) : ""
 
 const printThrows = (throws: ReadonlyArray<string>): string =>
   throws.length === 0
@@ -61,7 +58,7 @@ const printTitle = (s: string, deprecated: boolean, type?: string): string => {
   )
 }
 
-const printDescription = (d: Option.Option<string>): string => Markdown.p(Option.getOrElse(d, () => ""))
+const printDescription = (d: string | undefined): string => d ? Markdown.p(d) : ""
 
 const printSignatures = (signatures: ReadonlyArray<string>): string =>
   Markdown.p(Markdown.bold("Signature")) +
@@ -287,7 +284,7 @@ const byCategory = Order.mapInput(
  * import { Domain, Printer } from "@effect/docgen"
  * import { Option } from "effect"
  *
- * const doc = new Domain.NamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
+ * const doc = new Domain.NamedDoc("tests", undefined, "1.0.0", false, [], undefined)
  * const m = new Domain.Module(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
  * console.log(Printer.printModule(m, 0))
  * ```
@@ -315,7 +312,7 @@ export const printModule = (
 
     const content = pipe(
       getPrintables(module),
-      Array.groupBy(({ category }) => Option.getOrElse(category, () => DEFAULT_CATEGORY)),
+      Array.groupBy(({ category }) => category ?? DEFAULT_CATEGORY),
       Record.toEntries,
       Array.sort(byCategory),
       Array.map(([category, printables]) =>

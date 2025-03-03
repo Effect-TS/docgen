@@ -3,7 +3,7 @@ import * as Domain from "@effect/docgen/Domain"
 import * as Parser from "@effect/docgen/Parser"
 import { Path } from "@effect/platform"
 import chalk from "chalk"
-import { Effect, Exit, Option, String } from "effect"
+import { Effect, Exit, String } from "effect"
 import * as assert from "node:assert/strict"
 import * as ast from "ts-morph"
 import { describe, it } from "vitest"
@@ -90,11 +90,11 @@ describe("Parser", () => {
 
       const documentableA = new Domain.NamedDoc(
         "A",
-        Option.none(),
-        Option.some("1.0.0"),
+        undefined,
+        "1.0.0",
         false,
         [],
-        Option.none()
+        undefined
       )
 
       it("should parse an empty Namespace", () => {
@@ -146,11 +146,11 @@ describe("Parser", () => {
         it("should parse an interface", () => {
           const documentableB = new Domain.NamedDoc(
             "B",
-            Option.none(),
-            Option.some("1.0.1"),
+            undefined,
+            "1.0.1",
             false,
             [],
-            Option.none()
+            undefined
           )
 
           expectSuccess(
@@ -221,11 +221,11 @@ describe("Parser", () => {
         it("should parse a type alias", () => {
           const documentableB = new Domain.NamedDoc(
             "B",
-            Option.none(),
-            Option.some("1.0.1"),
+            undefined,
+            "1.0.1",
             false,
             [],
-            Option.none()
+            undefined
           )
 
           expectSuccess(
@@ -284,19 +284,19 @@ describe("Parser", () => {
         it("should parse a namespace", () => {
           const documentableB = new Domain.NamedDoc(
             "B",
-            Option.none(),
-            Option.some("1.0.1"),
+            undefined,
+            "1.0.1",
             false,
             [],
-            Option.none()
+            undefined
           )
           const documentableC = new Domain.NamedDoc(
             "C",
-            Option.none(),
-            Option.some("1.0.2"),
+            undefined,
+            "1.0.2",
             false,
             [],
-            Option.none()
+            undefined
           )
 
           expectSuccess(
@@ -351,11 +351,11 @@ describe("Parser", () => {
             new Domain.Interface(
               new Domain.NamedDoc(
                 "A",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [],
-                Option.none()
+                undefined
               ),
               "export interface A {}"
             )
@@ -380,22 +380,22 @@ describe("Parser", () => {
             new Domain.Interface(
               new Domain.NamedDoc(
                 "A",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export interface A {}"
             ),
             new Domain.Interface(
               new Domain.NamedDoc(
                 "B",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export interface B {}"
             )
@@ -497,11 +497,11 @@ describe("Parser", () => {
             new Domain.Function(
               new Domain.NamedDoc(
                 "toNullable",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const toNullable: <A>(ma: A | null) => A | null"
@@ -529,14 +529,14 @@ describe("Parser", () => {
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [
                   new Domain.Example("assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })"),
                   new Domain.Example("assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })")
                 ],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const f: (a: number, b: number) => { [key: string]: number; }"
@@ -566,8 +566,8 @@ describe("Parser", () => {
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [
                   new Domain.Example(`\`\`\`ts
@@ -575,7 +575,7 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 \`\`\``),
                   new Domain.Example("assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })")
                 ],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const f: (a: number, b: number) => { [key: string]: number; }"
@@ -605,8 +605,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [
                   new Domain.Example(`\`\`\`ts
@@ -615,7 +615,7 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
 \`\`\``)
                 ],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const f: (a: number, b: number) => { [key: string]: number; }"
@@ -645,8 +645,8 @@ assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [
                   new Domain.Example(`~~~ts
@@ -654,7 +654,7 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 ~~~`),
                   new Domain.Example("assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })")
                 ],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const f: (a: number, b: number) => { [key: string]: number; }"
@@ -684,8 +684,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [
                   new Domain.Example(`~~~ts
@@ -694,7 +694,7 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
 ~~~`)
                 ],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const f: (a: number, b: number) => { [key: string]: number; }"
@@ -724,8 +724,8 @@ assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [
                   new Domain.Example(`\`\`\`ts twoslash
@@ -733,7 +733,7 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 \`\`\``),
                   new Domain.Example(`assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`)
                 ],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const f: (a: number, b: number) => { [key: string]: number; }"
@@ -763,8 +763,8 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [
                   new Domain.Example(`~~~ts twoslash
@@ -772,7 +772,7 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
 ~~~`),
                   new Domain.Example(`assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`)
                 ],
-                Option.none()
+                undefined
               ),
               [
                 "export declare const f: (a: number, b: number) => { [key: string]: number; }"
@@ -794,11 +794,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               [
                 "export declare function f(a: number, b: number): { [key: string]: number }"
@@ -822,11 +822,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [],
-                Option.none()
+                undefined
               ),
               [
                 "export declare function f(a: number, b: number): { [key: string]: number }"
@@ -852,11 +852,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Function(
               new Domain.NamedDoc(
                 "f",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [],
-                Option.none()
+                undefined
               ),
               [
                 "export declare function f(a: Int, b: Int): { [key: string]: number }",
@@ -883,11 +883,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.TypeAlias(
               new Domain.NamedDoc(
                 "Option",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [],
-                Option.none()
+                undefined
               ),
               "export type Option<A> = None<A> | Some<A>"
             )
@@ -910,11 +910,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Constant(
               new Domain.NamedDoc(
                 "s",
-                Option.some("a description..."),
-                Option.some("1.0.0"),
+                "a description...",
+                "1.0.0",
                 true,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const s: string"
             )
@@ -933,11 +933,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Constant(
               new Domain.NamedDoc(
                 "left",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const left: <E = never, A = never>(l: E) => string"
             )
@@ -958,11 +958,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Constant(
               new Domain.NamedDoc(
                 "empty",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const empty: A"
             )
@@ -987,11 +987,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Constant(
               new Domain.NamedDoc(
                 "taskSeq",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const taskSeq: { a: number; }"
             )
@@ -1062,11 +1062,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Class(
               new Domain.NamedDoc(
                 "MyClass",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare class MyClass<A>",
               [],
@@ -1089,11 +1089,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Class(
               new Domain.NamedDoc(
                 "C",
-                Option.some("description"),
-                Option.some("1.0.0"),
+                "description",
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare class C { constructor() }",
               [],
@@ -1144,11 +1144,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Class(
               new Domain.NamedDoc(
                 "C",
-                Option.some("description"),
-                Option.some("1.0.0"),
+                "description",
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare class C",
               [],
@@ -1157,11 +1157,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 new Domain.Property(
                   new Domain.NamedDoc(
                     "a",
-                    Option.none(),
-                    Option.some("1.0.0"),
+                    undefined,
+                    "1.0.0",
                     false,
                     [],
-                    Option.none()
+                    undefined
                   ),
                   "a: string"
                 )
@@ -1207,22 +1207,22 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Class(
               new Domain.NamedDoc(
                 "Test",
-                Option.some("a class description..."),
-                Option.some("1.0.0"),
+                "a class description...",
+                "1.0.0",
                 true,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare class Test { constructor(readonly value: string) }",
               [
                 new Domain.Method(
                   new Domain.NamedDoc(
                     "g",
-                    Option.some("a method description..."),
-                    Option.some("1.1.0"),
+                    "a method description...",
+                    "1.1.0",
                     true,
                     [],
-                    Option.none()
+                    undefined
                   ),
                   [
                     "g(a: number, b: number): { [key: string]: number }"
@@ -1233,11 +1233,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 new Domain.Method(
                   new Domain.NamedDoc(
                     "f",
-                    Option.some("a static method description..."),
-                    Option.some("1.1.0"),
+                    "a static method description...",
+                    "1.1.0",
                     true,
                     [],
-                    Option.none()
+                    undefined
                   ),
                   ["static f(): void"]
                 )
@@ -1246,11 +1246,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 new Domain.Property(
                   new Domain.NamedDoc(
                     "a",
-                    Option.some("a property..."),
-                    Option.some("1.1.0"),
+                    "a property...",
+                    "1.1.0",
                     true,
                     [],
-                    Option.none()
+                    undefined
                   ),
                   "readonly a: string"
                 )
@@ -1293,22 +1293,22 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Class(
               new Domain.NamedDoc(
                 "Test",
-                Option.some("a class description..."),
-                Option.some("1.0.0"),
+                "a class description...",
+                "1.0.0",
                 true,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare class Test<A> { constructor(readonly value: A) }",
               [
                 new Domain.Method(
                   new Domain.NamedDoc(
                     "map",
-                    Option.some("a method description..."),
-                    Option.some("1.1.0"),
+                    "a method description...",
+                    "1.1.0",
                     true,
                     [],
-                    Option.none()
+                    undefined
                   ),
                   ["map(f: (a: number) => number): Test", "map(f: (a: string) => string): Test"]
                 )
@@ -1317,11 +1317,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
                 new Domain.Method(
                   new Domain.NamedDoc(
                     "f",
-                    Option.some("a static method description..."),
-                    Option.some("1.1.0"),
+                    "a static method description...",
+                    "1.1.0",
                     true,
                     [],
-                    Option.none()
+                    undefined
                   ),
                   ["static f(x: number): number", "static f(x: string): string"]
                 )
@@ -1355,11 +1355,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Class(
               new Domain.NamedDoc(
                 "Test",
-                Option.some("a class description..."),
-                Option.some("1.0.0"),
+                "a class description...",
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare class Test<A>",
               [],
@@ -1386,13 +1386,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
           Parser.parseModuleDocumentation,
           new Domain.NamedDoc(
             "test",
-            Option.some(
-              "Manages the configuration settings for the widget"
-            ),
-            Option.some("1.0.0"),
+            "Manages the configuration settings for the widget",
+            "1.0.0",
             true,
             [],
-            Option.none()
+            undefined
           ),
           { enforceVersion: false }
         )
@@ -1412,11 +1410,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
           Parser.parseModuleDocumentation,
           new Domain.NamedDoc(
             "test",
-            Option.none(),
-            Option.none(),
+            undefined,
+            undefined,
             false,
             [],
-            Option.none()
+            undefined
           ),
           { enforceVersion: false }
         )
@@ -1442,11 +1440,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Export(
               new Domain.NamedDoc(
                 "b",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const b: 1"
             )
@@ -1473,22 +1471,22 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Export(
               new Domain.NamedDoc(
                 "a",
-                Option.some("description_of_a"),
-                Option.some("1.0.0"),
+                "description_of_a",
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const a: any"
             ),
             new Domain.Export(
               new Domain.NamedDoc(
                 "b",
-                Option.some("description_of_b"),
-                Option.some("2.0.0"),
+                "description_of_b",
+                "2.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const b: any"
             )
@@ -1529,11 +1527,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Export(
               new Domain.NamedDoc(
                 "b",
-                Option.none(),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.none()
+                undefined
               ),
               "export declare const b: 1"
             )
@@ -1569,11 +1567,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Export(
               new Domain.NamedDoc(
                 "From './example'",
-                Option.some("Re-exports all named exports from the './example' module."),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.some("exports")
+                undefined
               ),
               "export * from './example'"
             )
@@ -1609,13 +1607,11 @@ assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
             new Domain.Export(
               new Domain.NamedDoc(
                 "From './example'",
-                Option.some(
-                  "Re-exports all named exports from the './example' module as `example`."
-                ),
-                Option.some("1.0.0"),
+                undefined,
+                "1.0.0",
                 false,
                 [],
-                Option.some("exports")
+                undefined
               ),
               "export * as example from './example'"
             )
@@ -1656,11 +1652,11 @@ export const foo = 'foo'`,
           new Domain.Module(
             new Domain.NamedDoc(
               "test",
-              Option.some("This is the assert module."),
-              Option.some("1.0.0"),
+              "This is the assert module.",
+              "1.0.0",
               false,
               [],
-              Option.none()
+              undefined
             ),
             ["test"],
             [],
@@ -1671,11 +1667,11 @@ export const foo = 'foo'`,
               new Domain.Constant(
                 new Domain.NamedDoc(
                   "foo",
-                  Option.some("This is the foo export."),
-                  Option.some("1.0.0"),
+                  "This is the foo export.",
+                  "1.0.0",
                   false,
                   [new Domain.Example(`import { foo } from 'test'\n\nconsole.log(foo)`)],
-                  Option.some("foo")
+                  "foo"
                 ),
                 "export declare const foo: \"foo\""
               )
@@ -1719,11 +1715,11 @@ export const foo = 'foo'`,
           "",
           Parser.getDoc("name", text),
           new Domain.Doc(
-            Option.some("description"),
-            Option.some("1.0.0"),
+            "description",
+            "1.0.0",
             false,
             [],
-            Option.some("instances")
+            "instances"
           )
         )
       })
@@ -1806,11 +1802,11 @@ export const foo = 'foo'`,
           "",
           Parser.getDoc("name", text),
           new Domain.Doc(
-            Option.some("description"),
-            Option.none(),
+            "description",
+            undefined,
             false,
             [],
-            Option.some("instances")
+            "instances"
           ),
           { enforceVersion: false }
         )
@@ -1819,21 +1815,21 @@ export const foo = 'foo'`,
 
     it("parseComment", () => {
       assert.deepStrictEqual(Parser.parseComment(""), {
-        description: Option.none(),
+        description: undefined,
         tags: {}
       })
 
       assert.deepStrictEqual(Parser.parseComment("/** description */"), {
-        description: Option.some("description"),
+        description: "description",
         tags: {}
       })
 
       assert.deepStrictEqual(
         Parser.parseComment("/** description\n * @since 1.0.0\n */"),
         {
-          description: Option.some("description"),
+          description: "description",
           tags: {
-            since: [Option.some("1.0.0")]
+            since: ["1.0.0"]
           }
         }
       )
@@ -1841,9 +1837,9 @@ export const foo = 'foo'`,
       assert.deepStrictEqual(
         Parser.parseComment("/** description\n * @deprecated\n */"),
         {
-          description: Option.some("description"),
+          description: "description",
           tags: {
-            deprecated: [Option.none()]
+            deprecated: [undefined]
           }
         }
       )
@@ -1851,9 +1847,9 @@ export const foo = 'foo'`,
       assert.deepStrictEqual(
         Parser.parseComment("/** description\n * @category instance\n */"),
         {
-          description: Option.some("description"),
+          description: "description",
           tags: {
-            category: [Option.some("instance")]
+            category: ["instance"]
           }
         }
       )
