@@ -7,3 +7,4 @@
 - Change "Added in" to "Since" in Markdown generation
 - Reorder signature and example sections in Markdown generation
 - Remove redundant "Example" header in Markdown generation
+- runExamples is not false by default

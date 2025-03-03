@@ -91,9 +91,8 @@ const enforceVersion = Options.boolean("no-enforce-version", {
   )
 )
 
-const runExamples = Options.boolean("no-run-examples", {
-  ifPresent: false,
-  negationNames: ["run-examples"]
+const runExamples = Options.boolean("run-examples", {
+  negationNames: ["no-run-examples"]
 }).pipe(
   Options.withFallbackConfig(Config.boolean("runExamples")),
   Options.withDescription(

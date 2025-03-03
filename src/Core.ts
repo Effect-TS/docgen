@@ -110,22 +110,25 @@ const parseModules = (files: ReadonlyArray<File.File>) =>
 const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
-    if (config.runExamples) {
+    yield* cleanupExamples
+    const files = yield* getExampleFiles(modules)
+    const len = files.length
+    if (len > 0) {
+      yield* Effect.logInfo(`${len} example(s) found`)
+      yield* writeExamplesToOutDir(files)
+      yield* createExamplesTsConfigJson
       yield* Effect.logInfo("Typechecking examples...")
-      yield* cleanupExamples
-      const files = yield* getExampleFiles(modules)
-      const len = files.length
-      if (len > 0) {
-        yield* Effect.logInfo(`${len} example(s) found`)
-        yield* writeExamplesToOutDir(files)
-        yield* createExamplesTsConfigJson
-        yield* runTscOnExamples
+      yield* runTscOnExamples
+      if (config.runExamples) {
+        yield* Effect.logInfo("Running examples...")
         yield* runTsxOnExamples
       } else {
-        yield* Effect.logInfo("No examples found.")
+        yield* Effect.logInfo("Skipping running examples")
       }
-      yield* cleanupExamples
+    } else {
+      yield* Effect.logInfo("No examples found.")
     }
+    yield* cleanupExamples
   })
 
 /**

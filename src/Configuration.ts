@@ -148,6 +148,7 @@ const validateJsonFile = <A, I>(
     )
   })
 
+// TODO: this is invoked twice, why?
 const readDocgenConfig = (
   path: string
 ): Effect.Effect<
