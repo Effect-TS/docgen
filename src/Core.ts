@@ -17,9 +17,8 @@ import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
-import type * as Domain from "./Domain.js"
+import * as Domain from "./Domain.js"
 import { DocgenError } from "./Error.js"
-import * as File from "./File.js"
 import { printModule } from "./Markdown.js"
 import * as Parser from "./Parser.js"
 import * as Process from "./Process.js"
@@ -58,14 +57,14 @@ const readSourceFiles = Effect.gen(function*() {
   return yield* Effect.forEach(paths, (path) =>
     Effect.map(
       fs.readFileString(path),
-      (content) => File.createFile(path, content, false)
+      (content) => new Domain.File(path, content, false)
     ), { concurrency: "inherit" })
 })
 
 /**
  * Writes a file to the `config.outDir` directory, taking into account the configuration and existing files.
  */
-const writeFileToOutDir = (file: File.File) =>
+const writeFileToOutDir = (file: Domain.File) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
     const fs = yield* FileSystem.FileSystem
@@ -92,10 +91,10 @@ const writeFileToOutDir = (file: File.File) =>
   })
 
 const writeFilesToOutDir = (
-  files: ReadonlyArray<File.File>
+  files: ReadonlyArray<Domain.File>
 ) => Effect.forEach(files, writeFileToOutDir, { discard: true })
 
-const parseModules = (files: ReadonlyArray<File.File>) =>
+const parseModules = (files: ReadonlyArray<Domain.File>) =>
   Parser.parseFiles(files).pipe(
     Effect.mapError((errors) =>
       new DocgenError({
@@ -186,7 +185,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
     return Array.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
-      const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<File.File> => {
+      const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<Domain.File> => {
         const descriptionExamples = doc.description.pipe(
           Option.map(extractFencedCode),
           Option.getOrElse((): Array<string> => [])
@@ -195,7 +194,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         return Array.map(
           examples,
           (example, i) => {
-            return File.createFile(
+            return new Domain.File(
               path.join(
                 config.outDir,
                 "examples",
@@ -276,13 +275,13 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
 /**
  * Generates an entry point file for the given examples.
  */
-const getExamplesEntryPoint = (examples: ReadonlyArray<File.File>) =>
+const getExamplesEntryPoint = (examples: ReadonlyArray<Domain.File>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
     const path = yield* Path.Path
     const content = examples.map((example) => `import './${path.basename(example.path, ".ts")}'`)
       .join("\n")
-    return File.createFile(
+    return new Domain.File(
       path.normalize(path.join(config.outDir, "examples", "index.ts")),
       `${content}\n`,
       true // make the file overwritable
@@ -389,7 +388,7 @@ const runTsxOnExamples = Effect.gen(function*() {
   }
 })
 
-const writeExamplesToOutDir = (examples: ReadonlyArray<File.File>) =>
+const writeExamplesToOutDir = (examples: ReadonlyArray<Domain.File>) =>
   Effect.gen(function*() {
     yield* Effect.logDebug("Writing examples...")
     const entryPoint = yield* getExamplesEntryPoint(examples)
@@ -404,7 +403,7 @@ const createExamplesTsConfigJson = Effect.gen(function*() {
   const cwd = yield* process.cwd
   const path = yield* Path.Path
   yield* writeFileToOutDir(
-    File.createFile(
+    new Domain.File(
       path.join(cwd, config.outDir, "examples", "tsconfig.json"),
       JSON.stringify({ compilerOptions: config.examplesCompilerOptions }, null, 2),
       true // make the file overwritable
@@ -426,7 +425,7 @@ const getMarkdownHomepage = Effect.gen(function*() {
   const process = yield* Process.Process
   const cwd = yield* process.cwd
   const path = yield* Path.Path
-  return File.createFile(
+  return new Domain.File(
     path.join(cwd, config.outDir, "index.md"),
     String.stripMargin(
       `|---
@@ -444,7 +443,7 @@ const getMarkdownIndex = Effect.gen(function*() {
   const process = yield* Process.Process
   const cwd = yield* process.cwd
   const path = yield* Path.Path
-  return File.createFile(
+  return new Domain.File(
     path.join(cwd, config.outDir, "modules", "index.md"),
     String.stripMargin(
       `|---
@@ -489,9 +488,9 @@ const getMarkdownConfigYML = Effect.gen(function*() {
   if (exists) {
     const content = yield* fs.readFileString(configPath)
     const resolved = yield* resolveConfigYML(content)
-    return File.createFile(configPath, resolved, true)
+    return new Domain.File(configPath, resolved, true)
   } else {
-    return File.createFile(
+    return new Domain.File(
       configPath,
       String.stripMargin(
         `|remote_theme: ${config.theme}
@@ -525,10 +524,10 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
     Effect.gen(function*() {
       const outputPath = yield* getModuleMarkdownOutputPath(module)
       const content = yield* printModule(module, order + 1)
-      return File.createFile(outputPath, content, true)
+      return new Domain.File(outputPath, content, true)
     }))
 
-const writeMarkdown = (files: ReadonlyArray<File.File>) =>
+const writeMarkdown = (files: ReadonlyArray<Domain.File>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
     const path = yield* pipe(Path.Path, Effect.provide(NodePath.layerPosix))

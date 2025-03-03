@@ -10,3 +10,5 @@
 - runExamples is not false by default
 - Extract examples from descriptions (disable with `skip-type-checking` metadata on fenced code blocks)
 - Add support for `@throws` tag in documentation generation
+- Refactor Domain module to use class-based implementation
+- Remove File module and integrate File class into Domain module

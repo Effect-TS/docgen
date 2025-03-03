@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 7
+nav_order: 6
 parent: Modules
 ---
 
@@ -17,7 +17,6 @@ Since v0.6.0
   - [From "./Core.js"](#from-corejs)
   - [From "./Domain.js"](#from-domainjs)
   - [From "./Error.js"](#from-errorjs)
-  - [From "./File.js"](#from-filejs)
   - [From "./Markdown.js"](#from-markdownjs)
   - [From "./Parser.js"](#from-parserjs)
   - [From "./Process.js"](#from-processjs)
@@ -70,18 +69,6 @@ Re-exports all named exports from the "./Error.js" module as `Error`.
 
 ```ts
 export * as Error from "./Error.js"
-```
-
-Since v0.6.0
-
-## From "./File.js"
-
-Re-exports all named exports from the "./File.js" module as `File`.
-
-**Signature**
-
-```ts
-export * as File from "./File.js"
 ```
 
 Since v0.6.0

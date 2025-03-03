@@ -15,7 +15,6 @@ import * as String from "effect/String"
 import * as ast from "ts-morph"
 import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
-import type * as File from "./File.js"
 import * as Process from "./Process.js"
 
 /** @internal */
@@ -886,7 +885,7 @@ export const parseModule = Effect.gen(function*() {
  * @internal
  */
 export const parseFile = (project: ast.Project) =>
-(file: File.File): Effect.Effect<
+(file: Domain.File): Effect.Effect<
   Domain.Module,
   Array<string>,
   Configuration.Configuration | Path.Path
@@ -905,7 +904,7 @@ export const parseFile = (project: ast.Project) =>
     return Effect.fail([`Unable to locate file: ${file.path}`])
   })
 
-const createProject = (files: ReadonlyArray<File.File>) =>
+const createProject = (files: ReadonlyArray<Domain.File>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
     const process = yield* Process.Process
@@ -937,7 +936,7 @@ const createProject = (files: ReadonlyArray<File.File>) =>
  * @category parsers
  * @since 0.6.0
  */
-export const parseFiles = (files: ReadonlyArray<File.File>) =>
+export const parseFiles = (files: ReadonlyArray<Domain.File>) =>
   createProject(files).pipe(
     Effect.flatMap((project) =>
       pipe(

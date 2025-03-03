@@ -237,3 +237,17 @@ export const ByPath: Order.Order<Module> = Order.mapInput(
   String.Order,
   (module: Module) => module.path.join("/").toLowerCase()
 )
+
+/**
+ * Represents a file which can be optionally overwriteable.
+ *
+ * @category model
+ * @since 0.6.0
+ */
+export class File {
+  constructor(
+    readonly path: string,
+    readonly content: string,
+    readonly isOverwriteable: boolean = false
+  ) {}
+}

@@ -1,6 +1,6 @@
 ---
 title: Parser.ts
-nav_order: 9
+nav_order: 8
 parent: Modules
 ---
 
@@ -71,7 +71,7 @@ Since v0.6.0
 
 ```ts
 export declare const parseFiles: (
-  files: ReadonlyArray<File.File>
+  files: ReadonlyArray<Domain.File>
 ) => Effect.Effect<
   Domain.Module[],
   [string[], ...string[][]],

@@ -1,6 +1,5 @@
 import * as Configuration from "@effect/docgen/Configuration"
 import * as Domain from "@effect/docgen/Domain"
-import * as File from "@effect/docgen/File"
 import * as Parser from "@effect/docgen/Parser"
 import { Path } from "@effect/platform"
 import chalk from "chalk"
@@ -1691,7 +1690,7 @@ export const foo = 'foo'`,
 
     describe("parseFile", () => {
       it("should not parse a non-existent file", async () => {
-        const file = File.createFile("non-existent.ts", "")
+        const file = new Domain.File("non-existent.ts", "")
         const project = new ast.Project({ useInMemoryFileSystem: true })
 
         assert.deepStrictEqual(

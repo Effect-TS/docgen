@@ -25,11 +25,6 @@ export * as Error from "./Error.js"
 /**
  * @since 0.6.0
  */
-export * as File from "./File.js"
-
-/**
- * @since 0.6.0
- */
 export * as Markdown from "./Markdown.js"
 
 /**

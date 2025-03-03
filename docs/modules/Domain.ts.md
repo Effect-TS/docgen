@@ -21,6 +21,7 @@ Since v0.6.0
   - [Example (class)](#example-class)
   - [Export (class)](#export-class)
     - [\_tag (property)](#_tag-property-2)
+  - [File (class)](#file-class)
   - [Function (class)](#function-class)
     - [\_tag (property)](#_tag-property-3)
   - [Interface (class)](#interface-class)
@@ -144,6 +145,22 @@ Since v0.6.0
 
 ```ts
 readonly _tag: "Export"
+```
+
+Since v0.6.0
+
+## File (class)
+
+Represents a file which can be optionally overwriteable.
+
+**Signature**
+
+```ts
+export declare class File { constructor(
+    readonly path: string,
+    readonly content: string,
+    readonly isOverwriteable: boolean = false
+  ) }
 ```
 
 Since v0.6.0
