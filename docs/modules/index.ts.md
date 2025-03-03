@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 6
+nav_order: 5
 parent: Modules
 ---
 
@@ -16,7 +16,6 @@ Since v0.6.0
   - [From "./Configuration.js"](#from-configurationjs)
   - [From "./Core.js"](#from-corejs)
   - [From "./Domain.js"](#from-domainjs)
-  - [From "./Error.js"](#from-errorjs)
   - [From "./Markdown.js"](#from-markdownjs)
   - [From "./Parser.js"](#from-parserjs)
   - [From "./Process.js"](#from-processjs)
@@ -57,18 +56,6 @@ Re-exports all named exports from the "./Domain.js" module as `Domain`.
 
 ```ts
 export * as Domain from "./Domain.js"
-```
-
-Since v0.6.0
-
-## From "./Error.js"
-
-Re-exports all named exports from the "./Error.js" module as `Error`.
-
-**Signature**
-
-```ts
-export * as Error from "./Error.js"
 ```
 
 Since v0.6.0

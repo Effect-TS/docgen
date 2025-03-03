@@ -20,11 +20,6 @@ export * as Domain from "./Domain.js"
 /**
  * @since 0.6.0
  */
-export * as Error from "./Error.js"
-
-/**
- * @since 0.6.0
- */
 export * as Markdown from "./Markdown.js"
 
 /**

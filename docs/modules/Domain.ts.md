@@ -18,6 +18,7 @@ Since v0.6.0
   - [Constant (class)](#constant-class)
     - [\_tag (property)](#_tag-property-1)
   - [Doc (class)](#doc-class)
+  - [DocgenError (class)](#docgenerror-class)
   - [Example (class)](#example-class)
   - [Export (class)](#export-class)
     - [\_tag (property)](#_tag-property-2)
@@ -36,6 +37,9 @@ Since v0.6.0
     - [\_tag (property)](#_tag-property-6)
 - [sorting](#sorting)
   - [ByPath](#bypath)
+- [symbol](#symbol)
+  - [DocgenErrorTypeId](#docgenerrortypeid)
+  - [DocgenErrorTypeId (type alias)](#docgenerrortypeid-type-alias)
 
 ---
 
@@ -102,6 +106,16 @@ export declare class Doc { constructor(
     readonly examples: ReadonlyArray<Example>,
     readonly category: Option.Option<string>
   ) }
+```
+
+Since v0.6.0
+
+## DocgenError (class)
+
+**Signature**
+
+```ts
+export declare class DocgenError
 ```
 
 Since v0.6.0
@@ -334,6 +348,28 @@ The file path is converted to lowercase before comparison.
 
 ```ts
 export declare const ByPath: Order.Order<Module>
+```
+
+Since v0.6.0
+
+# symbol
+
+## DocgenErrorTypeId
+
+**Signature**
+
+```ts
+export declare const DocgenErrorTypeId: typeof DocgenErrorTypeId
+```
+
+Since v0.6.0
+
+## DocgenErrorTypeId (type alias)
+
+**Signature**
+
+```ts
+export type DocgenErrorTypeId = typeof DocgenErrorTypeId
 ```
 
 Since v0.6.0

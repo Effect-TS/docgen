@@ -1,7 +1,7 @@
 import * as Command from "@effect/cli/Command"
 import * as CLI from "@effect/docgen/CLI"
 import * as Configuration from "@effect/docgen/Configuration"
-import { DocgenError } from "@effect/docgen/Error"
+import { DocgenError } from "@effect/docgen/Domain"
 import * as Process from "@effect/docgen/Process"
 import * as NodeCommandExecutor from "@effect/platform-node/NodeCommandExecutor"
 import * as NodeTerminal from "@effect/platform-node/NodeTerminal"

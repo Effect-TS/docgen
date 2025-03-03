@@ -18,7 +18,6 @@ import * as String from "effect/String"
 import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
-import { DocgenError } from "./Error.js"
 import { printModule } from "./Markdown.js"
 import * as Parser from "./Parser.js"
 import * as Process from "./Process.js"
@@ -35,7 +34,7 @@ const glob = (pattern: string, exclude: ReadonlyArray<string> = []) =>
     })
   ).pipe(
     Effect.orDieWith(() =>
-      new DocgenError({
+      new Domain.DocgenError({
         message: `[Core.glob] Unable to execute glob pattern '${pattern}' ` +
           `excluding files matching '${exclude}'`
       })
@@ -97,7 +96,7 @@ const writeFilesToOutDir = (
 const parseModules = (files: ReadonlyArray<Domain.File>) =>
   Parser.parseFiles(files).pipe(
     Effect.mapError((errors) =>
-      new DocgenError({
+      new Domain.DocgenError({
         message: "[Core.parseModules] The following error(s) occurred while " +
           `parsing the TypeScript source files:\n${errors.map((errors) => errors.join("\n")).join("\n")}`
       })
@@ -337,7 +336,7 @@ const runTscOnExamples = Effect.gen(function*() {
   )
 
   if (exitCode !== 0) {
-    yield* new DocgenError({
+    yield* new Domain.DocgenError({
       message: `Something went wrong while running tsc on examples:\n\n${stdout.join("\n")}`
     })
   }
@@ -381,7 +380,7 @@ const runTsxOnExamples = Effect.gen(function*() {
 
   if (exitCode !== 0) {
     yield* Effect.fail(
-      new DocgenError({
+      new Domain.DocgenError({
         message: `Something went wrong while running tsx on examples:\n\n${stdout.join("\n")}`
       })
     )

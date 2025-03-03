@@ -12,3 +12,4 @@
 - Add support for `@throws` tag in documentation generation
 - Refactor Domain module to use class-based implementation
 - Remove File module and integrate File class into Domain module
+- Move DocgenError from Error module to Domain module

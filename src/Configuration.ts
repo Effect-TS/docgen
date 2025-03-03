@@ -15,7 +15,7 @@ import * as Option from "effect/Option"
 import * as ParseResult from "effect/ParseResult"
 import * as Schema from "effect/Schema"
 import * as tsconfck from "tsconfck"
-import { DocgenError } from "./Error.js"
+import { DocgenError } from "./Domain.js"
 import * as Process from "./Process.js"
 
 const PACKAGE_JSON_FILE_NAME = "package.json"

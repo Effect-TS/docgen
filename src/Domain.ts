@@ -2,6 +2,7 @@
  * @since 0.6.0
  */
 
+import * as Data from "effect/Data"
 import type * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as String from "effect/String"
@@ -250,4 +251,25 @@ export class File {
     readonly content: string,
     readonly isOverwriteable: boolean = false
   ) {}
+}
+
+/**
+ * @category symbol
+ * @since 0.6.0
+ */
+export const DocgenErrorTypeId = Symbol.for("@effect/docgen/DocgenError")
+
+/**
+ * @category symbol
+ * @since 0.6.0
+ */
+export type DocgenErrorTypeId = typeof DocgenErrorTypeId
+
+/**
+ * @category model
+ * @since 0.6.0
+ */
+export class DocgenError extends Data.TaggedError("DocgenError")<{
+  readonly message: string
+}> {
 }
