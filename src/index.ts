@@ -20,7 +20,7 @@ export * as Domain from "./Domain.js"
 /**
  * @since 0.6.0
  */
-export * as Markdown from "./Markdown.js"
+export * as Printer from "./Printer.js"
 
 /**
  * @since 0.6.0

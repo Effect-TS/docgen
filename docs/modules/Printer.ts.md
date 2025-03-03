@@ -1,10 +1,10 @@
 ---
-title: Markdown.ts
-nav_order: 6
+title: Printer.ts
+nav_order: 7
 parent: Modules
 ---
 
-## Markdown overview
+## Printer overview
 
 Since v0.6.0
 
@@ -41,12 +41,12 @@ export const a: string = "a"
 **Example** (Title 1)
 
 ```ts twoslash title="Title 1"
-import { Domain, Markdown } from "@effect/docgen"
+import { Domain, Printer } from "@effect/docgen"
 import { Option } from "effect"
 
 const doc = new Domain.NamedDoc("tests", Option.none(), Option.some("1.0.0"), false, [], Option.none())
 const m = new Domain.Module(doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
-console.log(Markdown.printModule(m, 0))
+console.log(Printer.printModule(m, 0))
 ```
 
 **Example** (Title 2)

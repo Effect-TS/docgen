@@ -18,8 +18,8 @@ import * as String from "effect/String"
 import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
-import { printModule } from "./Markdown.js"
 import * as Parser from "./Parser.js"
+import { printModule } from "./Printer.js"
 
 /**
  * Find all files matching the specified `glob` pattern, optionally excluding
