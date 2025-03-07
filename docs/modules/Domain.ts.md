@@ -29,12 +29,13 @@ Since v0.6.0
     - [\_tag (property)](#_tag-property-4)
   - [Method (class)](#method-class)
   - [Module (class)](#module-class)
+    - [\_tag (property)](#_tag-property-5)
   - [NamedDoc (class)](#nameddoc-class)
   - [Namespace (class)](#namespace-class)
-    - [\_tag (property)](#_tag-property-5)
+    - [\_tag (property)](#_tag-property-6)
   - [Property (class)](#property-class)
   - [TypeAlias (class)](#typealias-class)
-    - [\_tag (property)](#_tag-property-6)
+    - [\_tag (property)](#_tag-property-7)
 - [service](#service)
   - [Process (class)](#process-class)
 - [sorting](#sorting)
@@ -257,6 +258,16 @@ export declare class Module { constructor(
     readonly exports: ReadonlyArray<Export>,
     readonly namespaces: ReadonlyArray<Namespace>
   ) }
+```
+
+Since v0.6.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "Module"
 ```
 
 Since v0.6.0

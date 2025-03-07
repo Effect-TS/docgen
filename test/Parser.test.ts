@@ -1,9 +1,10 @@
 import * as Configuration from "@effect/docgen/Configuration"
 import * as Domain from "@effect/docgen/Domain"
 import * as Parser from "@effect/docgen/Parser"
+import * as Printer from "@effect/docgen/Printer"
 import { Path } from "@effect/platform"
 import chalk from "chalk"
-import { Effect, Exit, String } from "effect"
+import { Effect, Exit } from "effect"
 import * as assert from "node:assert/strict"
 import * as ast from "ts-morph"
 import { describe, it } from "vitest"
@@ -25,16 +26,23 @@ const defaultConfig: Configuration.ConfigurationShape = {
   enforceDescriptions: false,
   enforceExamples: false,
   enforceVersion: true,
-  runExamples: true,
+  runExamples: false,
   exclude: [],
   parseCompilerOptions: {},
   examplesCompilerOptions: {}
 }
 
-const getParser = (sourceText: string): Parser.SourceShape => ({
-  path: ["test"],
-  sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
-})
+const makeSourceFromString = (sourceText: string) =>
+  Parser.Source.of({
+    path: ["test"],
+    sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
+  })
+
+const makeSourceFromSourceFile = (sourceFile: ast.SourceFile) =>
+  Parser.Source.of({
+    path: ["test"],
+    sourceFile
+  })
 
 const expectFailure = <A, E>(
   sourceText: string,
@@ -44,7 +52,7 @@ const expectFailure = <A, E>(
 ) => {
   assert.deepStrictEqual(
     eff.pipe(
-      Effect.provideService(Parser.Source, getParser(sourceText)),
+      Effect.provideService(Parser.Source, makeSourceFromString(sourceText)),
       Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
       Effect.provide(Path.layer),
       Effect.runSyncExit
@@ -56,1661 +64,1427 @@ const expectFailure = <A, E>(
 const expectSuccess = <A, E>(
   sourceText: string,
   eff: Effect.Effect<A, E, Parser.Source | Configuration.Configuration | Path.Path>,
-  a: A,
+  expected: A,
   config?: Partial<Configuration.ConfigurationShape>
 ) => {
-  assert.deepStrictEqual(
-    eff
-      .pipe(
-        Effect.provideService(Parser.Source, getParser(sourceText)),
-        Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
-        Effect.provide(Path.layer),
-        Effect.runSyncExit
-      ),
-    Exit.succeed(a)
+  const exit = eff.pipe(
+    Effect.provideService(Parser.Source, makeSourceFromString(sourceText)),
+    Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
+    Effect.provide(Path.layer),
+    Effect.runSyncExit
   )
+  assert.ok(exit._tag === "Success")
+  assert.deepStrictEqual(exit.value, expected)
+}
+
+const print = (printables: ReadonlyArray<Printer.Printable>) => {
+  const raw = printables.map((printable) => Printer.print(printable).trim()).join("\n")
+  return Effect.succeed(raw)
+  // return Printer.prettify(raw)
+}
+
+const expectMarkdown = async <E>(
+  eff: Effect.Effect<
+    Printer.Printable | ReadonlyArray<Printer.Printable>,
+    E,
+    Parser.Source | Configuration.Configuration | Path.Path
+  >,
+  sourceText: string,
+  expected: string
+) => {
+  const exit = await eff.pipe(
+    Effect.flatMap((a) => {
+      return print(Array.isArray(a) ? a : [a])
+    }),
+    Effect.provideService(Parser.Source, makeSourceFromString(sourceText)),
+    Effect.provideService(Configuration.Configuration, defaultConfig),
+    Effect.provide(Path.layer),
+    Effect.runPromiseExit
+  )
+  assert.ok(exit._tag === "Success")
+  if (exit.value !== expected) {
+    console.log(exit.value)
+  }
+  assert.strictEqual(exit.value, expected)
 }
 
 describe("Parser", () => {
-  describe("parsers", () => {
-    describe("parseNamespaces", () => {
-      it("should return no `Namespaces`s if the file is empty", () => {
-        expectSuccess("", Parser.parseNamespaces, [])
-      })
-
-      it("should return no `Namespaces`s if there are no exported namespaces", () => {
-        expectSuccess("namespace A {}", Parser.parseNamespaces, [])
-      })
-
-      it("should raise an error if the namespace is not well documented", () => {
-        expectFailure("export namespace A {}", Parser.parseNamespaces, [
-          `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#A")} documentation`
-        ])
-      })
-
-      const documentableA = new Domain.NamedDoc(
-        "A",
-        undefined,
-        "1.0.0",
-        false,
-        [],
-        undefined
+  describe("parseFunctions", () => {
+    it("should raise an error if the function is anonymous", () => {
+      expectFailure(
+        `export function(a: number, b: number): number { return a + b }`,
+        Parser.parseFunctions,
+        [`Missing ${chalk.bold("function name")} in module ${chalk.bold("test")}`]
       )
-
-      it("should parse an empty Namespace", () => {
-        expectSuccess(
-          `
-        /**
-         * @since 1.0.0
-         */
-        export namespace A {}
-        `,
-          Parser.parseNamespaces,
-          [
-            new Domain.Namespace(documentableA, [], [], [])
-          ]
-        )
-      })
-
-      describe("interfaces", () => {
-        it("should ignore not exported interfaces", () => {
-          expectSuccess(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            interface C {}
-          }
-          `,
-            Parser.parseNamespaces,
-            [new Domain.Namespace(documentableA, [], [], [])]
-          )
-        })
-
-        it("should raise an error if the interface is not well documented", () => {
-          expectFailure(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            export interface B {}
-          }
-          `,
-            Parser.parseNamespaces,
-            [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
-          )
-        })
-
-        it("should parse an interface", () => {
-          const documentableB = new Domain.NamedDoc(
-            "B",
-            undefined,
-            "1.0.1",
-            false,
-            [],
-            undefined
-          )
-
-          expectSuccess(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            /**
-             * @since 1.0.1
-             */
-            export interface B {
-              readonly d: boolean
-            }
-          }
-          `,
-            Parser.parseNamespaces,
-            [
-              new Domain.Namespace(
-                documentableA,
-                [
-                  new Domain.Interface(
-                    documentableB,
-                    `export interface B {
-              readonly d: boolean
-            }`
-                  )
-                ],
-                [],
-                []
-              )
-            ]
-          )
-        })
-      })
-
-      describe("type aliases", () => {
-        it("should ignore not exported type alias", () => {
-          expectSuccess(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            type C = number
-          }
-          `,
-            Parser.parseNamespaces,
-            [new Domain.Namespace(documentableA, [], [], [])]
-          )
-        })
-
-        it("should raise an error if the type alias is not well documented", () => {
-          expectFailure(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            export type B = string
-          }
-          `,
-            Parser.parseNamespaces,
-            [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
-          )
-        })
-
-        it("should parse a type alias", () => {
-          const documentableB = new Domain.NamedDoc(
-            "B",
-            undefined,
-            "1.0.1",
-            false,
-            [],
-            undefined
-          )
-
-          expectSuccess(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            /**
-             * @since 1.0.1
-             */
-            export type B = string
-          }
-          `,
-            Parser.parseNamespaces,
-            [
-              new Domain.Namespace(documentableA, [], [
-                new Domain.TypeAlias(documentableB, "export type B = string")
-              ], [])
-            ]
-          )
-        })
-      })
-
-      describe("nested namespaces", () => {
-        it("should ignore not exported namespaces", () => {
-          expectSuccess(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            namespace B {}
-          }
-          `,
-            Parser.parseNamespaces,
-            [new Domain.Namespace(documentableA, [], [], [])]
-          )
-        })
-
-        it("should raise an error if the namespace is not well documented", () => {
-          expectFailure(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            export namespace B {}
-          }
-          `,
-            Parser.parseNamespaces,
-            [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
-          )
-        })
-
-        it("should parse a namespace", () => {
-          const documentableB = new Domain.NamedDoc(
-            "B",
-            undefined,
-            "1.0.1",
-            false,
-            [],
-            undefined
-          )
-          const documentableC = new Domain.NamedDoc(
-            "C",
-            undefined,
-            "1.0.2",
-            false,
-            [],
-            undefined
-          )
-
-          expectSuccess(
-            `
-          /**
-           * @since 1.0.0
-           */
-          export namespace A {
-            /**
-             * @since 1.0.1
-             */
-            export namespace B {
-              /**
-               * @since 1.0.2
-               */
-              export type C = string
-            }
-          }
-          `,
-            Parser.parseNamespaces,
-            [
-              new Domain.Namespace(documentableA, [], [], [
-                new Domain.Namespace(documentableB, [], [
-                  new Domain.TypeAlias(documentableC, "export type C = string")
-                ], [])
-              ])
-            ]
-          )
-        })
-      })
     })
 
-    describe("parseInterfaces", () => {
-      it("should return no `Interface`s if the file is empty", () => {
-        expectSuccess("", Parser.parseInterfaces, [])
-      })
+    it("description", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @since 1.2.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
 
-      it("should return no `Interface`s if there are no exported interfaces", () => {
-        expectSuccess("interface A {}", Parser.parseInterfaces, [])
-      })
+description...
 
-      it("should return an `Interface`", () => {
-        expectSuccess(
-          `/**
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.2.0`
+      )
+    })
+
+    it("example without fence", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @example
+         * const x = 1
+         * @since 1.0.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
+
+description...
+
+**Example**
+
+\`\`\`ts
+const x = 1
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("example with backtick fence", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @example
+         * \`\`\`ts
+         * const x = 1
+         * \`\`\`
+         * @since 1.0.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
+
+description...
+
+**Example**
+
+\`\`\`ts
+const x = 1
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("2 examples", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @example
+         * \`\`\`ts
+         * const x = 1
+         * \`\`\`
+         * @example
+         * \`\`\`ts
+         * const x = 2
+         * \`\`\`
+         * @since 1.0.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
+
+description...
+
+**Example**
+
+\`\`\`ts
+const x = 1
+\`\`\`
+
+**Example**
+
+\`\`\`ts
+const x = 2
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("example with metas", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @example
+         * \`\`\`ts a=1
+         * const x = 1
+         * \`\`\`
+         * @since 1.0.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
+
+description...
+
+**Example**
+
+\`\`\`ts a=1
+const x = 1
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("example with titde fence", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @example
+         * ~~~ts
+         * const x = 1
+         * ~~~
+         * @since 1.0.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
+
+description...
+
+**Example**
+
+~~~ts
+const x = 1
+~~~
+
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should not return private function declarations", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         */
+        function myfunc() {}`,
+        ""
+      )
+    })
+
+    it("should not return ignored function declarations", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * @ignore
+         */
+        export function myfunc() {}`,
+        ""
+      )
+    })
+
+    it("should not return ignored function declarations with overloads", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+          * @ignore
+          */
+          export function sum(a: number, b: number)
+          export function sum(a: number, b: number): number { return a + b }`,
+        ""
+      )
+    })
+
+    it("should not return internal function declarations", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+          * @internal
+          */
+          export function sum(a: number, b: number): number { return a + b }`,
+        ""
+      )
+    })
+
+    it("should not return internal function declarations even with overloads", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+          * @internal
+          */
+          export function sum(a: number, b: number)
+          export function sum(a: number, b: number): number { return a + b }`,
+        ""
+      )
+    })
+
+    it("should not return private const function declarations", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `const sum = (a: number, b: number): number => a + b `,
+        ""
+      )
+    })
+
+    it("should not return internal const function declarations", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+          * @internal
+          */
+          export const sum = (a: number, b: number): number => a + b `,
+        ""
+      )
+    })
+
+    it("should account for nullable polymorphic return types", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+          * @since 1.0.0
+          */
+         export const toNullable = <A>(ma: A | null): A | null => ma`,
+        `## toNullable
+
+**Signature**
+
+\`\`\`ts
+export declare const toNullable: <A>(ma: A | null) => A | null
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should handle a const function declaration", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+          * a description...
+          * @since 1.0.0
+          * @example
+          * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+          * @example
+          * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+          * @deprecated
+          */
+          export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
+        `## ~~f~~
+
+a description...
+
+**Example**
+
+\`\`\`ts
+assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
+\`\`\`
+
+**Example**
+
+\`\`\`ts
+assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+export declare const f: (a: number, b: number) => { [key: string]: number; }
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should handle a function declaration", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+        * @since 1.0.0
+        */
+        export function f(a: number, b: number): { [key: string]: number } { return { a, b } }`,
+        `## f
+
+**Signature**
+
+\`\`\`ts
+export declare function f(a: number, b: number): { [key: string]: number }
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should handle overloadings", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
         * a description...
         * @since 1.0.0
         * @deprecated
         */
-        export interface A {}`,
-          Parser.parseInterfaces,
-          [
-            new Domain.Interface(
-              new Domain.NamedDoc(
-                "A",
-                "a description...",
-                "1.0.0",
-                true,
-                [],
-                undefined
-              ),
-              "export interface A {}"
-            )
-          ]
-        )
-      })
+        export function f(a: Int, b: Int): { [key: string]: number }
+        export function f(a: number, b: number): { [key: string]: number }
+        export function f(a: any, b: any): { [key: string]: number } { return { a, b } }`,
+        `## ~~f~~
 
-      it("should return interfaces sorted by name", () => {
-        expectSuccess(
-          `
-        /**
-         * @since 1.0.0
-         */
-        export interface B {}
-        /**
-         * @since 1.0.0
-         */
-        export interface A {}
-        `,
-          Parser.parseInterfaces,
-          [
-            new Domain.Interface(
-              new Domain.NamedDoc(
-                "A",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export interface A {}"
-            ),
-            new Domain.Interface(
-              new Domain.NamedDoc(
-                "B",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export interface B {}"
-            )
-          ]
-        )
-      })
+a description...
+
+**Signature**
+
+\`\`\`ts
+export declare function f(a: Int, b: Int): { [key: string]: number }
+export declare function f(a: number, b: number): { [key: string]: number }
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+  })
+
+  describe("parseConstants", () => {
+    it("should handle a constant value", async () => {
+      await expectMarkdown(
+        Parser.parseConstants,
+        `/**
+          * a description...
+          * @since 1.0.0
+          * @deprecated
+          */
+          export const s: string = ''`,
+        `## ~~s~~
+
+a description...
+
+**Signature**
+
+\`\`\`ts
+export declare const s: string
+\`\`\`
+
+Since v1.0.0`
+      )
     })
 
-    describe("parseFunctions", () => {
-      it("should raise an error if the function is anonymous", () => {
-        expectFailure(
-          `export function(a: number, b: number): number { return a + b }`,
-          Parser.parseFunctions,
-          [`Missing ${chalk.bold("function name")} in module ${chalk.bold("test")}`]
-        )
-      })
+    it("should support constants with default type parameters", async () => {
+      await expectMarkdown(
+        Parser.parseConstants,
+        `/**
+          * @since 1.0.0
+          */
+          export const left: <E = never, A = never>(l: E) => string = T.left`,
+        `## left
 
-      it("should not return private function declarations", () => {
-        expectSuccess(
-          `function sum(a: number, b: number): number { return a + b }`,
-          Parser.parseFunctions,
-          []
-        )
-      })
+**Signature**
 
-      it("should not return ignored function declarations", () => {
-        expectSuccess(
-          `/**
-        * @ignore
-        */
-        export function sum(a: number, b: number): number { return a + b }`,
-          Parser.parseFunctions,
-          []
-        )
-      })
+\`\`\`ts
+export declare const left: <E = never, A = never>(l: E) => string
+\`\`\`
 
-      it("should not return ignored function declarations with overloads", () => {
-        expectSuccess(
-          `/**
-            * @ignore
-            */
-            export function sum(a: number, b: number)
-            export function sum(a: number, b: number): number { return a + b }`,
-          Parser.parseFunctions,
-          []
-        )
-      })
-
-      it("should not return internal function declarations", () => {
-        expectSuccess(
-          `/**
-            * @internal
-            */
-            export function sum(a: number, b: number): number { return a + b }`,
-          Parser.parseFunctions,
-          []
-        )
-      })
-
-      it("should not return internal function declarations even with overloads", () => {
-        expectSuccess(
-          `/**
-            * @internal
-            */
-            export function sum(a: number, b: number)
-            export function sum(a: number, b: number): number { return a + b }`,
-          Parser.parseFunctions,
-          []
-        )
-      })
-
-      it("should not return private const function declarations", () => {
-        expectSuccess(
-          `const sum = (a: number, b: number): number => a + b `,
-          Parser.parseFunctions,
-          []
-        )
-      })
-
-      it("should not return internal const function declarations", () => {
-        expectSuccess(
-          `/**
-            * @internal
-            */
-            export const sum = (a: number, b: number): number => a + b `,
-          Parser.parseFunctions,
-          []
-        )
-      })
-
-      it("should account for nullable polymorphic return types", () => {
-        expectSuccess(
-          `/**
-            * @since 1.0.0
-            */
-           export const toNullable = <A>(ma: A | null): A | null => ma`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "toNullable",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              [
-                "export declare const toNullable: <A>(ma: A | null) => A | null"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should return a const function declaration", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @example
-            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            * @example
-            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-            * @deprecated
-            */
-            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [
-                  new Domain.Example("assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })"),
-                  new Domain.Example("assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })")
-                ],
-                undefined
-              ),
-              [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should parse examples even when enclosed in code blocks using backticks", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @example
-            * \`\`\`ts
-            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            * \`\`\`
-            * @example
-            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-            * @deprecated
-            */
-            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [
-                  new Domain.Example(`\`\`\`ts
-assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-\`\`\``),
-                  new Domain.Example("assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })")
-                ],
-                undefined
-              ),
-              [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should parse multiline examples even when enclosed in code blocks using backticks", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @example
-            * \`\`\`ts
-            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            *
-            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-            * \`\`\`
-            * @deprecated
-            */
-            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [
-                  new Domain.Example(`\`\`\`ts
-assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-
-assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-\`\`\``)
-                ],
-                undefined
-              ),
-              [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should parse examples even when enclosed in code blocks using tildes", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @example
-            * ~~~ts
-            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            * ~~~
-            * @example
-            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-            * @deprecated
-            */
-            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [
-                  new Domain.Example(`~~~ts
-assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-~~~`),
-                  new Domain.Example("assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })")
-                ],
-                undefined
-              ),
-              [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should parse multiline examples even when enclosed in code blocks using backticks", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @example
-            * ~~~ts
-            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            *
-            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-            * ~~~
-            * @deprecated
-            */
-            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [
-                  new Domain.Example(`~~~ts
-assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-
-assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-~~~`)
-                ],
-                undefined
-              ),
-              [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should  parse twoslash examples using backtick fences", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @example
-            * \`\`\`ts twoslash
-            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            * \`\`\`
-            * @example
-            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-            * @deprecated
-            */
-            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [
-                  new Domain.Example(`\`\`\`ts twoslash
-assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-\`\`\``),
-                  new Domain.Example(`assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`)
-                ],
-                undefined
-              ),
-              [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should  parse twoslash examples using tilde fences", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @example
-            * ~~~ts twoslash
-            * assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-            * ~~~
-            * @example
-            * assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
-            * @deprecated
-            */
-            export const f = (a: number, b: number): { [key: string]: number } => ({ a, b })`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [
-                  new Domain.Example(`~~~ts twoslash
-assert.deepStrictEqual(f(1, 2), { a: 1, b: 2 })
-~~~`),
-                  new Domain.Example(`assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })`)
-                ],
-                undefined
-              ),
-              [
-                "export declare const f: (a: number, b: number) => { [key: string]: number; }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should return a function declaration", () => {
-        expectSuccess(
-          `/**
-            * @since 1.0.0
-            */
-            export function f(a: number, b: number): { [key: string]: number } { return { a, b } }`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              [
-                "export declare function f(a: number, b: number): { [key: string]: number }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should return a function with comments", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @deprecated
-            */
-            export function f(a: number, b: number): { [key: string]: number } { return { a, b } }`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [],
-                undefined
-              ),
-              [
-                "export declare function f(a: number, b: number): { [key: string]: number }"
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should handle overloadings", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @deprecated
-            */
-            export function f(a: Int, b: Int): { [key: string]: number }
-            export function f(a: number, b: number): { [key: string]: number }
-            export function f(a: any, b: any): { [key: string]: number } { return { a, b } }`,
-          Parser.parseFunctions,
-          [
-            new Domain.Function(
-              new Domain.NamedDoc(
-                "f",
-                "a description...",
-                "1.0.0",
-                true,
-                [],
-                undefined
-              ),
-              [
-                "export declare function f(a: Int, b: Int): { [key: string]: number }",
-                "export declare function f(a: number, b: number): { [key: string]: number }"
-              ],
-              []
-            )
-          ]
-        )
-      })
+Since v1.0.0`
+      )
     })
 
-    describe("parseTypeAlias", () => {
-      it("should return a `TypeAlias`", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @deprecated
-            */
-            export type Option<A> = None<A> | Some<A>`,
-          Parser.parseTypeAliases,
-          [
-            new Domain.TypeAlias(
-              new Domain.NamedDoc(
-                "Option",
-                "a description...",
-                "1.0.0",
-                true,
-                [],
-                undefined
-              ),
-              "export type Option<A> = None<A> | Some<A>"
-            )
-          ]
-        )
-      })
+    it("should support untyped constants", async () => {
+      await expectMarkdown(
+        Parser.parseConstants,
+        `
+      class A {}
+    /**
+      * @since 1.0.0
+      */
+      export const empty = new A()`,
+        `## empty
+
+**Signature**
+
+\`\`\`ts
+export declare const empty: A
+\`\`\`
+
+Since v1.0.0`
+      )
     })
 
-    describe("parseConstants", () => {
-      it("should handle a constant value", () => {
-        expectSuccess(
-          `/**
-            * a description...
-            * @since 1.0.0
-            * @deprecated
-            */
-            export const s: string = ''`,
-          Parser.parseConstants,
-          [
-            new Domain.Constant(
-              new Domain.NamedDoc(
-                "s",
-                "a description...",
-                "1.0.0",
-                true,
-                [],
-                undefined
-              ),
-              "export declare const s: string"
-            )
-          ]
-        )
-      })
-
-      it("should support constants with default type parameters", () => {
-        expectSuccess(
-          `/**
-            * @since 1.0.0
-            */
-            export const left: <E = never, A = never>(l: E) => string = T.left`,
-          Parser.parseConstants,
-          [
-            new Domain.Constant(
-              new Domain.NamedDoc(
-                "left",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare const left: <E = never, A = never>(l: E) => string"
-            )
-          ]
-        )
-      })
-
-      it("should support untyped constants", () => {
-        expectSuccess(
-          `
-        class A {}
+    it("should handle constants with typeof annotations", async () => {
+      await expectMarkdown(
+        Parser.parseConstants,
+        ` const task: { a: number } = {
+        a: 1
+      }
       /**
-        * @since 1.0.0
-        */
-        export const empty = new A()`,
-          Parser.parseConstants,
-          [
-            new Domain.Constant(
-              new Domain.NamedDoc(
-                "empty",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare const empty: A"
-            )
-          ]
-        )
-      })
+      * @since 1.0.0
+      */
+      export const taskSeq: typeof task = {
+        ...task,
+        ap: (mab, ma) => () => mab().then(f => ma().then(a => f(a)))
+      }`,
+        `## taskSeq
 
-      it("should handle constants with typeof annotations", () => {
-        expectSuccess(
-          ` const task: { a: number } = {
-          a: 1
-        }
-        /**
-        * @since 1.0.0
-        */
-        export const taskSeq: typeof task = {
-          ...task,
-          ap: (mab, ma) => () => mab().then(f => ma().then(a => f(a)))
-        }`,
-          Parser.parseConstants,
-          [
-            new Domain.Constant(
-              new Domain.NamedDoc(
-                "taskSeq",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare const taskSeq: { a: number; }"
-            )
-          ]
-        )
-      })
+**Signature**
 
-      it("should not include variables declared in for loops", () => {
-        expectSuccess(
-          ` const object = { a: 1, b: 2, c: 3 };
+\`\`\`ts
+export declare const taskSeq: { a: number; }
+\`\`\`
 
-        for (const property in object) {
-          console.log(property);
-        }`,
-          Parser.parseConstants,
-          []
-        )
-      })
+Since v1.0.0`
+      )
     })
 
-    describe("parseClasses", () => {
-      it("should raise an error if the class is anonymous", () => {
-        expectFailure(`export class {}`, Parser.parseClasses, [
-          `Missing ${chalk.bold("class name")} in module ${chalk.bold("test")}`
-        ])
-      })
+    it("should not include variables declared in for loops", async () => {
+      await expectMarkdown(
+        Parser.parseConstants,
+        ` const object = { a: 1, b: 2, c: 3 };
 
-      it("should raise an error if an `@since` tag is missing in a module", () => {
-        expectFailure(`export class MyClass {}`, Parser.parseClasses, [
-          `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass")} documentation`
-        ])
-      })
+      for (const property in object) {
+        console.log(property);
+      }`,
+        ""
+      )
+    })
+  })
 
-      it("should ignore internal classes", () => {
-        expectSuccess(`/** @internal */export class MyClass {}`, Parser.parseClasses, [])
-      })
+  describe("parseTypeAliases", () => {
+    it("should return a type alias", async () => {
+      await expectMarkdown(
+        Parser.parseTypeAliases,
+        `/**
+          * a description...
+          * @since 1.0.0
+          * @deprecated
+          */
+          export type Option<A> = None<A> | Some<A>`,
+        `## ~~Option~~ (type alias)
 
-      it("should ignore `@ignore`d classes", () => {
-        expectSuccess(`/** @ignore */export class MyClass {}`, Parser.parseClasses, [])
-      })
+a description...
 
-      it("should raise an error if `@since` is missing in a property", () => {
-        expectFailure(
-          `/**
+**Signature**
+
+\`\`\`ts
+export type Option<A> = None<A> | Some<A>
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+  })
+
+  describe("parseExports", () => {
+    it("should return no exports if the file is empty", async () => {
+      await expectMarkdown(
+        Parser.parseExports,
+        "",
+        ""
+      )
+    })
+
+    it("should handle renamimg", async () => {
+      await expectMarkdown(
+        Parser.parseExports,
+        `const a = 1;
+        export {
+          /**
             * @since 1.0.0
             */
-            export class MyClass<A> {
-              readonly _A!: A
-            }`,
-          Parser.parseClasses,
-          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass#_A")} documentation`]
-        )
-      })
-
-      it("should skip ignored properties", () => {
-        expectSuccess(
-          `/**
-        * @since 1.0.0
-        */
-        export class MyClass<A> {
-          /**
-           * @ignore
-           */
-          readonly _A!: A
-        }`,
-          Parser.parseClasses,
-          [
-            new Domain.Class(
-              new Domain.NamedDoc(
-                "MyClass",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare class MyClass<A>",
-              [],
-              [],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should skip the constructor body", () => {
-        expectSuccess(
-          `/**
-        * description
-        * @since 1.0.0
-        */
-        export class C { constructor() {} }`,
-          Parser.parseClasses,
-          [
-            new Domain.Class(
-              new Domain.NamedDoc(
-                "C",
-                "description",
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare class C { constructor() }",
-              [],
-              [],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should get a constructor declaration signature", () => {
-        const sourceFile = project.createSourceFile(
-          `test-${testCounter++}.ts`,
-          `
-        /**
-         * @since 1.0.0
-         */
-        declare class A {
-          constructor()
-        }
-      `
-        )
-
-        const constructorDeclaration = sourceFile
-          .getClass("A")!
-          .getConstructors()[0]
-
-        assert.deepStrictEqual(
-          Parser.getConstructorDeclarationSignature(constructorDeclaration),
-          "constructor()"
-        )
-      })
-
-      it("should handle non-readonly properties", () => {
-        expectSuccess(
-          `/**
-        * description
-        * @since 1.0.0
-        */
-        export class C {
-          /**
-           * @since 1.0.0
-           */
-          a: string
-        }`,
-          Parser.parseClasses,
-          [
-            new Domain.Class(
-              new Domain.NamedDoc(
-                "C",
-                "description",
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare class C",
-              [],
-              [],
-              [
-                new Domain.Property(
-                  new Domain.NamedDoc(
-                    "a",
-                    undefined,
-                    "1.0.0",
-                    false,
-                    [],
-                    undefined
-                  ),
-                  "a: string"
-                )
-              ]
-            )
-          ]
-        )
-      })
-
-      it("should return a `Class`", () => {
-        expectSuccess(
-          `/**
-        * a class description...
-        * @since 1.0.0
-        * @deprecated
-        */
-        export class Test {
-          /**
-           * a property...
-           * @since 1.1.0
-           * @deprecated
-           */
-          readonly a: string
-          private readonly b: number
-          /**
-           * a static method description...
-           * @since 1.1.0
-           * @deprecated
-           */
-          static f(): void {}
-          constructor(readonly value: string) { }
-          /**
-           * a method description...
-           * @since 1.1.0
-           * @deprecated
-           */
-          g(a: number, b: number): { [key: string]: number } {
-            return { a, b }
-          }
-        }`,
-          Parser.parseClasses,
-          [
-            new Domain.Class(
-              new Domain.NamedDoc(
-                "Test",
-                "a class description...",
-                "1.0.0",
-                true,
-                [],
-                undefined
-              ),
-              "export declare class Test { constructor(readonly value: string) }",
-              [
-                new Domain.Method(
-                  new Domain.NamedDoc(
-                    "g",
-                    "a method description...",
-                    "1.1.0",
-                    true,
-                    [],
-                    undefined
-                  ),
-                  [
-                    "g(a: number, b: number): { [key: string]: number }"
-                  ]
-                )
-              ],
-              [
-                new Domain.Method(
-                  new Domain.NamedDoc(
-                    "f",
-                    "a static method description...",
-                    "1.1.0",
-                    true,
-                    [],
-                    undefined
-                  ),
-                  ["static f(): void"]
-                )
-              ],
-              [
-                new Domain.Property(
-                  new Domain.NamedDoc(
-                    "a",
-                    "a property...",
-                    "1.1.0",
-                    true,
-                    [],
-                    undefined
-                  ),
-                  "readonly a: string"
-                )
-              ]
-            )
-          ]
-        )
-      })
-
-      it("should handle method overloadings", () => {
-        expectSuccess(
-          `/**
-        * a class description...
-        * @since 1.0.0
-        * @deprecated
-        */
-        export class Test<A> {
-          /**
-           * a static method description...
-           * @since 1.1.0
-           * @deprecated
-           */
-          static f(x: number): number
-          static f(x: string): string
-          static f(x: any): any {}
-          constructor(readonly value: A) { }
-          /**
-           * a method description...
-           * @since 1.1.0
-           * @deprecated
-           */
-          map(f: (a: number) => number): Test
-          map(f: (a: string) => string): Test
-          map(f: (a: any) => any): any {
-            return new Test(f(this.value))
-          }
-        }`,
-          Parser.parseClasses,
-          [
-            new Domain.Class(
-              new Domain.NamedDoc(
-                "Test",
-                "a class description...",
-                "1.0.0",
-                true,
-                [],
-                undefined
-              ),
-              "export declare class Test<A> { constructor(readonly value: A) }",
-              [
-                new Domain.Method(
-                  new Domain.NamedDoc(
-                    "map",
-                    "a method description...",
-                    "1.1.0",
-                    true,
-                    [],
-                    undefined
-                  ),
-                  ["map(f: (a: number) => number): Test", "map(f: (a: string) => string): Test"]
-                )
-              ],
-              [
-                new Domain.Method(
-                  new Domain.NamedDoc(
-                    "f",
-                    "a static method description...",
-                    "1.1.0",
-                    true,
-                    [],
-                    undefined
-                  ),
-                  ["static f(x: number): number", "static f(x: string): string"]
-                )
-              ],
-              []
-            )
-          ]
-        )
-      })
-
-      it("should ignore internal/ignored methods (#42)", () => {
-        expectSuccess(
-          `/**
-        * a class description...
-        * @since 1.0.0
-        */
-        export class Test<A> {
-          /**
-           * @since 0.0.1
-           * @internal
-           **/
-          private foo(): void {}
-          /**
-           * @since 0.0.1
-           * @ignore
-           **/
-          private bar(): void {}
-        }`,
-          Parser.parseClasses,
-          [
-            new Domain.Class(
-              new Domain.NamedDoc(
-                "Test",
-                "a class description...",
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare class Test<A>",
-              [],
-              [],
-              []
-            )
-          ]
-        )
-      })
-    })
-
-    describe("parseModuleDocumentation", () => {
-      it("should return a description field and a deprecated field", () => {
-        expectSuccess(
-          `/**
-            * Manages the configuration settings for the widget
-            * @deprecated
-            * @since 1.0.0
-            */
-            /**
-             * @since 1.2.0
-             */
-            export const a: number = 1`,
-          Parser.parseModuleDocumentation,
-          new Domain.NamedDoc(
-            "test",
-            "Manages the configuration settings for the widget",
-            "1.0.0",
-            true,
-            [],
-            undefined
-          ),
-          { enforceVersion: false }
-        )
-      })
-
-      it("should return an error when documentation is enforced but no documentation is provided", () => {
-        expectFailure(
-          "export const a: number = 1",
-          Parser.parseModuleDocumentation,
-          [`Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`]
-        )
-      })
-
-      it("should support absence of module documentation when no documentation is enforced", () => {
-        expectSuccess(
-          "export const a: number = 1",
-          Parser.parseModuleDocumentation,
-          new Domain.NamedDoc(
-            "test",
-            undefined,
-            undefined,
-            false,
-            [],
-            undefined
-          ),
-          { enforceVersion: false }
-        )
-      })
-    })
-
-    describe("parseExports", () => {
-      it("should return no `Export`s if the file is empty", () => {
-        expectSuccess("", Parser.parseExports, [])
-      })
-
-      it("should handle renamimg", () => {
-        expectSuccess(
-          `const a = 1;
-          export {
-            /**
-             * @since 1.0.0
-             */
             a as b
           }`,
-          Parser.parseExports,
-          [
-            new Domain.Export(
-              new Domain.NamedDoc(
-                "b",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare const b: 1"
-            )
-          ]
-        )
-      })
+        `## b
 
-      it("should return an `Export`", () => {
-        expectSuccess(
-          `export {
-            /**
-             * description_of_a
-             * @since 1.0.0
-             */
-            a,
-            /**
-             * description_of_b
-             * @since 2.0.0
-             */
-            b
-          }`,
-          Parser.parseExports,
-          [
-            new Domain.Export(
-              new Domain.NamedDoc(
-                "a",
-                "description_of_a",
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare const a: any"
-            ),
-            new Domain.Export(
-              new Domain.NamedDoc(
-                "b",
-                "description_of_b",
-                "2.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare const b: any"
-            )
-          ]
-        )
-      })
+**Signature**
 
-      it("should raise an error if `@since` tag is missing in export", () => {
-        expectFailure("export { a }", Parser.parseExports, [
-          `Missing ${chalk.bold("a")} documentation in ${chalk.bold("test")}`
-        ])
-      })
+\`\`\`ts
+export declare const b: 1
+\`\`\`
 
-      it("should retrieve an export signature", () => {
-        project.createSourceFile("a.ts", `export const a = 1`)
-        const sourceFile = project.createSourceFile(
-          "b.ts",
-          `import { a } from './a'
-          const b = a
-          export {
-            /**
-              * @since 1.0.0
-              */
-            b
-          }`
-        )
-        const actual = Parser.parseExports.pipe(
-          Effect.provideService(Parser.Source, {
-            path: ["test"],
-            sourceFile
-          }),
-          Effect.provideService(Configuration.Configuration, defaultConfig),
-          Effect.runSyncExit
-        )
-        assert.deepStrictEqual(
-          actual,
-          Exit.succeed([
-            new Domain.Export(
-              new Domain.NamedDoc(
-                "b",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export declare const b: 1"
-            )
-          ])
-        )
-      })
-
-      it("parses export *", () => {
-        project.createSourceFile("example.ts", `export const a = 1`, { overwrite: true })
-
-        const sourceFile = project.createSourceFile(
-          "export-all.ts",
-          `
-           /**
-            * @since 1.0.0
-            */
-           export * from './example'
-          `
-        )
-
-        const actual = Parser.parseExports.pipe(
-          Effect.provideService(Parser.Source, {
-            path: ["test"],
-            sourceFile
-          }),
-          Effect.provideService(Configuration.Configuration, defaultConfig),
-          Effect.runSyncExit
-        )
-
-        assert.deepStrictEqual(
-          actual,
-          Exit.succeed([
-            new Domain.Export(
-              new Domain.NamedDoc(
-                "From './example'",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export * from './example'"
-            )
-          ])
-        )
-      })
-
-      it("parse export * as", () => {
-        project.createSourceFile("example.ts", `export const a = 1`, { overwrite: true })
-
-        const sourceFile = project.createSourceFile(
-          "export-all-namespace.ts",
-          `
-            /**
-             * @since 1.0.0
-             */
-            export * as example from './example'
-          `
-        )
-
-        const actual = Parser.parseExports.pipe(
-          Effect.provideService(Parser.Source, {
-            path: ["test"],
-            sourceFile
-          }),
-          Effect.provideService(Configuration.Configuration, defaultConfig),
-          Effect.runSyncExit
-        )
-
-        assert.deepStrictEqual(
-          actual,
-          Exit.succeed([
-            new Domain.Export(
-              new Domain.NamedDoc(
-                "From './example'",
-                undefined,
-                "1.0.0",
-                false,
-                [],
-                undefined
-              ),
-              "export * as example from './example'"
-            )
-          ])
-        )
-      })
+Since v1.0.0`
+      )
     })
 
-    describe("parseModule", () => {
-      it("should raise an error if `@since` tag is missing", async () => {
-        expectFailure(`import * as assert from 'assert'`, Parser.parseModule, [
-          `Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`
-        ])
-      })
+    it("should return an `Export`", async () => {
+      await expectMarkdown(
+        Parser.parseExports,
+        `
+        const a = 1;
+        const b = 2;
+        export {
+          /**
+           * description_of_a
+           * @since 1.0.0
+           */
+          a,
+          /**
+           * description_of_b
+           * @since 2.0.0
+           */
+          b
+        }`,
+        `## a
 
-      it("should not require an example for modules when `enforceExamples` is set to true (#38)", () => {
-        expectSuccess(
-          `/**
-* This is the assert module.
-*
-* @since 1.0.0
-*/
-import * as assert from 'assert'
+description_of_a
 
-/**
- * This is the foo export.
- *
- * @example
- * import { foo } from 'test'
- *
- * console.log(foo)
- *
- * @category foo
- * @since 1.0.0
- */
-export const foo = 'foo'`,
-          Parser.parseModule,
-          new Domain.Module(
+**Signature**
+
+\`\`\`ts
+export declare const a: 1
+\`\`\`
+
+Since v1.0.0
+## b
+
+description_of_b
+
+**Signature**
+
+\`\`\`ts
+export declare const b: 2
+\`\`\`
+
+Since v2.0.0`
+      )
+    })
+
+    it("should raise an error if `@since` tag is missing in export", () => {
+      expectFailure("export { a }", Parser.parseExports, [
+        `Missing ${chalk.bold("a")} documentation in ${chalk.bold("test")}`
+      ])
+    })
+
+    it("should handle a single re-export", () => {
+      project.createSourceFile("a.ts", `export const a = 1`)
+      const sourceFile = project.createSourceFile(
+        "b.ts",
+        `import { a } from './a'
+        const b = a
+        export {
+          /**
+            * @since 1.0.0
+            */
+          b
+        }`
+      )
+      const actual = Parser.parseExports.pipe(
+        Effect.provideService(Parser.Source, makeSourceFromSourceFile(sourceFile)),
+        Effect.provideService(Configuration.Configuration, defaultConfig),
+        Effect.runSyncExit
+      )
+      assert.deepStrictEqual(
+        actual,
+        Exit.succeed([
+          new Domain.Export(
             new Domain.NamedDoc(
-              "test",
-              "This is the assert module.",
+              "b",
+              undefined,
               "1.0.0",
               false,
               [],
               undefined
             ),
-            ["test"],
-            [],
-            [],
-            [],
-            [],
-            [
-              new Domain.Constant(
-                new Domain.NamedDoc(
-                  "foo",
-                  "This is the foo export.",
-                  "1.0.0",
-                  false,
-                  [new Domain.Example(`import { foo } from 'test'\n\nconsole.log(foo)`)],
-                  "foo"
-                ),
-                "export declare const foo: \"foo\""
-              )
-            ],
-            [],
-            []
-          ),
-          { enforceExamples: true }
+            "export declare const b: 1"
+          )
+        ])
+      )
+    })
+
+    it("should handle `export * from ...`", () => {
+      project.createSourceFile("example.ts", `export const a = 1`, { overwrite: true })
+
+      const sourceFile = project.createSourceFile(
+        "export-all.ts",
+        `
+         /**
+          * @since 1.0.0
+          */
+         export * from './example'
+        `
+      )
+
+      const actual = Parser.parseExports.pipe(
+        Effect.provideService(Parser.Source, makeSourceFromSourceFile(sourceFile)),
+        Effect.provideService(Configuration.Configuration, defaultConfig),
+        Effect.runSyncExit
+      )
+
+      assert.deepStrictEqual(
+        actual,
+        Exit.succeed([
+          new Domain.Export(
+            new Domain.NamedDoc(
+              "From './example'",
+              undefined,
+              "1.0.0",
+              false,
+              [],
+              undefined
+            ),
+            "export * from './example'"
+          )
+        ])
+      )
+    })
+
+    it("should handle `export * as ... from ...`", () => {
+      project.createSourceFile("example.ts", `export const a = 1`, { overwrite: true })
+
+      const sourceFile = project.createSourceFile(
+        "export-all-namespace.ts",
+        `
+          /**
+           * @since 1.0.0
+           */
+          export * as example from './example'
+        `
+      )
+
+      const actual = Parser.parseExports.pipe(
+        Effect.provideService(Parser.Source, makeSourceFromSourceFile(sourceFile)),
+        Effect.provideService(Configuration.Configuration, defaultConfig),
+        Effect.runSyncExit
+      )
+
+      assert.deepStrictEqual(
+        actual,
+        Exit.succeed([
+          new Domain.Export(
+            new Domain.NamedDoc(
+              "From './example'",
+              undefined,
+              "1.0.0",
+              false,
+              [],
+              undefined
+            ),
+            "export * as example from './example'"
+          )
+        ])
+      )
+    })
+  })
+
+  describe("parseInterfaces", () => {
+    it("should return no interfaces if the file is empty", async () => {
+      await expectMarkdown(
+        Parser.parseInterfaces,
+        "",
+        ""
+      )
+    })
+
+    it("should return no interfaces if there are no exported interfaces", async () => {
+      await expectMarkdown(
+        Parser.parseInterfaces,
+        "interface A {}",
+        ""
+      )
+    })
+
+    it("should return an interface", async () => {
+      await expectMarkdown(
+        Parser.parseInterfaces,
+        `/**
+      * a description...
+      * @since 1.0.0
+      * @deprecated
+      */
+      export interface A {}`,
+        `## ~~A~~ (interface)
+
+a description...
+
+**Signature**
+
+\`\`\`ts
+export interface A {}
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should return interfaces sorted by name", async () => {
+      await expectMarkdown(
+        Parser.parseInterfaces,
+        `
+      /**
+       * @since 1.0.0
+       */
+      export interface B {}
+      /**
+       * @since 1.0.0
+       */
+      export interface A {}
+      `,
+        `## A (interface)
+
+**Signature**
+
+\`\`\`ts
+export interface A {}
+\`\`\`
+
+Since v1.0.0
+## B (interface)
+
+**Signature**
+
+\`\`\`ts
+export interface B {}
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+  })
+
+  describe("parseNamespaces", () => {
+    it("should return no namespaces if the file is empty", async () => {
+      await expectMarkdown(
+        Parser.parseNamespaces,
+        "",
+        ""
+      )
+    })
+
+    it("should return no namespaces if there are no exported namespaces", async () => {
+      await expectMarkdown(
+        Parser.parseNamespaces,
+        "namespace A {}",
+        ""
+      )
+    })
+
+    it("should raise an error if the namespace is not well documented", () => {
+      expectFailure("export namespace A {}", Parser.parseNamespaces, [
+        `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#A")} documentation`
+      ])
+    })
+
+    it("should parse an empty Namespace", async () => {
+      await expectMarkdown(
+        Parser.parseNamespaces,
+        `
+      /**
+       * @since 1.0.0
+       */
+      export namespace A {}
+      `,
+        `## A (namespace)
+
+Since v1.0.0`
+      )
+    })
+
+    describe("namespace > interfaces", () => {
+      it("should ignore not exported interfaces", async () => {
+        await expectMarkdown(
+          Parser.parseNamespaces,
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          interface C {}
+        }
+        `,
+          `## A (namespace)
+
+Since v1.0.0`
+        )
+      })
+
+      it("should raise an error if the interface is not well documented", () => {
+        expectFailure(
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          export interface B {}
+        }
+        `,
+          Parser.parseNamespaces,
+          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+        )
+      })
+
+      it("should parse an interface", async () => {
+        await expectMarkdown(
+          Parser.parseNamespaces,
+          `
+/**
+ * @since 1.0.0
+ */
+export namespace A {
+  /**
+   * @since 1.0.1
+   */
+  export interface B {
+    readonly d: boolean
+  }
+}
+        `,
+          `## A (namespace)
+
+Since v1.0.0
+
+### B (interface)
+
+**Signature**
+
+\`\`\`ts
+export interface B {
+    readonly d: boolean
+  }
+\`\`\`
+
+Since v1.0.1`
         )
       })
     })
 
-    describe("parseFile", () => {
-      it("should not parse a non-existent file", async () => {
-        const file = new Domain.File("non-existent.ts", "")
-        const project = new ast.Project({ useInMemoryFileSystem: true })
+    describe("namespace > type aliases", () => {
+      it("should ignore not exported type aliases", async () => {
+        await expectMarkdown(
+          Parser.parseNamespaces,
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          type C = number
+        }
+        `,
+          `## A (namespace)
 
-        assert.deepStrictEqual(
-          Parser.parseFile(project)(file).pipe(
-            Effect.provideService(Configuration.Configuration, defaultConfig),
-            Effect.provide(Path.layer),
-            Effect.runSyncExit
-          ),
-          Exit.fail(["Unable to locate file: non-existent.ts"])
+Since v1.0.0`
         )
       })
+
+      it("should raise an error if the type alias is not well documented", () => {
+        expectFailure(
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          export type B = string
+        }
+        `,
+          Parser.parseNamespaces,
+          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+        )
+      })
+
+      it("should parse a type alias", async () => {
+        await expectMarkdown(
+          Parser.parseNamespaces,
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          /**
+           * @since 1.0.1
+           */
+          export type B = string
+        }
+        `,
+          `## A (namespace)
+
+Since v1.0.0
+
+### B (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type B = string
+\`\`\`
+
+Since v1.0.1`
+        )
+      })
+    })
+
+    describe("namespace > nested namespaces", () => {
+      it("should ignore not exported namespaces", async () => {
+        await expectMarkdown(
+          Parser.parseNamespaces,
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          namespace B {}
+        }
+        `,
+          `## A (namespace)
+
+Since v1.0.0`
+        )
+      })
+
+      it("should raise an error if the namespace is not well documented", () => {
+        expectFailure(
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          export namespace B {}
+        }
+        `,
+          Parser.parseNamespaces,
+          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+        )
+      })
+
+      it("should parse a namespace", async () => {
+        await expectMarkdown(
+          Parser.parseNamespaces,
+          `
+        /**
+         * @since 1.0.0
+         */
+        export namespace A {
+          /**
+           * @since 1.0.1
+           */
+          export namespace B {
+            /**
+             * @since 1.0.2
+             */
+            export type C = string
+          }
+        }
+        `,
+          `## A (namespace)
+
+Since v1.0.0
+
+### B (namespace)
+
+Since v1.0.1
+
+#### C (type alias)
+
+**Signature**
+
+\`\`\`ts
+export type C = string
+\`\`\`
+
+Since v1.0.2`
+        )
+      })
+    })
+  })
+
+  describe("parseClasses", () => {
+    it("should raise an error if the class is anonymous", () => {
+      expectFailure(`export class {}`, Parser.parseClasses, [
+        `Missing ${chalk.bold("class name")} in module ${chalk.bold("test")}`
+      ])
+    })
+
+    it("should raise an error if an `@since` tag is missing in a module", () => {
+      expectFailure(`export class MyClass {}`, Parser.parseClasses, [
+        `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass")} documentation`
+      ])
+    })
+
+    it("should ignore internal classes", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `/** @internal */export class MyClass {}`,
+        ""
+      )
+    })
+
+    it("should ignore `@ignore`d classes", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `
+        /** @ignore */
+        export class MyClass {}
+        `,
+        ""
+      )
+    })
+
+    it("should raise an error if `@since` is missing in a property", () => {
+      expectFailure(
+        `/**
+          * @since 1.0.0
+          */
+          export class MyClass<A> {
+            readonly _A!: A
+          }`,
+        Parser.parseClasses,
+        [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass#_A")} documentation`]
+      )
+    })
+
+    it("should skip ignored properties", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `/**
+      * @since 1.0.0
+      */
+      export class MyClass<A> {
+        /**
+         * @ignore
+         */
+        readonly _A!: A
+      }`,
+        `## MyClass (class)
+
+**Signature**
+
+\`\`\`ts
+export declare class MyClass<A>
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should skip the constructor body", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `/**
+      * description
+      * @since 1.0.0
+      */
+      export class C { constructor() {} }`,
+        `## C (class)
+
+description
+
+**Signature**
+
+\`\`\`ts
+export declare class C { constructor() }
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should get a constructor declaration signature", () => {
+      const sourceFile = project.createSourceFile(
+        `test-${testCounter++}.ts`,
+        `
+      /**
+       * @since 1.0.0
+       */
+      declare class A {
+        constructor()
+      }
+    `
+      )
+
+      const constructorDeclaration = sourceFile
+        .getClass("A")!
+        .getConstructors()[0]
+
+      assert.deepStrictEqual(
+        Parser.getConstructorDeclarationSignature(constructorDeclaration),
+        "constructor()"
+      )
+    })
+
+    it("should handle non-readonly properties", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `/**
+      * description
+      * @since 1.0.0
+      */
+      export class C {
+        /**
+         * @since 1.0.0
+         */
+        a: string
+      }`,
+        `## C (class)
+
+description
+
+**Signature**
+
+\`\`\`ts
+export declare class C
+\`\`\`
+
+Since v1.0.0
+
+### a (property)
+
+**Signature**
+
+\`\`\`ts
+a: string
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+
+    it("should return a `Class`", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `/**
+      * a class description...
+      * @since 1.0.0
+      * @deprecated
+      */
+      export class Test {
+        /**
+         * a property...
+         * @since 1.1.0
+         * @deprecated
+         */
+        readonly a: string
+        private readonly b: number
+        /**
+         * a static method description...
+         * @since 1.1.0
+         * @deprecated
+         */
+        static f(): void {}
+        constructor(readonly value: string) { }
+        /**
+         * a method description...
+         * @since 1.1.0
+         * @deprecated
+         */
+        g(a: number, b: number): { [key: string]: number } {
+          return { a, b }
+        }
+      }`,
+        `## ~~Test~~ (class)
+
+a class description...
+
+**Signature**
+
+\`\`\`ts
+export declare class Test { constructor(readonly value: string) }
+\`\`\`
+
+Since v1.0.0
+
+### ~~f~~ (static method)
+
+a static method description...
+
+**Signature**
+
+\`\`\`ts
+static f(): void
+\`\`\`
+
+Since v1.1.0
+
+### ~~g~~ (method)
+
+a method description...
+
+**Signature**
+
+\`\`\`ts
+g(a: number, b: number): { [key: string]: number }
+\`\`\`
+
+Since v1.1.0
+
+### ~~a~~ (property)
+
+a property...
+
+**Signature**
+
+\`\`\`ts
+readonly a: string
+\`\`\`
+
+Since v1.1.0`
+      )
+    })
+
+    it("should handle method overloadings", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `/**
+      * a class description...
+      * @since 1.0.0
+      * @deprecated
+      */
+      export class Test<A> {
+        /**
+         * a static method description...
+         * @since 1.1.0
+         * @deprecated
+         */
+        static f(x: number): number
+        static f(x: string): string
+        static f(x: any): any {}
+        constructor(readonly value: A) { }
+        /**
+         * a method description...
+         * @since 1.1.0
+         * @deprecated
+         */
+        map(f: (a: number) => number): Test
+        map(f: (a: string) => string): Test
+        map(f: (a: any) => any): any {
+          return new Test(f(this.value))
+        }
+      }`,
+        `## ~~Test~~ (class)
+
+a class description...
+
+**Signature**
+
+\`\`\`ts
+export declare class Test<A> { constructor(readonly value: A) }
+\`\`\`
+
+Since v1.0.0
+
+### ~~f~~ (static method)
+
+a static method description...
+
+**Signature**
+
+\`\`\`ts
+static f(x: number): number
+static f(x: string): string
+\`\`\`
+
+Since v1.1.0
+
+### ~~map~~ (method)
+
+a method description...
+
+**Signature**
+
+\`\`\`ts
+map(f: (a: number) => number): Test
+map(f: (a: string) => string): Test
+\`\`\`
+
+Since v1.1.0`
+      )
+    })
+
+    it("should ignore internal/ignored methods (#42)", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `/**
+      * a class description...
+      * @since 1.0.0
+      */
+      export class Test<A> {
+        /**
+         * @since 0.0.1
+         * @internal
+         **/
+        private foo(): void {}
+        /**
+         * @since 0.0.1
+         * @ignore
+         **/
+        private bar(): void {}
+      }`,
+        `## Test (class)
+
+a class description...
+
+**Signature**
+
+\`\`\`ts
+export declare class Test<A>
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+  })
+
+  describe("parseFile", () => {
+    it("should not parse a non-existent file", async () => {
+      const file = new Domain.File("non-existent.ts", "")
+      const project = new ast.Project({ useInMemoryFileSystem: true })
+
+      assert.deepStrictEqual(
+        Parser.parseFile(project)(file).pipe(
+          Effect.provideService(Configuration.Configuration, defaultConfig),
+          Effect.provide(Path.layer),
+          Effect.runSyncExit
+        ),
+        Exit.fail(["Unable to locate file: non-existent.ts"])
+      )
     })
   })
 
   describe("utils", () => {
     describe("getDoc", () => {
       it("should parse comment information", () => {
-        const text = String.stripMargin(
-          `|/**
-           | * description
-           | * @category instances
-           | * @since 1.0.0
-           | */`
-        )
+        const text = `/**
+         * description
+         * @category instances
+         * @since 1.0.0
+         */`
         expectSuccess(
           "",
           Parser.getDoc("name", text),
@@ -1725,12 +1499,10 @@ export const foo = 'foo'`,
       })
 
       it("should fail if an empty comment tag is provided", () => {
-        const text = String.stripMargin(
-          `|/**
-           | * @category
-           | * @since 1.0.0
-           | */`
-        )
+        const text = `/**
+         * @category
+         * @since 1.0.0
+         */`
         expectFailure(
           "",
           Parser.getDoc("name", text),
@@ -1739,12 +1511,10 @@ export const foo = 'foo'`,
       })
 
       it("should require a description if `enforceDescriptions` is set to true", () => {
-        const text = String.stripMargin(
-          `|/**
-           | * @category instances
-           | * @since 1.0.0
-           | */`
-        )
+        const text = `/**
+         * @category instances
+         * @since 1.0.0
+         */`
         expectFailure(
           "",
           Parser.getDoc("name", text),
@@ -1756,13 +1526,11 @@ export const foo = 'foo'`,
       })
 
       it("should require at least one example if `enforceExamples` is set to true", () => {
-        const text = String.stripMargin(
-          `|/**
-           | * description
-           | * @category instances
-           | * @since 1.0.0
-           | */`
-        )
+        const text = `/**
+         * description
+         * @category instances
+         * @since 1.0.0
+         */`
         expectFailure(
           "",
           Parser.getDoc("name", text),
@@ -1774,14 +1542,12 @@ export const foo = 'foo'`,
       })
 
       it("should require at least one non-empty example if `enforceExamples` is set to true", () => {
-        const text = String.stripMargin(
-          `|/**
-           | * description
-           | * @example
-           | * @category instances
-           | * @since 1.0.0
-           | */`
-        )
+        const text = `/**
+         * description
+         * @example
+         * @category instances
+         * @since 1.0.0
+         */`
         expectFailure(
           "",
           Parser.getDoc("name", text),
@@ -1867,6 +1633,118 @@ export const foo = 'foo'`,
           "{ <A, B>(refinementWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
         ),
         "{ <A, B>(refinementWithIndex: RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
+      )
+    })
+  })
+})
+
+describe("Parser-old", () => {
+  describe("parseModuleDocumentation", () => {
+    it("should return a description field and a deprecated field", () => {
+      expectSuccess(
+        `/**
+            * Manages the configuration settings for the widget
+            * @deprecated
+            * @since 1.0.0
+            */
+            /**
+             * @since 1.2.0
+             */
+            export const a: number = 1`,
+        Parser.parseModuleDocumentation,
+        new Domain.NamedDoc(
+          "test",
+          "Manages the configuration settings for the widget",
+          "1.0.0",
+          true,
+          [],
+          undefined
+        ),
+        { enforceVersion: true }
+      )
+    })
+
+    it("should support absence of module documentation when no documentation is enforced", () => {
+      expectSuccess(
+        "export const a: number = 1",
+        Parser.parseModuleDocumentation,
+        new Domain.NamedDoc(
+          "test",
+          undefined,
+          undefined,
+          false,
+          [],
+          undefined
+        ),
+        { enforceVersion: false }
+      )
+    })
+
+    it("should return an error when documentation is enforced but no documentation is provided", () => {
+      expectFailure(
+        "export const a: number = 1",
+        Parser.parseModuleDocumentation,
+        [`Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`]
+      )
+    })
+  })
+
+  describe("parseModule", () => {
+    it("should raise an error if `@since` tag is missing", async () => {
+      expectFailure(`import * as assert from 'assert'`, Parser.parseModule, [
+        `Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`
+      ])
+    })
+
+    it("should not require an example for modules when `enforceExamples` is set to true", async () => {
+      await expectMarkdown(
+        Parser.parseModule,
+        `/**
+* This is the assert module.
+*
+* @since 1.0.0
+*/
+import * as assert from 'assert'
+
+/**
+ * This is the foo export.
+ *
+ * @example
+ * import { foo } from 'test'
+ *
+ * console.log(foo)
+ *
+ * @category foo
+ * @since 1.0.0
+ */
+export const foo = 'foo'`,
+        `## test overview
+
+This is the assert module.
+
+Since v1.0.0
+# foo
+
+
+## foo
+
+This is the foo export.
+
+**Example**
+
+\`\`\`ts
+import { foo } from 'test'
+
+console.log(foo)
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+export declare const foo: "foo"
+\`\`\`
+
+Since v1.0.0`
       )
     })
   })

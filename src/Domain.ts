@@ -51,6 +51,10 @@ export class NamedDoc extends Doc {
  * @since 0.6.0
  */
 export class Module extends NamedDoc {
+  /**
+   * @since 0.6.0
+   */
+  readonly _tag = "Module"
   constructor(
     doc: NamedDoc,
     readonly path: ReadonlyArray<string>,

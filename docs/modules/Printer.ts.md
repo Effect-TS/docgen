@@ -33,11 +33,6 @@ export const a: string = "a"
 └───────┘    └───────┘    └───────┘    └───────┘    └───────┘    └────────┘
 ```
 
-**Throws**
-
-- `Error1` - Description 1
-- `Error2` - Description 2
-
 **Example** (Title 1)
 
 ```ts twoslash title="Title 1"
@@ -54,6 +49,11 @@ console.log(Printer.printModule(m, 0))
 ```js twoslash title="Title 2"
 export const a: string = "b"
 ```
+
+**Throws**
+
+`Error1` - Description 1
+`Error2` - Description 2
 
 **Signature**
 
