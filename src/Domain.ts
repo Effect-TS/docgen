@@ -182,7 +182,8 @@ export class Export {
   constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly signature: string
+    readonly signature: string,
+    readonly namespaceExport: boolean
   ) {}
 }
 

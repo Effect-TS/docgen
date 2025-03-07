@@ -10,6 +10,6 @@ Since v0.6.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 ---

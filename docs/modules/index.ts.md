@@ -10,20 +10,22 @@ Since v0.6.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [utils](#utils)
-  - [From "./Configuration.js"](#from-configurationjs)
-  - [From "./Core.js"](#from-corejs)
-  - [From "./Domain.js"](#from-domainjs)
-  - [From "./Parser.js"](#from-parserjs)
-  - [From "./Printer.js"](#from-printerjs)
+  - [Configuration (namespace export)](#configuration-namespace-export)
+  - [Core (namespace export)](#core-namespace-export)
+  - [Domain (namespace export)](#domain-namespace-export)
+  - [Parser (namespace export)](#parser-namespace-export)
+  - [Printer (namespace export)](#printer-namespace-export)
 
 ---
 
 # utils
 
-## From "./Configuration.js"
+## Configuration (namespace export)
+
+Re-exports all named exports from the "./Configuration.js" module as `Configuration`.
 
 **Signature**
 
@@ -33,7 +35,9 @@ export * as Configuration from "./Configuration.js"
 
 Since v0.6.0
 
-## From "./Core.js"
+## Core (namespace export)
+
+Re-exports all named exports from the "./Core.js" module as `Core`.
 
 **Signature**
 
@@ -43,7 +47,9 @@ export * as Core from "./Core.js"
 
 Since v0.6.0
 
-## From "./Domain.js"
+## Domain (namespace export)
+
+Re-exports all named exports from the "./Domain.js" module as `Domain`.
 
 **Signature**
 
@@ -53,7 +59,9 @@ export * as Domain from "./Domain.js"
 
 Since v0.6.0
 
-## From "./Parser.js"
+## Parser (namespace export)
+
+Re-exports all named exports from the "./Parser.js" module as `Parser`.
 
 **Signature**
 
@@ -63,7 +71,9 @@ export * as Parser from "./Parser.js"
 
 Since v0.6.0
 
-## From "./Printer.js"
+## Printer (namespace export)
+
+Re-exports all named exports from the "./Printer.js" module as `Printer`.
 
 **Signature**
 

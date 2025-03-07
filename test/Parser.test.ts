@@ -735,7 +735,8 @@ Since v2.0.0`
               [],
               undefined
             ),
-            "export declare const b: 1"
+            "export declare const b: 1",
+            false
           )
         ])
       )
@@ -764,15 +765,16 @@ Since v2.0.0`
         actual,
         Exit.succeed([
           new Domain.Export(
-            "From './example'",
+            "'./example'",
             new Domain.Doc(
-              undefined,
+              "Re-exports all named exports from the './example' module.",
               "1.0.0",
               false,
               [],
               undefined
             ),
-            "export * from './example'"
+            "export * from './example'",
+            true
           )
         ])
       )
@@ -801,15 +803,16 @@ Since v2.0.0`
         actual,
         Exit.succeed([
           new Domain.Export(
-            "From './example'",
+            "example",
             new Domain.Doc(
-              undefined,
+              "Re-exports all named exports from the './example' module as `example`.",
               "1.0.0",
               false,
               [],
               undefined
             ),
-            "export * as example from './example'"
+            "export * as example from './example'",
+            true
           )
         ])
       )
@@ -1531,6 +1534,8 @@ export const foo = 'foo'`,
 This is the assert module.
 
 Since v1.0.0
+
+<!-- toc -->
 
 # category
 

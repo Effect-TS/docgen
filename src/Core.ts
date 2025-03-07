@@ -18,7 +18,7 @@ import * as Glob from "glob"
 import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
 import * as Parser from "./Parser.js"
-import { printModule } from "./Printer.js"
+import * as Printer from "./Printer.js"
 
 /**
  * Find all files matching the specified `glob` pattern, optionally excluding
@@ -516,11 +516,26 @@ const getModuleMarkdownOutputPath = (module: Domain.Module) =>
   )
 
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
-  Effect.forEach(modules, (module, order) =>
+  Effect.forEach(modules, (module, i) =>
     Effect.gen(function*() {
       const outputPath = yield* getModuleMarkdownOutputPath(module)
-      const content = yield* printModule(module, order + 1)
-      return new Domain.File(outputPath, content, true)
+      const moduleContent = Printer.printModule(module)
+      const tocgen = yield* Effect.promise(async () => {
+        // @ts-expect-error
+        return await import("@effect/markdown-toc").then((m) => m.default)
+      }).pipe(Effect.orDie)
+      const toc = tocgen(moduleContent, { bullets: "-" }).content
+      const frontMatter = Printer.printFrontMatter(module, i + 1)
+      const content = (frontMatter + "\n\n" + moduleContent).replace(
+        "<!-- toc -->",
+        `---
+## Exports Grouped by Category
+${toc}
+---`
+      )
+
+      const prettified = yield* Printer.prettify(content)
+      return new Domain.File(outputPath, prettified, true)
     }))
 
 const writeMarkdown = (files: ReadonlyArray<Domain.File>) =>

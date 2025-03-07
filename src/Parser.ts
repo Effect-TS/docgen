@@ -7,7 +7,7 @@ import * as doctrine from "doctrine"
 import * as Array from "effect/Array"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
-import { flow, pipe } from "effect/Function"
+import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as Record from "effect/Record"
@@ -479,7 +479,8 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
         doc.examples,
         doc.category
       ),
-      signature
+      signature,
+      false
     )
   })
 
@@ -500,17 +501,21 @@ const parseExportStar = (
     }
     const commentRange = ocommentRange.value
     const text = commentRange.getText()
-    const doc = yield* getDoc(name, text)
+    const doc = yield* getDoc(namespace ?? name, text)
     return new Domain.Export(
-      `From ${name}`,
+      namespace ?? name,
       new Domain.Doc(
-        doc.description,
+        doc.description ??
+          `Re-exports all named exports from the ${name} module${
+            namespace === undefined ? "" : ` as \`${namespace}\``
+          }.`,
         doc.since,
         doc.deprecated,
         doc.examples,
         doc.category
       ),
-      signature
+      signature,
+      true
     )
   })
 
@@ -934,12 +939,7 @@ export const parseFiles = (files: ReadonlyArray<Domain.File>) =>
       pipe(
         files,
         Effect.validateAll(parseFile(project)),
-        Effect.map(
-          flow(
-            Array.filter((module) => !module.doc.deprecated),
-            sortModulesByPath
-          )
-        )
+        Effect.map(sortModulesByPath)
       )
     )
   )

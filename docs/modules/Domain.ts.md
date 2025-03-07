@@ -10,7 +10,7 @@ Since v0.6.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [model](#model)
   - [Class (class)](#class-class)
@@ -152,7 +152,8 @@ export {
 export declare class Export { constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly signature: string
+    readonly signature: string,
+    readonly namespaceExport: boolean
   ) }
 ```
 

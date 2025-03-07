@@ -4,10 +4,10 @@
 import * as Array from "effect/Array"
 import * as Effect from "effect/Effect"
 import { identity, pipe } from "effect/Function"
-import * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as Record from "effect/Record"
 import * as String from "effect/String"
+import * as NodePath from "node:path"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain.js"
 
@@ -32,22 +32,11 @@ const Markdown = {
   strikethrough: (content: string) => `~~${content}~~`
 }
 
-const printTitle = (s: string, deprecated: boolean, type?: string): string => {
-  const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
-  const title = deprecated ? Markdown.strikethrough(name) : name
-  return Option.fromNullable(type).pipe(
-    Option.match({
-      onNone: () => title,
-      onSome: (t) => title + ` ${t}`
-    })
-  )
-}
-
-const printOptionalString = (s: string | undefined): string => {
-  if (s === undefined) {
+const printOptionalDescription = (description: string | undefined): string => {
+  if (description === undefined) {
     return ""
   }
-  return `\n\n${s}`
+  return `\n\n${description}`
 }
 
 const printArray = (title: string, ss?: ReadonlyArray<string>): string => {
@@ -57,11 +46,11 @@ const printArray = (title: string, ss?: ReadonlyArray<string>): string => {
   return `\n\n${Markdown.bold(title)}\n\n${ss.join("\n")}`
 }
 
-const printFence = (s: string): string => {
-  if (s.startsWith("```ts") || s.startsWith("~~~ts")) {
-    return s
+const printFence = (code: string): string => {
+  if (code.startsWith("```ts") || code.startsWith("~~~ts")) {
+    return code
   }
-  return "```ts\n" + s + "\n```"
+  return "```ts\n" + code + "\n```"
 }
 
 const printSignaturesArray = (signatures?: ReadonlyArray<string>): string => {
@@ -98,14 +87,20 @@ const printHeaderByIndentation = (indentation: number) => {
   }
 }
 
+const printTitle = (s: string, deprecated: boolean, postfix?: string): string => {
+  const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
+  const title = deprecated ? Markdown.strikethrough(name) : name
+  return postfix === undefined ? title : title + ` ${postfix}`
+}
+
 const printModel = (name: string, doc: Domain.Doc, options: {
   readonly indentation?: number
-  readonly postfix?: string
-  readonly signatures?: ReadonlyArray<string>
-  readonly throws?: ReadonlyArray<string>
+  readonly postfix?: string | undefined
+  readonly signatures?: ReadonlyArray<string> | undefined
+  readonly throws?: ReadonlyArray<string> | undefined
 }): string => {
   return printHeaderByIndentation(options.indentation ?? 0) + printTitle(name, doc.deprecated, options.postfix) +
-    printOptionalString(doc.description) +
+    printOptionalDescription(doc.description) +
     printThrowsArray(options.throws) +
     printExamplesArray(doc.examples.map(({ body }) => body)) +
     printSignaturesArray(options.signatures) +
@@ -136,24 +131,14 @@ const printProperty = (model: Domain.Property): string => {
   })
 }
 
-const printModuleDescription = (module: Domain.Module): string => {
-  return printModel(module.name, module.doc, {
-    postfix: "overview"
-  })
-}
-
-const printMeta = (title: string, order: number): string => {
-  return [
-    "---",
-    `\n`,
-    `title: ${title}`,
-    `\n`,
-    `nav_order: ${order}`,
-    `\n`,
-    `parent: Modules`,
-    `\n`,
-    "---"
-  ].join("")
+/** @internal */
+export const printFrontMatter = (module: Domain.Module, order: number): string => {
+  const filename = NodePath.basename(module.path.join(NodePath.sep))
+  return `---
+title: ${filename}
+nav_order: ${order}
+parent: Modules
+---`
 }
 
 const addLineBreak = (i: number): string => i === 0 ? "\n\n" : ""
@@ -180,6 +165,7 @@ export const printConstant = (model: Domain.Constant): string => {
 /** @internal */
 export const printExport = (model: Domain.Export): string => {
   return printModel(model.name, model.doc, {
+    postfix: model.namespaceExport ? "(namespace export)" : undefined,
     signatures: [model.signature]
   })
 }
@@ -239,10 +225,8 @@ export const print = (p: Printable): string => {
       return printTypeAlias(p, 0)
     case "Namespace":
       return printNamespace(p, 0)
-    case "Module": {
-      const { content, description } = getModuleComponents(p)
-      return description + content
-    }
+    case "Module":
+      return printModule(p)
   }
 }
 
@@ -264,8 +248,46 @@ const byCategory = Order.mapInput(
   ([category]: [string, ...Array<unknown>]) => category
 )
 
-const getModuleComponents = (module: Domain.Module) => {
-  const description = printModuleDescription(module) + "\n"
+/**
+ * Description...
+ *
+ * ```ts
+ * export const a: string = "a"
+ * ```
+ *
+ * ```text
+ * ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌────────┐
+ * │ input │───►│ func1 │───►│ func2 │───►│  ...  │───►│ funcN │───►│ result │
+ * └───────┘    └───────┘    └───────┘    └───────┘    └───────┘    └────────┘
+ * ```
+ *
+ * **Example** (Title 1)
+ *
+ * ```ts twoslash title="Title 1"
+ * import { Domain, Printer } from "@effect/docgen"
+ * import { Option } from "effect"
+ *
+ * const doc = new Domain.Doc(undefined, "1.0.0", false, [], undefined)
+ * const m = new Domain.Module("tests", doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
+ * console.log(Printer.printModule(m))
+ * ```
+ *
+ * **Example** (Title 2)
+ *
+ * ~~~js twoslash title="Title 2"
+ * export const a: string = "b"
+ * ~~~
+ *
+ * @throws `Error1` - Description 1
+ * @throws `Error2` - Description 2
+ *
+ * @category printers
+ * @since 0.6.0
+ */
+export const printModule = (module: Domain.Module) => {
+  const description = printModel(module.name, module.doc, {
+    postfix: "overview"
+  })
 
   const content = pipe(
     getPrintables(module),
@@ -289,76 +311,13 @@ const getModuleComponents = (module: Domain.Module) => {
     )
   ).join("\n")
 
-  return { description, content }
+  return `
+${description}
+
+<!-- toc -->
+${content}
+`
 }
-
-/**
- * Description...
- *
- * ```ts
- * export const a: string = "a"
- * ```
- *
- * ```text
- * ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌────────┐
- * │ input │───►│ func1 │───►│ func2 │───►│  ...  │───►│ funcN │───►│ result │
- * └───────┘    └───────┘    └───────┘    └───────┘    └───────┘    └────────┘
- * ```
- *
- * **Example** (Title 1)
- *
- * ```ts twoslash title="Title 1"
- * import { Domain, Printer } from "@effect/docgen"
- * import { Option } from "effect"
- *
- * const doc = new Domain.Doc(undefined, "1.0.0", false, [], undefined)
- * const m = new Domain.Module("tests", doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
- * console.log(Printer.printModule(m, 0))
- * ```
- *
- * **Example** (Title 2)
- *
- * ~~~js twoslash title="Title 2"
- * export const a: string = "b"
- * ~~~
- *
- * @throws `Error1` - Description 1
- * @throws `Error2` - Description 2
- *
- * @category printers
- * @since 0.6.0
- */
-export const printModule = (module: Domain.Module, order: number): Effect.Effect<string> =>
-  Effect.gen(function*() {
-    const header = printMeta(module.path.slice(1).join("/"), order)
-
-    const { content, description } = getModuleComponents(module)
-
-    const toc = yield* Effect.tryPromise({
-      try: () => {
-        // @ts-ignore
-        return import("@effect/markdown-toc").then((m) => m.default)
-      },
-      catch: identity
-    }).pipe(Effect.orDie)
-
-    const tableOfContents = (content: string) =>
-      "<h2 class=\"text-delta\">Table of contents</h2>\n\n"
-      + toc(content, {
-        bullets: "-"
-      }).content
-      + "\n\n"
-
-    const raw = [
-      header,
-      description,
-      "---\n",
-      tableOfContents(content),
-      "---\n",
-      content
-    ].join("\n")
-    return yield* prettify(raw)
-  })
 
 const defaultPrettierOptions: Prettier.Options = {
   parser: "markdown",

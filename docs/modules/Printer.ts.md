@@ -10,7 +10,7 @@ Since v0.6.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [printers](#printers)
   - [printModule](#printmodule)
@@ -41,7 +41,7 @@ import { Option } from "effect"
 
 const doc = new Domain.Doc(undefined, "1.0.0", false, [], undefined)
 const m = new Domain.Module("tests", doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
-console.log(Printer.printModule(m, 0))
+console.log(Printer.printModule(m))
 ```
 
 **Example** (Title 2)
@@ -58,7 +58,7 @@ export const a: string = "b"
 **Signature**
 
 ```ts
-export declare const printModule: (module: Domain.Module, order: number) => Effect.Effect<string>
+export declare const printModule: (module: Domain.Module) => string
 ```
 
 Since v0.6.0
