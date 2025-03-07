@@ -14,4 +14,6 @@
 - Remove File module and integrate File class into Domain module
 - Move DocgenError from Error module to Domain module
 - Integrate Process service into Domain module
+- Rename Markdown module to Printer and update related imports
+- Remove Option usage in Domain
 - Remove NamedDoc class and update Domain model constructors

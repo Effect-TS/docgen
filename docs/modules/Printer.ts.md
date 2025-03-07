@@ -3,6 +3,7 @@ title: Printer.ts
 nav_order: 7
 parent: Modules
 ---
+
 ## Printer overview
 
 Since v0.6.0
@@ -14,9 +15,7 @@ Since v0.6.0
 - [printers](#printers)
   - [printModule](#printmodule)
 
-
 ---
-
 
 # printers
 
@@ -47,9 +46,9 @@ console.log(Printer.printModule(m, 0))
 
 **Example** (Title 2)
 
-~~~js twoslash title="Title 2"
+```js twoslash title="Title 2"
 export const a: string = "b"
-~~~
+```
 
 **Throws**
 

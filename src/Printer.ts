@@ -8,6 +8,7 @@ import * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as Record from "effect/Record"
 import * as String from "effect/String"
+import * as Prettier from "prettier"
 import type * as Domain from "./Domain.js"
 
 /** @internal */
@@ -356,6 +357,20 @@ export const printModule = (module: Domain.Module, order: number): Effect.Effect
       "---\n",
       content
     ].join("\n")
-    return raw
-    // return yield* prettify(raw)
+    return yield* prettify(raw)
   })
+
+const defaultPrettierOptions: Prettier.Options = {
+  parser: "markdown",
+  semi: false,
+  singleQuote: false,
+  printWidth: 120,
+  trailingComma: "none"
+}
+
+/** @internal */
+export const prettify = (s: string): Effect.Effect<string> =>
+  Effect.tryPromise({
+    try: () => Prettier.format(s, defaultPrettierOptions),
+    catch: identity
+  }).pipe(Effect.orDie)

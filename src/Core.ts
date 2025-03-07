@@ -120,7 +120,7 @@ const typeCheckAndRunExamples = (modules: ReadonlyArray<Domain.Module>) =>
         yield* Effect.logInfo("Running examples...")
         yield* runTsxOnExamples
       } else {
-        yield* Effect.logInfo("Skipping running examples")
+        yield* Effect.logInfo(chalk.gray("Skipping running examples"))
       }
     } else {
       yield* Effect.logInfo("No examples found.")

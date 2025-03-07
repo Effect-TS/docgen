@@ -3,6 +3,7 @@ title: Domain.ts
 nav_order: 4
 parent: Modules
 ---
+
 ## Domain overview
 
 Since v0.6.0
@@ -13,27 +14,27 @@ Since v0.6.0
 
 - [model](#model)
   - [Class (class)](#class-class)
-    - [_tag (property)](#_tag-property)
+    - [\_tag (property)](#_tag-property)
   - [Constant (class)](#constant-class)
-    - [_tag (property)](#_tag-property-1)
+    - [\_tag (property)](#_tag-property-1)
   - [Doc (class)](#doc-class)
   - [DocgenError (class)](#docgenerror-class)
   - [Example (class)](#example-class)
   - [Export (class)](#export-class)
-    - [_tag (property)](#_tag-property-2)
+    - [\_tag (property)](#_tag-property-2)
   - [File (class)](#file-class)
   - [Function (class)](#function-class)
-    - [_tag (property)](#_tag-property-3)
+    - [\_tag (property)](#_tag-property-3)
   - [Interface (class)](#interface-class)
-    - [_tag (property)](#_tag-property-4)
+    - [\_tag (property)](#_tag-property-4)
   - [Method (class)](#method-class)
   - [Module (class)](#module-class)
-    - [_tag (property)](#_tag-property-5)
+    - [\_tag (property)](#_tag-property-5)
   - [Namespace (class)](#namespace-class)
-    - [_tag (property)](#_tag-property-6)
+    - [\_tag (property)](#_tag-property-6)
   - [Property (class)](#property-class)
   - [TypeAlias (class)](#typealias-class)
-    - [_tag (property)](#_tag-property-7)
+    - [\_tag (property)](#_tag-property-7)
 - [service](#service)
   - [Process (class)](#process-class)
 - [sorting](#sorting)
@@ -42,9 +43,7 @@ Since v0.6.0
   - [DocgenErrorTypeId](#docgenerrortypeid)
   - [DocgenErrorTypeId (type alias)](#docgenerrortypeid-type-alias)
 
-
 ---
-
 
 # model
 
@@ -65,7 +64,7 @@ export declare class Class { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -74,6 +73,7 @@ readonly _tag: "Class"
 ```
 
 Since v0.6.0
+
 ## Constant (class)
 
 **Signature**
@@ -88,7 +88,7 @@ export declare class Constant { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -97,6 +97,7 @@ readonly _tag: "Constant"
 ```
 
 Since v0.6.0
+
 ## Doc (class)
 
 **Signature**
@@ -112,6 +113,7 @@ export declare class Doc { constructor(
 ```
 
 Since v0.6.0
+
 ## DocgenError (class)
 
 **Signature**
@@ -121,6 +123,7 @@ export declare class DocgenError
 ```
 
 Since v0.6.0
+
 ## Example (class)
 
 **Signature**
@@ -130,6 +133,7 @@ export declare class Example { constructor(readonly body: string) }
 ```
 
 Since v0.6.0
+
 ## Export (class)
 
 These are manual exports, like:
@@ -154,7 +158,7 @@ export declare class Export { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -163,6 +167,7 @@ readonly _tag: "Export"
 ```
 
 Since v0.6.0
+
 ## File (class)
 
 Represents a file which can be optionally overwriteable.
@@ -178,6 +183,7 @@ export declare class File { constructor(
 ```
 
 Since v0.6.0
+
 ## Function (class)
 
 **Signature**
@@ -193,7 +199,7 @@ export declare class Function { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -202,6 +208,7 @@ readonly _tag: "Function"
 ```
 
 Since v0.6.0
+
 ## Interface (class)
 
 **Signature**
@@ -216,7 +223,7 @@ export declare class Interface { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -225,6 +232,7 @@ readonly _tag: "Interface"
 ```
 
 Since v0.6.0
+
 ## Method (class)
 
 **Signature**
@@ -238,6 +246,7 @@ export declare class Method { constructor(
 ```
 
 Since v0.6.0
+
 ## Module (class)
 
 **Signature**
@@ -259,7 +268,7 @@ export declare class Module { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -268,6 +277,7 @@ readonly _tag: "Module"
 ```
 
 Since v0.6.0
+
 ## Namespace (class)
 
 **Signature**
@@ -284,7 +294,7 @@ export declare class Namespace { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -293,6 +303,7 @@ readonly _tag: "Namespace"
 ```
 
 Since v0.6.0
+
 ## Property (class)
 
 **Signature**
@@ -306,6 +317,7 @@ export declare class Property { constructor(
 ```
 
 Since v0.6.0
+
 ## TypeAlias (class)
 
 **Signature**
@@ -320,7 +332,7 @@ export declare class TypeAlias { constructor(
 
 Since v0.6.0
 
-### _tag (property)
+### \_tag (property)
 
 **Signature**
 
@@ -370,6 +382,7 @@ export declare const DocgenErrorTypeId: typeof DocgenErrorTypeId
 ```
 
 Since v0.6.0
+
 ## DocgenErrorTypeId (type alias)
 
 **Signature**
