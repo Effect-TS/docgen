@@ -4,7 +4,7 @@ import * as Parser from "@effect/docgen/Parser"
 import * as Printer from "@effect/docgen/Printer"
 import { Path } from "@effect/platform"
 import chalk from "chalk"
-import { Effect, Exit } from "effect"
+import { Effect, Exit, Predicate } from "effect"
 import * as assert from "node:assert/strict"
 import * as ast from "ts-morph"
 import { describe, it } from "vitest"
@@ -32,16 +32,12 @@ const defaultConfig: Configuration.ConfigurationShape = {
   examplesCompilerOptions: {}
 }
 
-const makeSourceFromString = (sourceText: string) =>
+const makeSource = (source: string | ast.SourceFile) =>
   Parser.Source.of({
     path: ["test"],
-    sourceFile: project.createSourceFile(`test-${testCounter++}.ts`, sourceText)
-  })
-
-const makeSourceFromSourceFile = (sourceFile: ast.SourceFile) =>
-  Parser.Source.of({
-    path: ["test"],
-    sourceFile
+    sourceFile: Predicate.isString(source)
+      ? project.createSourceFile(`test-${testCounter++}.ts`, source)
+      : source
   })
 
 const expectFailure = <A, E>(
@@ -52,29 +48,13 @@ const expectFailure = <A, E>(
 ) => {
   assert.deepStrictEqual(
     eff.pipe(
-      Effect.provideService(Parser.Source, makeSourceFromString(sourceText)),
+      Effect.provideService(Parser.Source, makeSource(sourceText)),
       Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
       Effect.provide(Path.layer),
       Effect.runSyncExit
     ),
     Exit.fail(failure)
   )
-}
-
-const expectSuccess = <A, E>(
-  sourceText: string,
-  eff: Effect.Effect<A, E, Parser.Source | Configuration.Configuration | Path.Path>,
-  expected: A,
-  config?: Partial<Configuration.ConfigurationShape>
-) => {
-  const exit = eff.pipe(
-    Effect.provideService(Parser.Source, makeSourceFromString(sourceText)),
-    Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
-    Effect.provide(Path.layer),
-    Effect.runSyncExit
-  )
-  assert.ok(exit._tag === "Success")
-  assert.deepStrictEqual(exit.value, expected)
 }
 
 const print = (printables: ReadonlyArray<Printer.Printable>) => {
@@ -90,14 +70,15 @@ const expectMarkdown = async <E>(
     Parser.Source | Configuration.Configuration | Path.Path
   >,
   sourceText: string,
-  expected: string
+  expected: string,
+  config?: Partial<Configuration.ConfigurationShape>
 ) => {
   const exit = await eff.pipe(
     Effect.flatMap((a) => {
       return print(Array.isArray(a) ? a : [a])
     }),
-    Effect.provideService(Parser.Source, makeSourceFromString(sourceText)),
-    Effect.provideService(Configuration.Configuration, defaultConfig),
+    Effect.provideService(Parser.Source, makeSource(sourceText)),
+    Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
     Effect.provide(Path.layer),
     Effect.runPromiseExit
   )
@@ -738,7 +719,7 @@ Since v2.0.0`
         }`
       )
       const actual = Parser.parseExports.pipe(
-        Effect.provideService(Parser.Source, makeSourceFromSourceFile(sourceFile)),
+        Effect.provideService(Parser.Source, makeSource(sourceFile)),
         Effect.provideService(Configuration.Configuration, defaultConfig),
         Effect.runSyncExit
       )
@@ -774,7 +755,7 @@ Since v2.0.0`
       )
 
       const actual = Parser.parseExports.pipe(
-        Effect.provideService(Parser.Source, makeSourceFromSourceFile(sourceFile)),
+        Effect.provideService(Parser.Source, makeSource(sourceFile)),
         Effect.provideService(Configuration.Configuration, defaultConfig),
         Effect.runSyncExit
       )
@@ -811,7 +792,7 @@ Since v2.0.0`
       )
 
       const actual = Parser.parseExports.pipe(
-        Effect.provideService(Parser.Source, makeSourceFromSourceFile(sourceFile)),
+        Effect.provideService(Parser.Source, makeSource(sourceFile)),
         Effect.provideService(Configuration.Configuration, defaultConfig),
         Effect.runSyncExit
       )
@@ -1506,207 +1487,7 @@ Since v1.0.0`
     })
   })
 
-  describe("utils", () => {
-    describe("getDoc", () => {
-      it("should parse comment information", () => {
-        const text = `/**
-         * description
-         * @category instances
-         * @since 1.0.0
-         */`
-        expectSuccess(
-          "",
-          Parser.getDoc("name", text),
-          new Domain.Doc(
-            "description",
-            "1.0.0",
-            false,
-            [],
-            "instances"
-          )
-        )
-      })
-
-      it("should fail if an empty comment tag is provided", () => {
-        const text = `/**
-         * @category
-         * @since 1.0.0
-         */`
-        expectFailure(
-          "",
-          Parser.getDoc("name", text),
-          `Missing ${chalk.bold("@category")} tag in ${chalk.bold("test#name")} documentation`
-        )
-      })
-
-      it("should require a description if `enforceDescriptions` is set to true", () => {
-        const text = `/**
-         * @category instances
-         * @since 1.0.0
-         */`
-        expectFailure(
-          "",
-          Parser.getDoc("name", text),
-          `Missing ${chalk.bold("description")} in ${chalk.bold("test#name")} documentation`,
-          {
-            enforceDescriptions: true
-          }
-        )
-      })
-
-      it("should require at least one example if `enforceExamples` is set to true", () => {
-        const text = `/**
-         * description
-         * @category instances
-         * @since 1.0.0
-         */`
-        expectFailure(
-          "",
-          Parser.getDoc("name", text),
-          `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
-          {
-            enforceExamples: true
-          }
-        )
-      })
-
-      it("should require at least one non-empty example if `enforceExamples` is set to true", () => {
-        const text = `/**
-         * description
-         * @example
-         * @category instances
-         * @since 1.0.0
-         */`
-        expectFailure(
-          "",
-          Parser.getDoc("name", text),
-          `Missing ${chalk.bold("@example")} tag in ${chalk.bold("test#name")} documentation`,
-          {
-            enforceExamples: true
-          }
-        )
-      })
-
-      it("should allow no since tag if `enforceVersion` is set to false", () => {
-        const text = `/**
-* description
-* @category instances
-*/`
-
-        expectSuccess(
-          "",
-          Parser.getDoc("name", text),
-          new Domain.Doc(
-            "description",
-            undefined,
-            false,
-            [],
-            "instances"
-          ),
-          { enforceVersion: false }
-        )
-      })
-    })
-
-    it("parseComment", () => {
-      assert.deepStrictEqual(Parser.parseComment(""), {
-        description: undefined,
-        tags: {}
-      })
-
-      assert.deepStrictEqual(Parser.parseComment("/** description */"), {
-        description: "description",
-        tags: {}
-      })
-
-      assert.deepStrictEqual(
-        Parser.parseComment("/** description\n * @since 1.0.0\n */"),
-        {
-          description: "description",
-          tags: {
-            since: ["1.0.0"]
-          }
-        }
-      )
-
-      assert.deepStrictEqual(
-        Parser.parseComment("/** description\n * @deprecated\n */"),
-        {
-          description: "description",
-          tags: {
-            deprecated: [undefined]
-          }
-        }
-      )
-
-      assert.deepStrictEqual(
-        Parser.parseComment("/** description\n * @category instance\n */"),
-        {
-          description: "description",
-          tags: {
-            category: ["instance"]
-          }
-        }
-      )
-    })
-
-    it("stripImportTypes", () => {
-      assert.deepStrictEqual(
-        Parser.stripImportTypes(
-          "{ <E, A, B>(refinement: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/function\").Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
-        ),
-        "{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
-      )
-      assert.deepStrictEqual(
-        Parser.stripImportTypes(
-          "{ <A, B>(refinementWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
-        ),
-        "{ <A, B>(refinementWithIndex: RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
-      )
-    })
-  })
-})
-
-describe("Parser-old", () => {
   describe("parseModuleDocumentation", () => {
-    it("should return a description field and a deprecated field", () => {
-      expectSuccess(
-        `/**
-            * Manages the configuration settings for the widget
-            * @deprecated
-            * @since 1.0.0
-            */
-            /**
-             * @since 1.2.0
-             */
-            export const a: number = 1`,
-        Parser.parseModuleDocumentation,
-        new Domain.Doc(
-          "Manages the configuration settings for the widget",
-          "1.0.0",
-          true,
-          [],
-          undefined
-        ),
-        { enforceVersion: true }
-      )
-    })
-
-    it("should support absence of module documentation when no documentation is enforced", () => {
-      expectSuccess(
-        "export const a: number = 1",
-        Parser.parseModuleDocumentation,
-        new Domain.Doc(
-          undefined,
-          undefined,
-          false,
-          [],
-          undefined
-        ),
-        { enforceVersion: false }
-      )
-    })
-
     it("should return an error when documentation is enforced but no documentation is provided", () => {
       expectFailure(
         "export const a: number = 1",
@@ -1772,6 +1553,65 @@ export declare const foo: "foo"
 \`\`\`
 
 Since v1.0.0`
+      )
+    })
+  })
+
+  describe("utils", () => {
+    it("parseComment", () => {
+      assert.deepStrictEqual(Parser.parseComment(""), {
+        description: undefined,
+        tags: {}
+      })
+
+      assert.deepStrictEqual(Parser.parseComment("/** description */"), {
+        description: "description",
+        tags: {}
+      })
+
+      assert.deepStrictEqual(
+        Parser.parseComment("/** description\n * @since 1.0.0\n */"),
+        {
+          description: "description",
+          tags: {
+            since: ["1.0.0"]
+          }
+        }
+      )
+
+      assert.deepStrictEqual(
+        Parser.parseComment("/** description\n * @deprecated\n */"),
+        {
+          description: "description",
+          tags: {
+            deprecated: [undefined]
+          }
+        }
+      )
+
+      assert.deepStrictEqual(
+        Parser.parseComment("/** description\n * @category instance\n */"),
+        {
+          description: "description",
+          tags: {
+            category: ["instance"]
+          }
+        }
+      )
+    })
+
+    it("stripImportTypes", () => {
+      assert.deepStrictEqual(
+        Parser.stripImportTypes(
+          "{ <E, A, B>(refinement: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/function\").Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
+        ),
+        "{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
+      )
+      assert.deepStrictEqual(
+        Parser.stripImportTypes(
+          "{ <A, B>(refinementWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
+        ),
+        "{ <A, B>(refinementWithIndex: RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
       )
     })
   })

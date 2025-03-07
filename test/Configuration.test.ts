@@ -10,7 +10,6 @@ import * as Path from "@effect/platform/Path"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
-import { hole } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import * as assert from "node:assert/strict"
@@ -49,36 +48,9 @@ const TestFileSystem = Layer.effect(
     const exists: FileSystem.FileSystem["exists"] = (filePath) =>
       Effect.succeed(path.basename(filePath) === "docgen.json")
 
-    return FileSystem.FileSystem.of({
-      watch: hole,
-      access: hole,
-      chmod: hole,
-      chown: hole,
-      copy: hole,
-      copyFile: hole,
+    return FileSystem.makeNoop({
       exists,
-      link: hole,
-      makeDirectory: hole,
-      makeTempDirectory: hole,
-      makeTempDirectoryScoped: hole,
-      makeTempFile: hole,
-      makeTempFileScoped: hole,
-      open: hole,
-      readDirectory: hole,
-      readFile: hole,
-      readFileString,
-      readLink: hole,
-      realPath: hole,
-      remove: hole,
-      rename: hole,
-      sink: hole,
-      stat: hole,
-      stream: hole,
-      symlink: hole,
-      truncate: hole,
-      utimes: hole,
-      writeFile: hole,
-      writeFileString: hole
+      readFileString
     })
   })
 ).pipe(Layer.provide(Path.layer))
