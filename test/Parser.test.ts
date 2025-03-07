@@ -140,6 +140,35 @@ Since v1.2.0`
       )
     })
 
+    it("throws", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @throws \`Error1\` - Description 1
+         * @throws \`Error2\` - Description 2
+         * @since 1.2.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
+
+description...
+
+**Throws**
+
+\`Error1\` - Description 1
+\`Error2\` - Description 2
+
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.2.0`
+      )
+    })
+
     it("example without fence", async () => {
       await expectMarkdown(
         Parser.parseFunctions,
@@ -1722,8 +1751,6 @@ This is the assert module.
 
 Since v1.0.0
 # foo
-
-
 ## foo
 
 This is the foo export.
