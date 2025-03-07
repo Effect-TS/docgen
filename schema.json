@@ -64,11 +64,9 @@
               "type": "object",
               "required": [],
               "properties": {},
-              "patternProperties": {
-                "": {
-                  "$id": "/schemas/unknown",
-                  "title": "unknown"
-                }
+              "additionalProperties": {
+                "$id": "/schemas/unknown",
+                "title": "unknown"
               }
             }
           ],
@@ -84,11 +82,9 @@
               "type": "object",
               "required": [],
               "properties": {},
-              "patternProperties": {
-                "": {
-                  "$id": "/schemas/unknown",
-                  "title": "unknown"
-                }
+              "additionalProperties": {
+                "$id": "/schemas/unknown",
+                "title": "unknown"
               }
             }
           ],
