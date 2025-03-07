@@ -197,8 +197,8 @@ const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
     const doc = yield* getDoc(name, text)
     const signature = id.getText()
     return new Domain.Interface(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -287,8 +287,8 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
       Option.getOrElse(() => [])
     )
     return new Domain.Function(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -318,8 +318,8 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
       Option.getOrElse(() => [])
     )
     return new Domain.Function(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -376,8 +376,8 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
     const doc = yield* getDoc(name, text)
     const signature = ta.getText()
     return new Domain.TypeAlias(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -416,8 +416,8 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
     const type = stripImportTypes(vd.getType().getText(vd))
     const signature = `export declare const ${name}: ${type}`
     return new Domain.Constant(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -471,8 +471,8 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
     const doc = yield* getDoc(name, text)
     const signature = `export declare const ${name}: ${type}`
     return new Domain.Export(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -502,8 +502,8 @@ const parseExportStar = (
     const text = commentRange.getText()
     const doc = yield* getDoc(name, text)
     return new Domain.Export(
-      new Domain.NamedDoc(
-        `From ${name}`,
+      `From ${name}`,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -559,8 +559,8 @@ const parseModuleDeclaration = (
       const typeAliases = yield* getTypeAliases
       const namespaces = yield* getNamespaces
       return new Domain.Namespace(
-        new Domain.NamedDoc(
-          name,
+        name,
+        new Domain.Doc(
           info.description,
           info.since,
           info.deprecated,
@@ -640,8 +640,8 @@ const parseMethod = (md: ast.MethodDeclaration) =>
       )
       return Option.some(
         new Domain.Method(
-          new Domain.NamedDoc(
-            name,
+          name,
+          new Domain.Doc(
             doc.description,
             doc.since,
             doc.deprecated,
@@ -672,8 +672,8 @@ const parseProperty = (classname: string) => (pd: ast.PropertyDeclaration) =>
     )
     const signature = `${readonly}${name}: ${type}`
     return new Domain.Property(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -762,8 +762,8 @@ const parseClass = (c: ast.ClassDeclaration) =>
     )
     const properties = yield* parseProperties(name, c)
     return new Domain.Class(
-      new Domain.NamedDoc(
-        name,
+      name,
+      new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -801,8 +801,6 @@ export const parseClasses = Effect.gen(function*() {
 export const parseModuleDocumentation = Effect.gen(function*() {
   const config = yield* Configuration.Configuration
   const source = yield* Source
-  const path = yield* Path.Path
-  const name = path.parse(Array.lastNonEmpty(source.path)).name
   // if any of the settings enforcing documentation are set to `true`, then
   // a module should have associated documentation
   const isDocumentationRequired = config.enforceDescriptions || config.enforceVersion
@@ -827,8 +825,7 @@ export const parseModuleDocumentation = Effect.gen(function*() {
       const commentRange = ocommentRange.value
       const text = commentRange.getText()
       const doc = yield* getDoc("<module fileoverview>", text, true).pipe(Effect.mapError(Array.of))
-      return new Domain.NamedDoc(
-        name,
+      return new Domain.Doc(
         doc.description,
         doc.since,
         doc.deprecated,
@@ -837,8 +834,7 @@ export const parseModuleDocumentation = Effect.gen(function*() {
       )
     }
   }
-  return new Domain.NamedDoc(
-    name,
+  return new Domain.Doc(
     undefined,
     undefined,
     false,
@@ -861,7 +857,10 @@ export const parseModule = Effect.gen(function*() {
   const constants = yield* parseConstants
   const exports = yield* parseExports
   const namespaces = yield* parseNamespaces
+  const path = yield* Path.Path
+  const name = path.parse(Array.lastNonEmpty(source.path)).name
   return new Domain.Module(
+    name,
     doc,
     source.path,
     classes,
@@ -937,7 +936,7 @@ export const parseFiles = (files: ReadonlyArray<Domain.File>) =>
         Effect.validateAll(parseFile(project)),
         Effect.map(
           flow(
-            Array.filter((module) => !module.deprecated),
+            Array.filter((module) => !module.doc.deprecated),
             sortModulesByPath
           )
         )

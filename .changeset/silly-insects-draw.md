@@ -14,3 +14,4 @@
 - Remove File module and integrate File class into Domain module
 - Move DocgenError from Error module to Domain module
 - Integrate Process service into Domain module
+- Remove NamedDoc class and update Domain model constructors

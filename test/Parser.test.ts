@@ -717,8 +717,8 @@ Since v2.0.0`
         actual,
         Exit.succeed([
           new Domain.Export(
-            new Domain.NamedDoc(
-              "b",
+            "b",
+            new Domain.Doc(
               undefined,
               "1.0.0",
               false,
@@ -754,8 +754,8 @@ Since v2.0.0`
         actual,
         Exit.succeed([
           new Domain.Export(
-            new Domain.NamedDoc(
-              "From './example'",
+            "From './example'",
+            new Domain.Doc(
               undefined,
               "1.0.0",
               false,
@@ -791,8 +791,8 @@ Since v2.0.0`
         actual,
         Exit.succeed([
           new Domain.Export(
-            new Domain.NamedDoc(
-              "From './example'",
+            "From './example'",
+            new Domain.Doc(
               undefined,
               "1.0.0",
               false,
@@ -1652,8 +1652,7 @@ describe("Parser-old", () => {
              */
             export const a: number = 1`,
         Parser.parseModuleDocumentation,
-        new Domain.NamedDoc(
-          "test",
+        new Domain.Doc(
           "Manages the configuration settings for the widget",
           "1.0.0",
           true,
@@ -1668,8 +1667,7 @@ describe("Parser-old", () => {
       expectSuccess(
         "export const a: number = 1",
         Parser.parseModuleDocumentation,
-        new Domain.NamedDoc(
-          "test",
+        new Domain.Doc(
           undefined,
           undefined,
           false,

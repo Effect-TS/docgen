@@ -33,30 +33,14 @@ export class Doc {
  * @category model
  * @since 0.6.0
  */
-export class NamedDoc extends Doc {
-  constructor(
-    readonly name: string,
-    description: string | undefined,
-    since: string | undefined,
-    deprecated: boolean,
-    examples: ReadonlyArray<Example>,
-    category: string | undefined
-  ) {
-    super(description, since, deprecated, examples, category)
-  }
-}
-
-/**
- * @category model
- * @since 0.6.0
- */
-export class Module extends NamedDoc {
+export class Module {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Module"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly path: ReadonlyArray<string>,
     readonly classes: ReadonlyArray<Class>,
     readonly interfaces: ReadonlyArray<Interface>,
@@ -65,124 +49,115 @@ export class Module extends NamedDoc {
     readonly constants: ReadonlyArray<Constant>,
     readonly exports: ReadonlyArray<Export>,
     readonly namespaces: ReadonlyArray<Namespace>
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Class extends NamedDoc {
+export class Class {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Class"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string,
     readonly methods: ReadonlyArray<Method>,
     readonly staticMethods: ReadonlyArray<Method>,
     readonly properties: ReadonlyArray<Property>
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Method extends NamedDoc {
+export class Method {
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Property extends NamedDoc {
+export class Property {
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Interface extends NamedDoc {
+export class Interface {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Interface"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Function extends NamedDoc {
+export class Function {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Function"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>,
     readonly throws: ReadonlyArray<string>
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class TypeAlias extends NamedDoc {
+export class TypeAlias {
   /**
    * @since 0.6.0
    */
   readonly _tag = "TypeAlias"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Constant extends NamedDoc {
+export class Constant {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Constant"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
@@ -199,36 +174,34 @@ export class Constant extends NamedDoc {
  * @category model
  * @since 0.6.0
  */
-export class Export extends NamedDoc {
+export class Export {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Export"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Namespace extends NamedDoc {
+export class Namespace {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Namespace"
   constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly interfaces: ReadonlyArray<Interface>,
     readonly typeAliases: ReadonlyArray<TypeAlias>,
     readonly namespaces: ReadonlyArray<Namespace>
-  ) {
-    super(doc.name, doc.description, doc.since, doc.deprecated, doc.examples, doc.category)
-  }
+  ) {}
 }
 
 /**

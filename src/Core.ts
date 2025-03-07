@@ -182,24 +182,26 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
     return Array.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
-      const getFiles = (exampleId: string) => (doc: Domain.NamedDoc): ReadonlyArray<Domain.File> => {
-        const descriptionExamples = doc.description ? extractFencedCode(doc.description) : []
-        const examples = descriptionExamples.concat(doc.examples.flatMap((e) => extractFencedCode(e.body)))
-        return Array.map(
-          examples,
-          (example, i) => {
-            return new Domain.File(
-              path.join(
-                config.outDir,
-                "examples",
-                `${prefix}-${exampleId}-${doc.name}-${i}.ts`
-              ),
-              example,
-              true // make the file overwritable
-            )
-          }
-        )
-      }
+      const getFiles =
+        (exampleId: string) =>
+        (namedDoc: { readonly name: string; readonly doc: Domain.Doc }): ReadonlyArray<Domain.File> => {
+          const descriptionExamples = namedDoc.doc.description ? extractFencedCode(namedDoc.doc.description) : []
+          const examples = descriptionExamples.concat(namedDoc.doc.examples.flatMap((e) => extractFencedCode(e.body)))
+          return Array.map(
+            examples,
+            (example, i) => {
+              return new Domain.File(
+                path.join(
+                  config.outDir,
+                  "examples",
+                  `${prefix}-${exampleId}-${namedDoc.name}-${i}.ts`
+                ),
+                example,
+                true // make the file overwritable
+              )
+            }
+          )
+        }
 
       const allPrefixedNamespaces = Array.flatMap(module.namespaces, (namespace) =>
         extractPrefixedNestedNamespaces(namespace, ""))

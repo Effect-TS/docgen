@@ -30,7 +30,6 @@ Since v0.6.0
   - [Method (class)](#method-class)
   - [Module (class)](#module-class)
     - [\_tag (property)](#_tag-property-5)
-  - [NamedDoc (class)](#nameddoc-class)
   - [Namespace (class)](#namespace-class)
     - [\_tag (property)](#_tag-property-6)
   - [Property (class)](#property-class)
@@ -54,7 +53,8 @@ Since v0.6.0
 
 ```ts
 export declare class Class { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string,
     readonly methods: ReadonlyArray<Method>,
     readonly staticMethods: ReadonlyArray<Method>,
@@ -80,7 +80,8 @@ Since v0.6.0
 
 ```ts
 export declare class Constant { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
   ) }
 ```
@@ -149,7 +150,8 @@ export {
 
 ```ts
 export declare class Export { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
   ) }
 ```
@@ -188,7 +190,8 @@ Since v0.6.0
 
 ```ts
 export declare class Function { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>,
     readonly throws: ReadonlyArray<string>
   ) }
@@ -212,7 +215,8 @@ Since v0.6.0
 
 ```ts
 export declare class Interface { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
   ) }
 ```
@@ -235,7 +239,8 @@ Since v0.6.0
 
 ```ts
 export declare class Method { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>
   ) }
 ```
@@ -248,7 +253,8 @@ Since v0.6.0
 
 ```ts
 export declare class Module { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly path: ReadonlyArray<string>,
     readonly classes: ReadonlyArray<Class>,
     readonly interfaces: ReadonlyArray<Interface>,
@@ -272,30 +278,14 @@ readonly _tag: "Module"
 
 Since v0.6.0
 
-## NamedDoc (class)
-
-**Signature**
-
-```ts
-export declare class NamedDoc { constructor(
-    readonly name: string,
-    description: string | undefined,
-    since: string | undefined,
-    deprecated: boolean,
-    examples: ReadonlyArray<Example>,
-    category: string | undefined
-  ) }
-```
-
-Since v0.6.0
-
 ## Namespace (class)
 
 **Signature**
 
 ```ts
 export declare class Namespace { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly interfaces: ReadonlyArray<Interface>,
     readonly typeAliases: ReadonlyArray<TypeAlias>,
     readonly namespaces: ReadonlyArray<Namespace>
@@ -320,7 +310,8 @@ Since v0.6.0
 
 ```ts
 export declare class Property { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
   ) }
 ```
@@ -333,7 +324,8 @@ Since v0.6.0
 
 ```ts
 export declare class TypeAlias { constructor(
-    doc: NamedDoc,
+    readonly name: string,
+    readonly doc: Doc,
     readonly signature: string
   ) }
 ```
