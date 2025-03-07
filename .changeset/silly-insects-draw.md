@@ -17,3 +17,4 @@
 - Rename Markdown module to Printer and update related imports
 - Remove Option usage in Domain
 - Remove NamedDoc class and update Domain model constructors
+- Add support for @see JSDoc tag in function documentation

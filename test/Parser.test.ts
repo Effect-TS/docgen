@@ -150,6 +150,35 @@ Since v1.2.0`
       )
     })
 
+    it("sees", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * description...
+         * @see \`foo\` Description 1
+         * @see {@link bar} Description 2
+         * @since 1.2.0
+         */
+        export function myfunc() {}`,
+        `## myfunc
+
+description...
+
+**See**
+
+- \`foo\` Description 1
+- \`bar\` Description 2
+
+**Signature**
+
+\`\`\`ts
+export declare function myfunc()
+\`\`\`
+
+Since v1.2.0`
+      )
+    })
+
     it("example without fence", async () => {
       await expectMarkdown(
         Parser.parseFunctions,

@@ -93,15 +93,39 @@ const printTitle = (s: string, deprecated: boolean, postfix?: string): string =>
   return postfix === undefined ? title : title + ` ${postfix}`
 }
 
+/**
+ * Extracts the link from a JSDoc link tag.
+ *
+ * Given
+ *
+ * "{@link bar} description"
+ *
+ * returns
+ *
+ * "`bar` description"
+ */
+function parseJSDocLink(text: string): string {
+  return text.replace(/\{@link\s+([^}]+)\}/, "`$1`")
+}
+
+const printSeesArray = (sees?: ReadonlyArray<string>): string => {
+  if (sees === undefined || sees.length === 0) {
+    return ""
+  }
+  return `\n\n${Markdown.bold("See")}\n\n${sees.map((see) => `- ${parseJSDocLink(see)}`).join("\n")}`
+}
+
 const printModel = (name: string, doc: Domain.Doc, options: {
   readonly indentation?: number
   readonly postfix?: string | undefined
   readonly signatures?: ReadonlyArray<string> | undefined
   readonly throws?: ReadonlyArray<string> | undefined
+  readonly sees?: ReadonlyArray<string> | undefined
 }): string => {
   return printHeaderByIndentation(options.indentation ?? 0) + printTitle(name, doc.deprecated, options.postfix) +
     printOptionalDescription(doc.description) +
     printThrowsArray(options.throws) +
+    printSeesArray(options.sees) +
     printExamplesArray(doc.examples.map(({ body }) => body)) +
     printSignaturesArray(options.signatures) +
     printOptionalSince(doc.since)
@@ -174,7 +198,8 @@ export const printExport = (model: Domain.Export): string => {
 export const printFunction = (model: Domain.Function): string => {
   return printModel(model.name, model.doc, {
     signatures: model.signatures,
-    throws: model.throws
+    throws: model.throws,
+    sees: model.sees
   })
 }
 
@@ -280,6 +305,9 @@ const byCategory = Order.mapInput(
  *
  * @throws `Error1` - Description 1
  * @throws `Error2` - Description 2
+ *
+ * @see `foo` description1
+ * @see {@link printFunction} description2
  *
  * @category printers
  * @since 0.6.0

@@ -55,6 +55,11 @@ export const a: string = "b"
 `Error1` - Description 1
 `Error2` - Description 2
 
+**See**
+
+- `foo` description1
+- `printFunction` description2
+
 **Signature**
 
 ```ts

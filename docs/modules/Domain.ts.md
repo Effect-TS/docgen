@@ -194,7 +194,8 @@ export declare class Function { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>,
-    readonly throws: ReadonlyArray<string>
+    readonly throws: ReadonlyArray<string>,
+    readonly sees: ReadonlyArray<string>
   ) }
 ```
 

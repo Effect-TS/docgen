@@ -257,6 +257,13 @@ const getFunctionDeclarationJSDocs = (
     })
   )
 
+const parseSeeTag = (comment: Comment): Array<string> => {
+  return Option.fromNullable(comment.tags["see"]).pipe(
+    Option.map((tags) => tags.filter((tag) => tag !== undefined)),
+    Option.getOrElse(() => [])
+  )
+}
+
 const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
   Effect.gen(function*() {
     const source = yield* Source
@@ -296,7 +303,8 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
         doc.category
       ),
       signatures,
-      throws
+      throws,
+      parseSeeTag(comment)
     )
   })
 
@@ -327,7 +335,8 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
         doc.category
       ),
       [signature],
-      throws
+      throws,
+      parseSeeTag(comment)
     )
   })
 
