@@ -3,7 +3,6 @@ title: Configuration.ts
 nav_order: 2
 parent: Modules
 ---
-
 ## Configuration overview
 
 Since v0.6.0
@@ -17,7 +16,9 @@ Since v0.6.0
   - [ConfigurationSchema](#configurationschema)
   - [ConfigurationShape (interface)](#configurationshape-interface)
 
+
 ---
+
 
 # service
 
@@ -30,34 +31,15 @@ export declare class Configuration
 ```
 
 Since v0.6.0
-
 ## ConfigurationSchema
 
 **Signature**
 
 ```ts
-export declare const ConfigurationSchema: Schema.Struct<{
-  $schema: Schema.optional<typeof Schema.String>
-  projectHomepage: Schema.optional<typeof Schema.String>
-  srcDir: Schema.optional<typeof Schema.String>
-  outDir: Schema.optional<typeof Schema.String>
-  theme: Schema.optional<typeof Schema.String>
-  enableSearch: Schema.optional<typeof Schema.Boolean>
-  enforceDescriptions: Schema.optional<typeof Schema.Boolean>
-  enforceExamples: Schema.optional<typeof Schema.Boolean>
-  enforceVersion: Schema.optional<typeof Schema.Boolean>
-  exclude: Schema.optional<Schema.Array$<typeof Schema.String>>
-  parseCompilerOptions: Schema.optional<
-    Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>
-  >
-  examplesCompilerOptions: Schema.optional<
-    Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>
-  >
-}>
+export declare const ConfigurationSchema: Schema.Struct<{ $schema: Schema.optional<typeof Schema.String>; projectHomepage: Schema.optional<typeof Schema.String>; srcDir: Schema.optional<typeof Schema.String>; outDir: Schema.optional<typeof Schema.String>; theme: Schema.optional<typeof Schema.String>; enableSearch: Schema.optional<typeof Schema.Boolean>; enforceDescriptions: Schema.optional<typeof Schema.Boolean>; enforceExamples: Schema.optional<typeof Schema.Boolean>; enforceVersion: Schema.optional<typeof Schema.Boolean>; exclude: Schema.optional<Schema.Array$<typeof Schema.String>>; parseCompilerOptions: Schema.optional<Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>>; examplesCompilerOptions: Schema.optional<Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>>; }>
 ```
 
 Since v0.6.0
-
 ## ConfigurationShape (interface)
 
 **Signature**

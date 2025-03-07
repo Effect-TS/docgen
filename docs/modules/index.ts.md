@@ -3,7 +3,6 @@ title: index.ts
 nav_order: 5
 parent: Modules
 ---
-
 ## index overview
 
 Since v0.6.0
@@ -19,7 +18,9 @@ Since v0.6.0
   - [From "./Parser.js"](#from-parserjs)
   - [From "./Printer.js"](#from-printerjs)
 
+
 ---
+
 
 # utils
 
@@ -32,7 +33,6 @@ export * as Configuration from "./Configuration.js"
 ```
 
 Since v0.6.0
-
 ## From "./Core.js"
 
 **Signature**
@@ -42,7 +42,6 @@ export * as Core from "./Core.js"
 ```
 
 Since v0.6.0
-
 ## From "./Domain.js"
 
 **Signature**
@@ -52,7 +51,6 @@ export * as Domain from "./Domain.js"
 ```
 
 Since v0.6.0
-
 ## From "./Parser.js"
 
 **Signature**
@@ -62,7 +60,6 @@ export * as Parser from "./Parser.js"
 ```
 
 Since v0.6.0
-
 ## From "./Printer.js"
 
 **Signature**

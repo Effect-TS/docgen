@@ -8,7 +8,6 @@ import * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as Record from "effect/Record"
 import * as String from "effect/String"
-import * as Prettier from "prettier"
 import type * as Domain from "./Domain.js"
 
 /** @internal */
@@ -156,16 +155,18 @@ const printMeta = (title: string, order: number): string => {
   ].join("")
 }
 
+const addLineBreak = (i: number): string => i === 0 ? "\n\n" : ""
+
 /** @internal */
 export const printClass = (model: Domain.Class): string => {
   const header = printModel(model.name, model.doc, {
     postfix: "(class)",
     signatures: [model.signature]
   })
-  return header + "\n\n" +
-    model.staticMethods.map((method) => printStaticMethod(method) + "\n\n").join("") +
-    model.methods.map((method) => printMethod(method) + "\n\n").join("") +
-    model.properties.map((property) => printProperty(property) + "\n\n").join("")
+  return header +
+    model.staticMethods.map((method, i) => addLineBreak(i) + printStaticMethod(method)).join("\n\n") +
+    model.methods.map((method, i) => addLineBreak(i) + printMethod(method)).join("\n\n") +
+    model.properties.map((property, i) => addLineBreak(i) + printProperty(property)).join("\n\n")
 }
 
 /** @internal */
@@ -272,7 +273,7 @@ const getModuleComponents = (module: Domain.Module) => {
     Array.sort(byCategory),
     Array.map(([category, printables]) =>
       [
-        `# ${category}`,
+        `\n# ${category}\n`,
         ...pipe(
           printables,
           Array.sort(
@@ -342,32 +343,19 @@ export const printModule = (module: Domain.Module, order: number): Effect.Effect
 
     const tableOfContents = (content: string) =>
       "<h2 class=\"text-delta\">Table of contents</h2>\n\n"
-      + toc(content).content
+      + toc(content, {
+        bullets: "-"
+      }).content
       + "\n\n"
 
-    return yield* prettify(
-      [
-        header,
-        description,
-        "---\n",
-        tableOfContents(content),
-        "---\n",
-        content
-      ].join("\n")
-    )
+    const raw = [
+      header,
+      description,
+      "---\n",
+      tableOfContents(content),
+      "---\n",
+      content
+    ].join("\n")
+    return raw
+    // return yield* prettify(raw)
   })
-
-const defaultPrettierOptions: Prettier.Options = {
-  parser: "markdown",
-  semi: false,
-  singleQuote: false,
-  printWidth: 120,
-  trailingComma: "none"
-}
-
-/** @internal */
-export const prettify = (s: string): Effect.Effect<string> =>
-  Effect.tryPromise({
-    try: () => Prettier.format(s, defaultPrettierOptions),
-    catch: identity
-  }).pipe(Effect.orDie)

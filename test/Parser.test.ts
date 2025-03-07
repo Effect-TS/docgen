@@ -1741,7 +1741,7 @@ import * as assert from 'assert'
  *
  * console.log(foo)
  *
- * @category foo
+ * @category category
  * @since 1.0.0
  */
 export const foo = 'foo'`,
@@ -1750,7 +1750,9 @@ export const foo = 'foo'`,
 This is the assert module.
 
 Since v1.0.0
-# foo
+
+# category
+
 ## foo
 
 This is the foo export.
