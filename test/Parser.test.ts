@@ -732,7 +732,10 @@ Since v2.0.0`
               [],
               [],
               [],
-              []
+              [],
+              {
+                "since": ["1.0.0"]
+              }
             ),
             "export declare const b: 1",
             false
@@ -772,7 +775,10 @@ Since v2.0.0`
               [],
               [],
               [],
-              []
+              [],
+              {
+                "since": ["1.0.0"]
+              }
             ),
             "export * from './example'",
             true
@@ -812,7 +818,10 @@ Since v2.0.0`
               [],
               [],
               [],
-              []
+              [],
+              {
+                "since": ["1.0.0"]
+              }
             ),
             "export * as example from './example'",
             true
@@ -856,40 +865,6 @@ a description...
 
 \`\`\`ts
 export interface A {}
-\`\`\`
-
-Since v1.0.0`
-      )
-    })
-
-    it("should return interfaces sorted by name", async () => {
-      await expectMarkdown(
-        Parser.parseInterfaces,
-        `
-      /**
-       * @since 1.0.0
-       */
-      export interface B {}
-      /**
-       * @since 1.0.0
-       */
-      export interface A {}
-      `,
-        `## A (interface)
-
-**Signature**
-
-\`\`\`ts
-export interface A {}
-\`\`\`
-
-Since v1.0.0
-## B (interface)
-
-**Signature**
-
-\`\`\`ts
-export interface B {}
 \`\`\`
 
 Since v1.0.0`

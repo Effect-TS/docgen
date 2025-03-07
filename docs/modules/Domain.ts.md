@@ -1,6 +1,6 @@
 ---
 title: Domain.ts
-nav_order: 4
+nav_order: 5
 parent: Modules
 ---
 
@@ -18,8 +18,8 @@ Since v0.6.0
   - [Constant (class)](#constant-class)
     - [\_tag (property)](#_tag-property-1)
   - [Doc (class)](#doc-class)
+    - [modifyDescription (method)](#modifydescription-method)
   - [DocgenError (class)](#docgenerror-class)
-  - [Example (class)](#example-class)
   - [Export (class)](#export-class)
     - [\_tag (property)](#_tag-property-2)
   - [File (class)](#file-class)
@@ -105,14 +105,25 @@ Since v0.6.0
 ```ts
 export declare class Doc { constructor(
     readonly description: string | undefined,
-    readonly since: string | undefined,
-    readonly deprecated: boolean,
-    readonly examples: ReadonlyArray<Example>,
-    readonly category: string | undefined
+    readonly since: ReadonlyArray<string>,
+    readonly deprecated: ReadonlyArray<string>,
+    readonly examples: ReadonlyArray<string>,
+    readonly category: ReadonlyArray<string>,
+    readonly throws: ReadonlyArray<string>,
+    readonly sees: ReadonlyArray<string>,
+    readonly tags: Record<string, ReadonlyArray<string> | undefined>
   ) }
 ```
 
 Since v0.6.0
+
+### modifyDescription (method)
+
+**Signature**
+
+```ts
+modifyDescription(description: string | undefined): Doc
+```
 
 ## DocgenError (class)
 
@@ -120,16 +131,6 @@ Since v0.6.0
 
 ```ts
 export declare class DocgenError
-```
-
-Since v0.6.0
-
-## Example (class)
-
-**Signature**
-
-```ts
-export declare class Example { constructor(readonly body: string) }
 ```
 
 Since v0.6.0
@@ -193,9 +194,7 @@ Since v0.6.0
 export declare class Function { constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly signatures: ReadonlyArray<string>,
-    readonly throws: ReadonlyArray<string>,
-    readonly sees: ReadonlyArray<string>
+    readonly signatures: ReadonlyArray<string>
   ) }
 ```
 
@@ -257,7 +256,7 @@ Since v0.6.0
 export declare class Module { constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly path: ReadonlyArray<string>,
+    readonly path: Array.NonEmptyReadonlyArray<string>,
     readonly classes: ReadonlyArray<Class>,
     readonly interfaces: ReadonlyArray<Interface>,
     readonly functions: ReadonlyArray<Function>,

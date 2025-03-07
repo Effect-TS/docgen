@@ -59,17 +59,6 @@ const expectFailure = <A, E>(
 }
 
 describe.skip("Checker", () => {
-  describe("checkFunctions", () => {
-    it("should raise an error if the function is anonymous", () => {
-      expectFailure(
-        `export function(a: number, b: number): number { return a + b }`,
-        Parser.parseFunctions,
-        Checker.checkFunctions,
-        [`Missing ${chalk.bold("function name")} in module ${chalk.bold("test")}`]
-      )
-    })
-  })
-
   describe("checkExports", () => {
     it("should raise an error if `@since` tag is missing in export", () => {
       expectFailure(
@@ -145,17 +134,6 @@ describe.skip("Checker", () => {
   })
 
   describe("checkClasses", () => {
-    it("should raise an error if the class is anonymous", () => {
-      expectFailure(
-        `export class {}`,
-        Parser.parseClasses,
-        Checker.checkClasses,
-        [
-          `Missing ${chalk.bold("class name")} in module ${chalk.bold("test")}`
-        ]
-      )
-    })
-
     it("should raise an error if an `@since` tag is missing in a module", () => {
       expectFailure(
         `export class MyClass {}`,

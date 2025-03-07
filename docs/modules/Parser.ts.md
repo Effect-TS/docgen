@@ -1,6 +1,6 @@
 ---
 title: Parser.ts
-nav_order: 6
+nav_order: 7
 parent: Modules
 ---
 
@@ -32,7 +32,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseClasses: Effect.Effect<Domain.Class[], string[], Configuration.Configuration | Source>
+export declare const parseClasses: Effect.Effect<Domain.Class[], never, Source>
 ```
 
 Since v0.6.0
@@ -42,11 +42,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseConstants: Effect.Effect<
-  Domain.Constant[],
-  [string, ...string[]],
-  Configuration.Configuration | Source
->
+export declare const parseConstants: Effect.Effect<Domain.Constant[], never, Source>
 ```
 
 Since v0.6.0
@@ -56,11 +52,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseExports: Effect.Effect<
-  Domain.Export[],
-  [string, ...string[]],
-  Configuration.Configuration | Source
->
+export declare const parseExports: Effect.Effect<Domain.Export[], never, Source>
 ```
 
 Since v0.6.0
@@ -82,11 +74,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseFunctions: Effect.Effect<
-  Domain.Function[],
-  [string, ...string[]],
-  Configuration.Configuration | Source
->
+export declare const parseFunctions: Effect.Effect<Domain.Function[], never, Source>
 ```
 
 Since v0.6.0
@@ -96,11 +84,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseInterfaces: Effect.Effect<
-  Domain.Interface[],
-  [string, ...string[]],
-  Configuration.Configuration | Source
->
+export declare const parseInterfaces: Effect.Effect<Domain.Interface[], never, Source>
 ```
 
 Since v0.6.0
@@ -110,11 +94,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseModule: Effect.Effect<
-  Domain.Module,
-  string[],
-  Configuration.Configuration | Path.Path | Source
->
+export declare const parseModule: Effect.Effect<Domain.Module, never, Configuration.Configuration | Path.Path | Source>
 ```
 
 Since v0.6.0
@@ -124,7 +104,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseNamespaces: Effect.Effect<Domain.Namespace[], string[], Configuration.Configuration | Source>
+export declare const parseNamespaces: Effect.Effect<Domain.Namespace[], never, Configuration.Configuration | Source>
 ```
 
 Since v0.6.0
@@ -134,11 +114,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseTypeAliases: Effect.Effect<
-  Domain.TypeAlias[],
-  [string, ...string[]],
-  Configuration.Configuration | Source
->
+export declare const parseTypeAliases: Effect.Effect<Domain.TypeAlias[], never, Source>
 ```
 
 Since v0.6.0

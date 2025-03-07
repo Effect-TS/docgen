@@ -2,6 +2,7 @@
  * @since 0.6.0
  */
 
+import type * as Array from "effect/Array"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as Order from "effect/Order"
@@ -19,7 +20,8 @@ export class Doc {
     readonly examples: ReadonlyArray<string>,
     readonly category: ReadonlyArray<string>,
     readonly throws: ReadonlyArray<string>,
-    readonly sees: ReadonlyArray<string>
+    readonly sees: ReadonlyArray<string>,
+    readonly tags: Record<string, ReadonlyArray<string> | undefined>
   ) {}
 
   modifyDescription(description: string | undefined): Doc {
@@ -30,7 +32,8 @@ export class Doc {
       this.examples,
       this.category,
       this.throws,
-      this.sees
+      this.sees,
+      this.tags
     )
   }
 }
@@ -47,7 +50,7 @@ export class Module {
   constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly path: ReadonlyArray<string>,
+    readonly path: Array.NonEmptyReadonlyArray<string>,
     readonly classes: ReadonlyArray<Class>,
     readonly interfaces: ReadonlyArray<Interface>,
     readonly functions: ReadonlyArray<Function>,

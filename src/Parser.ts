@@ -8,7 +8,6 @@ import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import * as Order from "effect/Order"
 import * as Record from "effect/Record"
 import * as String from "effect/String"
 import * as ast from "ts-morph"
@@ -24,13 +23,6 @@ export interface SourceShape {
 /** @internal */
 export class Source extends Context.Tag("Source")<Source, SourceShape>() {}
 
-const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = Array.sort(
-  pipe(
-    String.Order,
-    Order.mapInput(({ name }: { name: string }) => name)
-  )
-)
-
 const sortModulesByPath: <A extends Domain.Module>(self: Iterable<A>) => Array<A> = Array
   .sort(Domain.ByPath)
 
@@ -43,12 +35,6 @@ const getJSDocText: (jsdocs: ReadonlyArray<ast.JSDoc>) => string = Array.matchRi
   onEmpty: () => "",
   onNonEmpty: (_, last) => last.getText()
 })
-
-const hasTag = (tag: string) => (comment: Comment) => pipe(comment.tags, Record.get(tag), Option.isSome)
-
-const hasInternalTag = hasTag("internal")
-
-const hasIgnoreTag = hasTag("ignore")
 
 class Comment {
   constructor(
@@ -88,11 +74,6 @@ export const parseComment = (text: string): Comment => {
   return { description, tags }
 }
 
-const shouldNotIgnore = (jsdocs: ReadonlyArray<ast.JSDoc>): boolean => {
-  const comment = parseComment(getJSDocText(jsdocs))
-  return !hasInternalTag(comment) && !hasIgnoreTag(comment)
-}
-
 const isVariableDeclarationList = (
   u: ast.VariableDeclarationList | ast.CatchClause
 ): u is ast.VariableDeclarationList => u.getKind() === ast.ts.SyntaxKind.VariableDeclarationList
@@ -117,31 +98,39 @@ export const getDoc = (text: string) => {
     comment.tags["example"] ?? [],
     comment.tags["category"] ?? [],
     comment.tags["throws"] ?? [],
-    comment.tags["see"] ?? []
+    comment.tags["see"] ?? [],
+    comment.tags
   )
+}
+
+const shouldIgnore = (doc: Domain.Doc): boolean => {
+  return Record.has(doc.tags, "internal") || Record.has(doc.tags, "ignore")
 }
 
 const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
   Effect.gen(function*() {
-    const name = id.getName()
     const text = getJSDocText(id.getJsDocs())
     const doc = getDoc(text)
+    if (shouldIgnore(doc)) {
+      return []
+    }
+    const name = id.getName()
     const signature = id.getText()
-    return new Domain.Interface(
-      name,
-      doc,
-      signature
-    )
+    return [
+      new Domain.Interface(
+        name,
+        doc,
+        signature
+      )
+    ]
   })
 
 const parseInterfaceDeclarations = (interfaces: ReadonlyArray<ast.InterfaceDeclaration>) => {
   const exportedInterfaces = Array.filter(
     interfaces,
-    (id) => id.isExported() && shouldNotIgnore(id.getJsDocs())
+    (id) => id.isExported()
   )
-  return Effect.forEach(exportedInterfaces, parseInterfaceDeclaration).pipe(
-    Effect.map(sortByName)
-  )
+  return Effect.forEach(exportedInterfaces, parseInterfaceDeclaration).pipe(Effect.map(Array.flatten))
 }
 
 /**
@@ -184,9 +173,12 @@ const getFunctionDeclarationJSDocs = (
 
 const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
   Effect.gen(function*() {
-    const name = fd.getName()
     const text = getJSDocText(getFunctionDeclarationJSDocs(fd))
     const doc = getDoc(text)
+    if (shouldIgnore(doc)) {
+      return []
+    }
+    const name = fd.getName()
     const signatures = pipe(
       fd.getOverloads(),
       Array.matchRight({
@@ -198,36 +190,43 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
           )
       })
     )
-    return new Domain.Function(
-      name ?? "anonymous function",
-      doc,
-      signatures
-    )
+    return [
+      new Domain.Function(
+        name ?? "anonymous function",
+        doc,
+        signatures
+      )
+    ]
   })
 
 const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
   Effect.gen(function*() {
     const vs: any = vd.getParent().getParent()
-    const name = vd.getName()
     const text = getJSDocText(vs.getJsDocs())
     const doc = getDoc(text)
+    if (shouldIgnore(doc)) {
+      return []
+    }
+    const name = vd.getName()
     const signature = `export declare const ${name}: ${
       stripImportTypes(
         vd.getType().getText(vd)
       )
     }`
-    return new Domain.Function(
-      name,
-      doc,
-      [signature]
-    )
+    return [
+      new Domain.Function(
+        name,
+        doc,
+        [signature]
+      )
+    ]
   })
 
 const getFunctionDeclarations = Effect.gen(function*() {
   const source = yield* Source
   const functions = Array.filter(
     source.sourceFile.getFunctions(),
-    (fd) => fd.isExported() && shouldNotIgnore(getFunctionDeclarationJSDocs(fd))
+    (fd) => fd.isExported()
   )
   const arrows = pipe(
     Array.filter(
@@ -236,7 +235,7 @@ const getFunctionDeclarations = Effect.gen(function*() {
         if (isVariableDeclarationList(vd.getParent())) {
           const vs: any = vd.getParent().getParent()
           if (isVariableStatement(vs)) {
-            return vs.isExported() && shouldNotIgnore(vs.getJsDocs()) &&
+            return vs.isExported() &&
               Option.fromNullable(vd.getInitializer()).pipe(
                 Option.filter((expr) => ast.Node.isFunctionLikeDeclaration(expr)),
                 Option.isSome
@@ -256,32 +255,39 @@ const getFunctionDeclarations = Effect.gen(function*() {
  */
 export const parseFunctions = Effect.gen(function*() {
   const { arrows, functions } = yield* getFunctionDeclarations
-  const functionDeclarations = yield* Effect.forEach(functions, parseFunctionDeclaration)
-  const functionVariableDeclarations = yield* Effect.forEach(arrows, parseFunctionVariableDeclaration)
+  const functionDeclarations = yield* Effect.forEach(functions, parseFunctionDeclaration).pipe(
+    Effect.map(Array.flatten)
+  )
+  const functionVariableDeclarations = yield* Effect.forEach(arrows, parseFunctionVariableDeclaration).pipe(
+    Effect.map(Array.flatten)
+  )
   return [...functionDeclarations, ...functionVariableDeclarations]
 })
 
 const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
   Effect.gen(function*() {
-    const name = ta.getName()
     const text = getJSDocText(ta.getJsDocs())
     const doc = getDoc(text)
+    if (shouldIgnore(doc)) {
+      return []
+    }
+    const name = ta.getName()
     const signature = ta.getText()
-    return new Domain.TypeAlias(
-      name,
-      doc,
-      signature
-    )
+    return [
+      new Domain.TypeAlias(
+        name,
+        doc,
+        signature
+      )
+    ]
   })
 
 const parseTypeAliasDeclarations = (typeAliases: ReadonlyArray<ast.TypeAliasDeclaration>) => {
   const exportedTypeAliases = Array.filter(
     typeAliases,
-    (tad) => tad.isExported() && shouldNotIgnore(tad.getJsDocs())
+    (tad) => tad.isExported()
   )
-  return Effect.forEach(exportedTypeAliases, parseTypeAliasDeclaration).pipe(
-    Effect.map(sortByName)
-  )
+  return Effect.forEach(exportedTypeAliases, parseTypeAliasDeclaration).pipe(Effect.map(Array.flatten))
 }
 
 /**
@@ -296,16 +302,21 @@ export const parseTypeAliases = Effect.flatMap(
 const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
   Effect.gen(function*() {
     const vs: any = vd.getParent().getParent()
-    const name = vd.getName()
     const text = getJSDocText(vs.getJsDocs())
     const doc = getDoc(text)
+    if (shouldIgnore(doc)) {
+      return []
+    }
+    const name = vd.getName()
     const type = stripImportTypes(vd.getType().getText(vd))
     const signature = `export declare const ${name}: ${type}`
-    return new Domain.Constant(
-      name,
-      doc,
-      signature
-    )
+    return [
+      new Domain.Constant(
+        name,
+        doc,
+        signature
+      )
+    ]
   })
 
 /**
@@ -321,7 +332,7 @@ export const parseConstants = Effect.gen(function*() {
         if (isVariableDeclarationList(vd.getParent())) {
           const vs: any = vd.getParent().getParent()
           if (isVariableStatement(vs)) {
-            return vs.isExported() && shouldNotIgnore(vs.getJsDocs()) &&
+            return vs.isExported() &&
               Option.fromNullable(vd.getInitializer()).pipe(
                 Option.filter((expr) => !ast.Node.isFunctionLikeDeclaration(expr)),
                 Option.isSome
@@ -332,7 +343,9 @@ export const parseConstants = Effect.gen(function*() {
       }
     )
   )
-  return yield* Effect.forEach(variableDeclarations, parseConstantVariableDeclaration)
+  return yield* Effect.forEach(variableDeclarations, parseConstantVariableDeclaration).pipe(
+    Effect.map(Array.flatten)
+  )
 })
 
 const parseExportSpecifier = (es: ast.ExportSpecifier) =>
@@ -351,9 +364,7 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
     )
   })
 
-const parseExportStar = (
-  ed: ast.ExportDeclaration
-) =>
+const parseExportStar = (ed: ast.ExportDeclaration) =>
   Effect.gen(function*() {
     const es = ed.getModuleSpecifier()!
     const name = es.getText()
@@ -392,41 +403,40 @@ export const parseExports = pipe(
 
 const parseModuleDeclaration = (
   ed: ast.ModuleDeclaration
-): Effect.Effect<Domain.Namespace, never, Source | Configuration.Configuration> =>
-  Effect.flatMap(Source, (_source) => {
-    const name = ed.getName()
-    const text = getJSDocText(ed.getJsDocs())
-    const doc = getDoc(text)
-    const getInterfaces = parseInterfaceDeclarations(ed.getInterfaces())
-    const getTypeAliases = parseTypeAliasDeclarations(
-      ed.getTypeAliases()
-    )
-    const getNamespaces = parseModuleDeclarations(ed.getModules())
-    return Effect.gen(function*() {
-      const interfaces = yield* getInterfaces
-      const typeAliases = yield* getTypeAliases
-      const namespaces = yield* getNamespaces
-      return new Domain.Namespace(
+): Effect.Effect<Array<Domain.Namespace>, never, Source | Configuration.Configuration> => {
+  const text = getJSDocText(ed.getJsDocs())
+  const doc = getDoc(text)
+  if (shouldIgnore(doc)) {
+    return Effect.succeed([])
+  }
+  const name = ed.getName()
+  const getInterfaces = parseInterfaceDeclarations(ed.getInterfaces())
+  const getTypeAliases = parseTypeAliasDeclarations(
+    ed.getTypeAliases()
+  )
+  const getNamespaces = parseModuleDeclarations(ed.getModules())
+  return Effect.gen(function*() {
+    const interfaces = yield* getInterfaces
+    const typeAliases = yield* getTypeAliases
+    const namespaces = yield* getNamespaces
+    return [
+      new Domain.Namespace(
         name,
         doc,
         interfaces,
         typeAliases,
         namespaces
       )
-    })
+    ]
   })
+}
 
 const parseModuleDeclarations = (namespaces: ReadonlyArray<ast.ModuleDeclaration>) => {
   const exportedNamespaces = Array.filter(
     namespaces,
-    (md) => md.isExported() && shouldNotIgnore(md.getJsDocs())
+    (md) => md.isExported()
   )
-  return Effect.forEach(exportedNamespaces, parseModuleDeclaration).pipe(
-    Effect.mapBoth({
-      onFailure: Array.flatten,
-      onSuccess: sortByName
-    })
-  )
+  return Effect.forEach(exportedNamespaces, parseModuleDeclaration).pipe(Effect.map(Array.flatten))
 }
 
 /**
@@ -465,36 +475,39 @@ const parseMethod = (md: ast.MethodDeclaration) =>
         onNonEmpty: (x) => x.getJsDocs()
       })
     )
-    if (shouldNotIgnore(jsdocs)) {
-      const text = getJSDocText(jsdocs)
-      const doc = getDoc(text)
-      const signatures = pipe(
-        overloads,
-        Array.matchRight({
-          onEmpty: () => [getMethodSignature(md)],
-          onNonEmpty: (init, last) =>
-            pipe(
-              init.map((md) => md.getText()),
-              Array.append(getMethodSignature(last))
-            )
-        })
-      )
-      return Option.some(
-        new Domain.Method(
-          name,
-          doc,
-          signatures
-        )
-      )
+    const text = getJSDocText(jsdocs)
+    const doc = getDoc(text)
+    if (shouldIgnore(doc)) {
+      return Option.none()
     }
-    return Option.none()
+    const signatures = pipe(
+      overloads,
+      Array.matchRight({
+        onEmpty: () => [getMethodSignature(md)],
+        onNonEmpty: (init, last) =>
+          pipe(
+            init.map((md) => md.getText()),
+            Array.append(getMethodSignature(last))
+          )
+      })
+    )
+    return Option.some(
+      new Domain.Method(
+        name,
+        doc,
+        signatures
+      )
+    )
   })
 
 const parseProperty = (pd: ast.PropertyDeclaration) =>
   Effect.gen(function*() {
-    const name = pd.getName()
     const text = getJSDocText(pd.getJsDocs())
     const doc = getDoc(text)
+    if (shouldIgnore(doc)) {
+      return []
+    }
+    const name = pd.getName()
     const type = stripImportTypes(pd.getType().getText(pd))
     const readonly = pipe(
       Option.fromNullable(
@@ -506,24 +519,26 @@ const parseProperty = (pd: ast.PropertyDeclaration) =>
       })
     )
     const signature = `${readonly}${name}: ${type}`
-    return new Domain.Property(
-      name,
-      doc,
-      signature
-    )
+    return [
+      new Domain.Property(
+        name,
+        doc,
+        signature
+      )
+    ]
   })
 
 const parseProperties = (name: string, c: ast.ClassDeclaration) => {
   const properties = Array.filter(
     c.getProperties(),
     (pd) =>
-      !pd.isStatic() && shouldNotIgnore(pd.getJsDocs()) && pipe(
+      !pd.isStatic() && pipe(
         pd.getFirstModifierByKind(ast.ts.SyntaxKind.PrivateKeyword),
         Option.fromNullable,
         Option.isNone
       )
   )
-  return Effect.forEach(properties, parseProperty)
+  return Effect.forEach(properties, parseProperty).pipe(Effect.map(Array.flatten))
 }
 
 /**
@@ -543,7 +558,7 @@ export const getConstructorDeclarationSignature = (
     })
   )
 
-const getClassDoc = (name: string, c: ast.ClassDeclaration) => {
+const getClassDoc = (c: ast.ClassDeclaration) => {
   const text = getJSDocText(c.getJsDocs())
   return getDoc(text)
 }
@@ -569,8 +584,11 @@ const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
 
 const parseClass = (c: ast.ClassDeclaration) =>
   Effect.gen(function*() {
+    const doc = getClassDoc(c)
+    if (shouldIgnore(doc)) {
+      return []
+    }
     const name = c.getName() ?? "anonymous class"
-    const doc = getClassDoc(name, c)
     const signature = yield* getClassDeclarationSignature(name, c)
     const methods = yield* pipe(
       c.getInstanceMethods(),
@@ -583,14 +601,16 @@ const parseClass = (c: ast.ClassDeclaration) =>
       Effect.map(Array.getSomes)
     )
     const properties = yield* parseProperties(name, c)
-    return new Domain.Class(
-      name,
-      doc,
-      signature,
-      methods,
-      staticMethods,
-      properties
-    )
+    return [
+      new Domain.Class(
+        name,
+        doc,
+        signature,
+        methods,
+        staticMethods,
+        properties
+      )
+    ]
   })
 
 /**
@@ -601,11 +621,9 @@ export const parseClasses = Effect.gen(function*() {
   const source = yield* Source
   const exportedClasses = Array.filter(
     source.sourceFile.getClasses(),
-    (cd) => cd.isExported() && shouldNotIgnore(cd.getJsDocs())
+    (cd) => cd.isExported()
   )
-  return yield* Effect.forEach(exportedClasses, parseClass).pipe(
-    Effect.map(sortByName)
-  )
+  return yield* Effect.forEach(exportedClasses, parseClass).pipe(Effect.map(Array.flatten))
 })
 
 /**
@@ -667,9 +685,7 @@ export const parseFile = (project: ast.Project) =>
   Configuration.Configuration | Path.Path
 > =>
   Effect.flatMap(Path.Path, (_) => {
-    const path = file.path.split(
-      _.sep
-    ) as any as Array.NonEmptyReadonlyArray<string>
+    const path = file.path.split(_.sep) as any as Array.NonEmptyReadonlyArray<string>
     const sourceFile = project.getSourceFile(file.path)
     if (sourceFile !== undefined) {
       return pipe(

@@ -1,6 +1,6 @@
 ---
 title: Printer.ts
-nav_order: 7
+nav_order: 8
 parent: Modules
 ---
 
@@ -39,7 +39,7 @@ export const a: string = "a"
 import { Domain, Printer } from "@effect/docgen"
 import { Option } from "effect"
 
-const doc = new Domain.Doc(undefined, "1.0.0", false, [], undefined)
+const doc = new Domain.Doc(undefined, ["1.0.0"], [], [], [], [], [], {})
 const m = new Domain.Module("tests", doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
 console.log(Printer.printModule(m))
 ```

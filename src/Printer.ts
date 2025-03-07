@@ -7,7 +7,6 @@ import { identity, pipe } from "effect/Function"
 import * as Order from "effect/Order"
 import * as Record from "effect/Record"
 import * as String from "effect/String"
-import * as NodePath from "node:path"
 import * as Prettier from "prettier"
 import type * as Domain from "./Domain.js"
 
@@ -155,7 +154,7 @@ const printProperty = (model: Domain.Property): string => {
 
 /** @internal */
 export const printFrontMatter = (module: Domain.Module, order: number): string => {
-  const filename = NodePath.basename(module.path.join(NodePath.sep))
+  const filename = Array.lastNonEmpty(module.path)
   return `---
 title: ${filename}
 nav_order: ${order}
@@ -269,6 +268,13 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
     module.namespaces
   ])
 
+const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = Array.sort(
+  pipe(
+    String.Order,
+    Order.mapInput(({ name }: { name: string }) => name)
+  )
+)
+
 /**
  * Description...
  *
@@ -288,7 +294,7 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
  * import { Domain, Printer } from "@effect/docgen"
  * import { Option } from "effect"
  *
- * const doc = new Domain.Doc(undefined, "1.0.0", false, [], undefined)
+ * const doc = new Domain.Doc(undefined, ["1.0.0"], [], [], [], [], [], {})
  * const m = new Domain.Module("tests", doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
  * console.log(Printer.printModule(m))
  * ```
@@ -314,7 +320,7 @@ export const printModule = (module: Domain.Module) => {
   })
 
   const content = pipe(
-    getPrintables(module),
+    sortByName(getPrintables(module)),
     Array.groupBy((printable) =>
       printable.doc.category.length === 0 ? DEFAULT_CATEGORY : printable.doc.category.join(", ")
     ),
