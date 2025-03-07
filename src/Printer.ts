@@ -69,11 +69,11 @@ const printExamplesArray = (examples: ReadonlyArray<string>): string => {
   return examples.map((ex) => "\n\n**Example**\n\n" + printFence(ex)).join("")
 }
 
-const printOptionalSince = (since: string | undefined): string => {
-  if (since === undefined) {
+const printOptionalSince = (since: ReadonlyArray<string>): string => {
+  if (since.length === 0) {
     return ""
   }
-  return `\n\nSince v${since}`
+  return `\n\nSince v${since.join(", ")}`
 }
 
 const printHeaderByIndentation = (indentation: number) => {
@@ -87,9 +87,9 @@ const printHeaderByIndentation = (indentation: number) => {
   }
 }
 
-const printTitle = (s: string, deprecated: boolean, postfix?: string): string => {
+const printTitle = (s: string, deprecated: ReadonlyArray<string>, postfix?: string): string => {
   const name = s.trim() === "hasOwnProperty" ? `${s} (function)` : s
-  const title = deprecated ? Markdown.strikethrough(name) : name
+  const title = deprecated.length > 0 ? Markdown.strikethrough(name) : name
   return postfix === undefined ? title : title + ` ${postfix}`
 }
 
@@ -119,14 +119,12 @@ const printModel = (name: string, doc: Domain.Doc, options: {
   readonly indentation?: number
   readonly postfix?: string | undefined
   readonly signatures?: ReadonlyArray<string> | undefined
-  readonly throws?: ReadonlyArray<string> | undefined
-  readonly sees?: ReadonlyArray<string> | undefined
 }): string => {
   return printHeaderByIndentation(options.indentation ?? 0) + printTitle(name, doc.deprecated, options.postfix) +
     printOptionalDescription(doc.description) +
-    printThrowsArray(options.throws) +
-    printSeesArray(options.sees) +
-    printExamplesArray(doc.examples.map(({ body }) => body)) +
+    printThrowsArray(doc.throws) +
+    printSeesArray(doc.sees) +
+    printExamplesArray(doc.examples) +
     printSignaturesArray(options.signatures) +
     printOptionalSince(doc.since)
 }
@@ -197,9 +195,7 @@ export const printExport = (model: Domain.Export): string => {
 /** @internal */
 export const printFunction = (model: Domain.Function): string => {
   return printModel(model.name, model.doc, {
-    signatures: model.signatures,
-    throws: model.throws,
-    sees: model.sees
+    signatures: model.signatures
   })
 }
 
@@ -255,6 +251,13 @@ export const print = (p: Printable): string => {
   }
 }
 
+const DEFAULT_CATEGORY = "utils"
+
+const byCategory = Order.mapInput(
+  String.Order,
+  ([category]: [string, ...Array<unknown>]) => category
+)
+
 const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
   Array.flatten([
     module.classes,
@@ -265,13 +268,6 @@ const getPrintables = (module: Domain.Module): ReadonlyArray<Printable> =>
     module.typeAliases,
     module.namespaces
   ])
-
-const DEFAULT_CATEGORY = "utils"
-
-const byCategory = Order.mapInput(
-  String.Order,
-  ([category]: [string, ...Array<unknown>]) => category
-)
 
 /**
  * Description...
@@ -319,7 +315,9 @@ export const printModule = (module: Domain.Module) => {
 
   const content = pipe(
     getPrintables(module),
-    Array.groupBy((printable) => printable.doc.category ?? DEFAULT_CATEGORY),
+    Array.groupBy((printable) =>
+      printable.doc.category.length === 0 ? DEFAULT_CATEGORY : printable.doc.category.join(", ")
+    ),
     Record.toEntries,
     Array.sort(byCategory),
     Array.map(([category, printables]) =>

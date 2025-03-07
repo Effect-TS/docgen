@@ -3,7 +3,6 @@ import * as Domain from "@effect/docgen/Domain"
 import * as Parser from "@effect/docgen/Parser"
 import * as Printer from "@effect/docgen/Printer"
 import { Path } from "@effect/platform"
-import chalk from "chalk"
 import { Effect, Exit, Predicate } from "effect"
 import * as assert from "node:assert/strict"
 import * as ast from "ts-morph"
@@ -40,23 +39,6 @@ const makeSource = (source: string | ast.SourceFile) =>
       : source
   })
 
-const expectFailure = <A, E>(
-  sourceText: string,
-  eff: Effect.Effect<A, E, Parser.Source | Configuration.Configuration | Path.Path>,
-  failure: E,
-  config?: Partial<Configuration.ConfigurationShape>
-) => {
-  assert.deepStrictEqual(
-    eff.pipe(
-      Effect.provideService(Parser.Source, makeSource(sourceText)),
-      Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
-      Effect.provide(Path.layer),
-      Effect.runSyncExit
-    ),
-    Exit.fail(failure)
-  )
-}
-
 const print = (printables: ReadonlyArray<Printer.Printable>) => {
   const raw = printables.map((printable) => Printer.print(printable).trim()).join("\n")
   return Effect.succeed(raw)
@@ -91,14 +73,6 @@ const expectMarkdown = async <E>(
 
 describe("Parser", () => {
   describe("parseFunctions", () => {
-    it("should raise an error if the function is anonymous", () => {
-      expectFailure(
-        `export function(a: number, b: number): number { return a + b }`,
-        Parser.parseFunctions,
-        [`Missing ${chalk.bold("function name")} in module ${chalk.bold("test")}`]
-      )
-    })
-
     it("description", async () => {
       await expectMarkdown(
         Parser.parseFunctions,
@@ -728,12 +702,6 @@ Since v2.0.0`
       )
     })
 
-    it("should raise an error if `@since` tag is missing in export", () => {
-      expectFailure("export { a }", Parser.parseExports, [
-        `Missing ${chalk.bold("a")} documentation in ${chalk.bold("test")}`
-      ])
-    })
-
     it("should handle a single re-export", () => {
       project.createSourceFile("a.ts", `export const a = 1`)
       const sourceFile = project.createSourceFile(
@@ -759,10 +727,12 @@ Since v2.0.0`
             "b",
             new Domain.Doc(
               undefined,
-              "1.0.0",
-              false,
+              ["1.0.0"],
               [],
-              undefined
+              [],
+              [],
+              [],
+              []
             ),
             "export declare const b: 1",
             false
@@ -797,10 +767,12 @@ Since v2.0.0`
             "'./example'",
             new Domain.Doc(
               "Re-exports all named exports from the './example' module.",
-              "1.0.0",
-              false,
+              ["1.0.0"],
               [],
-              undefined
+              [],
+              [],
+              [],
+              []
             ),
             "export * from './example'",
             true
@@ -835,10 +807,12 @@ Since v2.0.0`
             "example",
             new Domain.Doc(
               "Re-exports all named exports from the './example' module as `example`.",
-              "1.0.0",
-              false,
+              ["1.0.0"],
               [],
-              undefined
+              [],
+              [],
+              [],
+              []
             ),
             "export * as example from './example'",
             true
@@ -940,12 +914,6 @@ Since v1.0.0`
       )
     })
 
-    it("should raise an error if the namespace is not well documented", () => {
-      expectFailure("export namespace A {}", Parser.parseNamespaces, [
-        `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#A")} documentation`
-      ])
-    })
-
     it("should parse an empty Namespace", async () => {
       await expectMarkdown(
         Parser.parseNamespaces,
@@ -976,21 +944,6 @@ Since v1.0.0`
           `## A (namespace)
 
 Since v1.0.0`
-        )
-      })
-
-      it("should raise an error if the interface is not well documented", () => {
-        expectFailure(
-          `
-        /**
-         * @since 1.0.0
-         */
-        export namespace A {
-          export interface B {}
-        }
-        `,
-          Parser.parseNamespaces,
-          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
         )
       })
 
@@ -1047,21 +1000,6 @@ Since v1.0.0`
         )
       })
 
-      it("should raise an error if the type alias is not well documented", () => {
-        expectFailure(
-          `
-        /**
-         * @since 1.0.0
-         */
-        export namespace A {
-          export type B = string
-        }
-        `,
-          Parser.parseNamespaces,
-          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
-        )
-      })
-
       it("should parse a type alias", async () => {
         await expectMarkdown(
           Parser.parseNamespaces,
@@ -1111,21 +1049,6 @@ Since v1.0.0`
         )
       })
 
-      it("should raise an error if the namespace is not well documented", () => {
-        expectFailure(
-          `
-        /**
-         * @since 1.0.0
-         */
-        export namespace A {
-          export namespace B {}
-        }
-        `,
-          Parser.parseNamespaces,
-          [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
-        )
-      })
-
       it("should parse a namespace", async () => {
         await expectMarkdown(
           Parser.parseNamespaces,
@@ -1168,18 +1091,6 @@ Since v1.0.2`
   })
 
   describe("parseClasses", () => {
-    it("should raise an error if the class is anonymous", () => {
-      expectFailure(`export class {}`, Parser.parseClasses, [
-        `Missing ${chalk.bold("class name")} in module ${chalk.bold("test")}`
-      ])
-    })
-
-    it("should raise an error if an `@since` tag is missing in a module", () => {
-      expectFailure(`export class MyClass {}`, Parser.parseClasses, [
-        `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass")} documentation`
-      ])
-    })
-
     it("should ignore internal classes", async () => {
       await expectMarkdown(
         Parser.parseClasses,
@@ -1196,19 +1107,6 @@ Since v1.0.2`
         export class MyClass {}
         `,
         ""
-      )
-    })
-
-    it("should raise an error if `@since` is missing in a property", () => {
-      expectFailure(
-        `/**
-          * @since 1.0.0
-          */
-          export class MyClass<A> {
-            readonly _A!: A
-          }`,
-        Parser.parseClasses,
-        [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass#_A")} documentation`]
       )
     })
 
@@ -1519,23 +1417,7 @@ Since v1.0.0`
     })
   })
 
-  describe("parseModuleDocumentation", () => {
-    it("should return an error when documentation is enforced but no documentation is provided", () => {
-      expectFailure(
-        "export const a: number = 1",
-        Parser.parseModuleDocumentation,
-        [`Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`]
-      )
-    })
-  })
-
   describe("parseModule", () => {
-    it("should raise an error if `@since` tag is missing", async () => {
-      expectFailure(`import * as assert from 'assert'`, Parser.parseModule, [
-        `Missing ${chalk.bold("documentation")} in ${chalk.bold("test")} module`
-      ])
-    })
-
     it("should not require an example for modules when `enforceExamples` is set to true", async () => {
       await expectMarkdown(
         Parser.parseModule,
@@ -1618,7 +1500,7 @@ Since v1.0.0`
         {
           description: "description",
           tags: {
-            deprecated: [undefined]
+            deprecated: [""]
           }
         }
       )

@@ -186,7 +186,9 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         (exampleId: string) =>
         (namedDoc: { readonly name: string; readonly doc: Domain.Doc }): ReadonlyArray<Domain.File> => {
           const descriptionExamples = namedDoc.doc.description ? extractFencedCode(namedDoc.doc.description) : []
-          const examples = descriptionExamples.concat(namedDoc.doc.examples.flatMap((e) => extractFencedCode(e.body)))
+          const examples = descriptionExamples.concat(
+            namedDoc.doc.examples.flatMap((example) => extractFencedCode(example))
+          )
           return Array.map(
             examples,
             (example, i) => {

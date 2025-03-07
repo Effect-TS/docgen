@@ -11,22 +11,28 @@ import * as String from "effect/String"
  * @category model
  * @since 0.6.0
  */
-export class Example {
-  constructor(readonly body: string) {}
-}
-
-/**
- * @category model
- * @since 0.6.0
- */
 export class Doc {
   constructor(
     readonly description: string | undefined,
-    readonly since: string | undefined,
-    readonly deprecated: boolean,
-    readonly examples: ReadonlyArray<Example>,
-    readonly category: string | undefined
+    readonly since: ReadonlyArray<string>,
+    readonly deprecated: ReadonlyArray<string>,
+    readonly examples: ReadonlyArray<string>,
+    readonly category: ReadonlyArray<string>,
+    readonly throws: ReadonlyArray<string>,
+    readonly sees: ReadonlyArray<string>
   ) {}
+
+  modifyDescription(description: string | undefined): Doc {
+    return new Doc(
+      description,
+      this.since,
+      this.deprecated,
+      this.examples,
+      this.category,
+      this.throws,
+      this.sees
+    )
+  }
 }
 
 /**
@@ -37,7 +43,7 @@ export class Module {
   /**
    * @since 0.6.0
    */
-  readonly _tag = "Module"
+  readonly _tag = "Module" // TODO: remove this
   constructor(
     readonly name: string,
     readonly doc: Doc,
@@ -123,9 +129,7 @@ export class Function {
   constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly signatures: ReadonlyArray<string>,
-    readonly throws: ReadonlyArray<string>,
-    readonly sees: ReadonlyArray<string>
+    readonly signatures: ReadonlyArray<string>
   ) {}
 }
 
