@@ -42,14 +42,19 @@ const makeSource = (source: string | ast.SourceFile) => {
 }
 
 const print = (printables: ReadonlyArray<Printer.Printable>) => {
-  const raw = printables.map((printable) => Printer.print(printable).trim()).join("\n")
-  return Effect.succeed(raw)
-  // return Printer.prettify(raw)
+  return Effect.gen(function*() {
+    const strings = yield* Effect.forEach(printables, (printable) => Printer.print(printable))
+    return strings.join("\n")
+  })
+}
+
+const isModule = (printableOr: ReadonlyArray<Printer.Printable> | Domain.Module): printableOr is Domain.Module => {
+  return !Array.isArray(printableOr)
 }
 
 const expectMarkdown = async <E>(
   eff: Effect.Effect<
-    Printer.Printable | ReadonlyArray<Printer.Printable>,
+    ReadonlyArray<Printer.Printable> | Domain.Module,
     E,
     Parser.Source | Configuration.Configuration | Path.Path
   >,
@@ -58,8 +63,11 @@ const expectMarkdown = async <E>(
   config?: Partial<Configuration.ConfigurationShape>
 ) => {
   const exit = await eff.pipe(
-    Effect.flatMap((a) => {
-      return print(Array.isArray(a) ? a : [a])
+    Effect.flatMap((printableOr) => {
+      if (isModule(printableOr)) {
+        return Printer.printModule(printableOr)
+      }
+      return print(printableOr)
     }),
     Effect.provideService(Parser.Source, makeSource(sourceText)),
     Effect.provideService(Configuration.Configuration, { ...defaultConfig, ...config }),
@@ -150,6 +158,8 @@ This is a description containing two links to \`foo\` and \`bar\`.
 declare const myfunc: <A>() => void
 \`\`\`
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-1.ts#L6)
+
 Since v1.2.0`
       )
     })
@@ -172,6 +182,8 @@ This is a description containing two links to \`foo\` and \`bar\`.
 \`\`\`ts
 declare const myfunc: () => void
 \`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-2.ts#L6)
 
 Since v1.2.0`
       )
@@ -201,6 +213,8 @@ description...
 \`\`\`ts
 declare const myfunc: () => void
 \`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-3.ts#L7)
 
 Since v1.2.0`
       )
@@ -233,6 +247,8 @@ description...
 declare const myfunc: () => void
 \`\`\`
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-4.ts#L8)
+
 Since v1.2.0`
       )
     })
@@ -262,6 +278,8 @@ const x = 1
 \`\`\`ts
 declare const myfunc: () => void
 \`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-5.ts#L7)
 
 Since v1.0.0`
       )
@@ -294,6 +312,8 @@ const x = 1
 \`\`\`ts
 declare const myfunc: () => void
 \`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-6.ts#L9)
 
 Since v1.0.0`
       )
@@ -337,6 +357,8 @@ const x = 2
 declare const myfunc: () => void
 \`\`\`
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-7.ts#L13)
+
 Since v1.0.0`
       )
     })
@@ -369,6 +391,8 @@ const x = 1
 declare const myfunc: () => void
 \`\`\`
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-8.ts#L9)
+
 Since v1.0.0`
       )
     })
@@ -400,6 +424,8 @@ const x = 1
 \`\`\`ts
 declare const myfunc: () => void
 \`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-9.ts#L9)
 
 Since v1.0.0`
       )
@@ -496,6 +522,8 @@ Since v1.0.0`
 declare const toNullable: <A>(ma: A | null) => A | null
 \`\`\`
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-17.ts#L4)
+
 Since v1.0.0`
       )
     })
@@ -535,6 +563,8 @@ assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
 declare const f: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-18.ts#L10)
+
 Since v1.0.0`
       )
     })
@@ -553,6 +583,8 @@ Since v1.0.0`
 \`\`\`ts
 declare const f: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-19.ts#L4)
 
 Since v1.0.0`
       )
@@ -578,6 +610,8 @@ a description...
 \`\`\`ts
 declare const f: { (a: Int, b: Int): { [key: string]: number; }; (a: number, b: number): { [key: string]: number; }; }
 \`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test-20.ts#L8)
 
 Since v1.0.0`
       )

@@ -8,7 +8,9 @@ import * as Order from "effect/Order"
 import * as Record from "effect/Record"
 import * as String from "effect/String"
 import * as Prettier from "prettier"
+import * as Configuration from "./Configuration.js"
 import type * as Domain from "./Domain.js"
+import * as Parser from "./Parser.js"
 
 /** @internal */
 export type Printable =
@@ -19,7 +21,6 @@ export type Printable =
   | Domain.Interface
   | Domain.TypeAlias
   | Domain.Namespace
-  | Domain.Module
 
 const Markdown = {
   bold: (content: string) => `**${content}**`,
@@ -108,21 +109,38 @@ const printSeesArray = (sees?: ReadonlyArray<string>): string => {
   return `\n\n${Markdown.bold("See")}\n\n${sees.map((see) => `- ${replaceJSDocLinks(see)}`).join("\n")}`
 }
 
+const printOptionalSourceLink = (position?: Domain.Position) => {
+  return Effect.gen(function*() {
+    if (position === undefined) {
+      return ""
+    }
+    const config = yield* Configuration.Configuration
+    const source = yield* Parser.Source
+    const name = source.sourceFile.getBaseName()
+    return `\n\n[Source](${config.projectHomepage}/blob/main/src/${name}#L${position.line})`
+  })
+}
+
 const printModel = (name: string, doc: Domain.Doc, options: {
   readonly indentation?: number
   readonly postfix?: string | undefined
   readonly signature?: string | undefined
-}): string => {
-  return printHeaderByIndentation(options.indentation ?? 0) + printTitle(name, doc.deprecated, options.postfix) +
-    printOptionalDescription(doc.description) +
-    printThrowsArray(doc.throws) +
-    printExamplesArray(doc.examples) +
-    printSeesArray(doc.sees) +
-    printOptionalSignature(options.signature) +
-    printOptionalSince(doc.since)
+  readonly position?: Domain.Position | undefined
+}) => {
+  return Effect.gen(function*() {
+    const sourceLink = yield* printOptionalSourceLink(options.position)
+    return printHeaderByIndentation(options.indentation ?? 0) + printTitle(name, doc.deprecated, options.postfix) +
+      printOptionalDescription(doc.description) +
+      printThrowsArray(doc.throws) +
+      printExamplesArray(doc.examples) +
+      printSeesArray(doc.sees) +
+      printOptionalSignature(options.signature) +
+      sourceLink +
+      printOptionalSince(doc.since)
+  })
 }
 
-const printStaticMethod = (model: Domain.Method): string => {
+const printStaticMethod = (model: Domain.Method) => {
   return printModel(model.name, model.doc, {
     indentation: 1,
     postfix: "(static method)",
@@ -130,7 +148,7 @@ const printStaticMethod = (model: Domain.Method): string => {
   })
 }
 
-const printMethod = (model: Domain.Method): string => {
+const printMethod = (model: Domain.Method) => {
   return printModel(model.name, model.doc, {
     indentation: 1,
     postfix: "(method)",
@@ -138,7 +156,7 @@ const printMethod = (model: Domain.Method): string => {
   })
 }
 
-const printProperty = (model: Domain.Property): string => {
+const printProperty = (model: Domain.Property) => {
   return printModel(model.name, model.doc, {
     indentation: 1,
     postfix: "(property)",
@@ -146,39 +164,43 @@ const printProperty = (model: Domain.Property): string => {
   })
 }
 
-const addLineBreak = (i: number): string => i === 0 ? "\n\n" : ""
-
-const printClass = (model: Domain.Class): string => {
-  const header = printModel(model.name, model.doc, {
-    postfix: "(class)",
-    signature: model.signature
+const printClass = (model: Domain.Class) => {
+  return Effect.gen(function*() {
+    const header = yield* printModel(model.name, model.doc, {
+      postfix: "(class)",
+      signature: model.signature
+    })
+    const staticMethods = yield* Effect.forEach(model.staticMethods, (method) => printStaticMethod(method))
+    const methods = yield* Effect.forEach(model.methods, (method) => printMethod(method))
+    const properties = yield* Effect.forEach(model.properties, (property) => printProperty(property))
+    return header +
+      staticMethods.map((s) => "\n\n" + s).join("") +
+      methods.map((s) => "\n\n" + s).join("") +
+      properties.map((s) => "\n\n" + s).join("")
   })
-  return header +
-    model.staticMethods.map((method, i) => addLineBreak(i) + printStaticMethod(method)).join("\n\n") +
-    model.methods.map((method, i) => addLineBreak(i) + printMethod(method)).join("\n\n") +
-    model.properties.map((property, i) => addLineBreak(i) + printProperty(property)).join("\n\n")
 }
 
-const printConstant = (model: Domain.Constant): string => {
+const printConstant = (model: Domain.Constant) => {
   return printModel(model.name, model.doc, {
     signature: model.signature
   })
 }
 
-const printExport = (model: Domain.Export): string => {
+const printExport = (model: Domain.Export) => {
   return printModel(model.name, model.doc, {
     postfix: model.isNamespaceExport ? "(namespace export)" : undefined,
     signature: model.signature
   })
 }
 
-const printFunction = (model: Domain.Function): string => {
+const printFunction = (model: Domain.Function) => {
   return printModel(model.name, model.doc, {
-    signature: model.signature
+    signature: model.signature,
+    position: model.position
   })
 }
 
-const printInterface = (model: Domain.Interface, indentation: number): string => {
+const printInterface = (model: Domain.Interface, indentation: number) => {
   return printModel(model.name, model.doc, {
     indentation,
     postfix: "(interface)",
@@ -186,7 +208,7 @@ const printInterface = (model: Domain.Interface, indentation: number): string =>
   })
 }
 
-const printTypeAlias = (model: Domain.TypeAlias, indentation: number): string => {
+const printTypeAlias = (model: Domain.TypeAlias, indentation: number) => {
   return printModel(model.name, model.doc, {
     indentation,
     postfix: "(type alias)",
@@ -194,19 +216,33 @@ const printTypeAlias = (model: Domain.TypeAlias, indentation: number): string =>
   })
 }
 
-const printNamespace = (model: Domain.Namespace, indentation: number): string => {
-  const header = printModel(model.name, model.doc, {
-    indentation,
-    postfix: "(namespace)"
+const printNamespace = (
+  model: Domain.Namespace,
+  indentation: number
+): Effect.Effect<string, never, Configuration.Configuration | Parser.Source> => {
+  return Effect.gen(function*() {
+    const header = yield* printModel(model.name, model.doc, {
+      indentation,
+      postfix: "(namespace)"
+    })
+    const interfaces = yield* Effect.forEach(model.interfaces, (inter) => printInterface(inter, indentation + 1))
+    const typeAliases = yield* Effect.forEach(
+      model.typeAliases,
+      (typeAlias) => printTypeAlias(typeAlias, indentation + 1)
+    )
+    const namespaces = yield* Effect.forEach(
+      model.namespaces,
+      (namespace) => printNamespace(namespace, indentation + 1)
+    )
+    return header +
+      interfaces.map((s) => "\n\n" + s).join("") +
+      typeAliases.map((s) => "\n\n" + s).join("") +
+      namespaces.map((s) => "\n\n" + s).join("")
   })
-  return header + "\n\n" +
-    model.interfaces.map((inter) => printInterface(inter, indentation + 1) + "\n\n").join("") +
-    model.typeAliases.map((typeAlias) => printTypeAlias(typeAlias, indentation + 1) + "\n\n").join("") +
-    model.namespaces.map((namespace) => printNamespace(namespace, indentation + 1) + "\n\n").join("")
 }
 
 /** @internal */
-export const print = (p: Printable): string => {
+export const print = (p: Printable) => {
   switch (p._tag) {
     case "Class":
       return printClass(p)
@@ -222,8 +258,6 @@ export const print = (p: Printable): string => {
       return printTypeAlias(p, 0)
     case "Namespace":
       return printNamespace(p, 0)
-    case "Module":
-      return printModule(p)
   }
 }
 
@@ -268,18 +302,13 @@ const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = 
  * **Example** (Title 1)
  *
  * ```ts twoslash title="Title 1"
- * import { Domain, Printer } from "@effect/docgen"
- * import { Option } from "effect"
- *
- * const doc = new Domain.Doc(undefined, ["1.0.0"], [], [], [], [], [], {})
- * const m = new Domain.Module("tests", doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
- * console.log(Printer.printModule(m))
+ * export const b: string = "b"
  * ```
  *
  * **Example** (Title 2)
  *
  * ~~~js twoslash title="Title 2"
- * export const a: string = "b"
+ * export const c: string = "c"
  * ~~~
  *
  * @throws `Error1` - Description 1
@@ -292,40 +321,33 @@ const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = 
  * @since 0.6.0
  */
 export const printModule = (module: Domain.Module) => {
-  const description = printModel(module.name, module.doc, {
-    postfix: "overview"
-  })
+  return Effect.gen(function*() {
+    const description = yield* printModel(module.name, module.doc, {
+      postfix: "overview"
+    })
 
-  const content = pipe(
-    sortByName(getPrintables(module)),
-    Array.groupBy((printable) =>
-      printable.doc.category.length === 0 ? DEFAULT_CATEGORY : printable.doc.category.join(", ")
-    ),
-    Record.toEntries,
-    Array.sort(byCategory),
-    Array.map(([category, printables]) =>
-      [
-        `\n# ${category}\n`,
-        ...pipe(
-          printables,
-          Array.sort(
-            Order.mapInput(
-              String.Order,
-              (printable: Printable) => printable.name
-            )
-          ),
-          Array.map(print)
-        )
-      ].join("\n")
+    const printables = pipe(
+      sortByName(getPrintables(module)),
+      Array.groupBy((printable) =>
+        printable.doc.category.length === 0 ? DEFAULT_CATEGORY : printable.doc.category.join(", ")
+      ),
+      Record.toEntries,
+      Array.sort(byCategory)
     )
-  ).join("\n")
 
-  return `
-${description}
+    const strings = yield* Effect.forEach(printables, ([category, printables]) =>
+      Effect.gen(function*() {
+        const out = `\n\n# ${category}`
+        const strings = yield* Effect.forEach(sortByName(printables), (printable) => print(printable))
+        return out + strings.map((s) => "\n\n" + s).join("")
+      }))
 
-<!-- toc -->
-${content}
-`
+    const content = strings.join("")
+
+    return `${description}
+
+<!-- toc -->${content}`
+  }).pipe(Effect.provideService(Parser.Source, module.source))
 }
 
 const defaultPrettierOptions: Prettier.Options = {

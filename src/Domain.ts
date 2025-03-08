@@ -7,7 +7,7 @@ import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as Order from "effect/Order"
 import * as String from "effect/String"
-
+import type * as Parser from "./Parser.js"
 /**
  * @category model
  * @since 0.6.0
@@ -43,11 +43,8 @@ export class Doc {
  * @since 0.6.0
  */
 export class Module {
-  /**
-   * @since 0.6.0
-   */
-  readonly _tag = "Module" // TODO: remove this
   constructor(
+    readonly source: Parser.SourceShape,
     readonly name: string,
     readonly doc: Doc,
     readonly path: Array.NonEmptyReadonlyArray<string>,

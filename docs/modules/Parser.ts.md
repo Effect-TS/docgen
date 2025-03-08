@@ -71,6 +71,8 @@ declare const parseFiles: (
 >
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L667)
+
 Since v0.6.0
 
 ## parseFunctions

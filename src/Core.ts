@@ -522,7 +522,7 @@ const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.forEach(modules, (module, i) =>
     Effect.gen(function*() {
       const outputPath = yield* getModuleMarkdownOutputPath(module)
-      const moduleContent = Printer.printModule(module)
+      const moduleContent = yield* Printer.printModule(module)
       const tocgen = yield* Effect.promise(async () => {
         // @ts-expect-error
         return await import("@effect/markdown-toc").then((m) => m.default)

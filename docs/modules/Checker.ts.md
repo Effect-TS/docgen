@@ -34,6 +34,8 @@ Since v0.6.0
 declare const checkClasses: (_classes: ReadonlyArray<Domain.Class>) => Effect.Effect<Array<never>, never, never>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L32)
+
 Since v0.6.0
 
 ## checkConstants
@@ -44,6 +46,8 @@ Since v0.6.0
 declare const checkConstants: (_constants: ReadonlyArray<Domain.Constant>) => Effect.Effect<Array<never>, never, never>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L39)
+
 Since v0.6.0
 
 ## checkExports
@@ -53,6 +57,8 @@ Since v0.6.0
 ```ts
 declare const checkExports: (_exports: ReadonlyArray<Domain.Export>) => Effect.Effect<Array<never>, never, never>
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L67)
 
 Since v0.6.0
 
@@ -66,6 +72,8 @@ declare const checkFunctions: (
 ) => Effect.Effect<Array<string>, never, Parser.Source>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L25)
+
 Since v0.6.0
 
 ## checkInterfaces
@@ -78,6 +86,8 @@ declare const checkInterfaces: (
 ) => Effect.Effect<Array<never>, never, never>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L46)
+
 Since v0.6.0
 
 ## checkModule
@@ -87,6 +97,8 @@ Since v0.6.0
 ```ts
 declare const checkModule: (_module: Domain.Module) => Effect.Effect<Array<never>, never, never>
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L74)
 
 Since v0.6.0
 
@@ -100,6 +112,8 @@ declare const checkNamespaces: (
 ) => Effect.Effect<Array<never>, never, never>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L60)
+
 Since v0.6.0
 
 ## checkTypeAliases
@@ -111,5 +125,7 @@ declare const checkTypeAliases: (
   _typeAliases: ReadonlyArray<Domain.TypeAlias>
 ) => Effect.Effect<Array<never>, never, never>
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L53)
 
 Since v0.6.0

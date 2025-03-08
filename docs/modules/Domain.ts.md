@@ -29,13 +29,12 @@ Since v0.6.0
     - [\_tag (property)](#_tag-property-4)
   - [Method (class)](#method-class)
   - [Module (class)](#module-class)
-    - [\_tag (property)](#_tag-property-5)
   - [Namespace (class)](#namespace-class)
-    - [\_tag (property)](#_tag-property-6)
+    - [\_tag (property)](#_tag-property-5)
   - [Position (interface)](#position-interface)
   - [Property (class)](#property-class)
   - [TypeAlias (class)](#typealias-class)
-    - [\_tag (property)](#_tag-property-7)
+    - [\_tag (property)](#_tag-property-6)
 - [service](#service)
   - [Process (class)](#process-class)
 - [sorting](#sorting)
@@ -256,6 +255,7 @@ Since v0.6.0
 
 ```ts
 declare class Module { constructor(
+    readonly source: Parser.SourceShape,
     readonly name: string,
     readonly doc: Doc,
     readonly path: Array.NonEmptyReadonlyArray<string>,
@@ -267,16 +267,6 @@ declare class Module { constructor(
     readonly exports: ReadonlyArray<Export>,
     readonly namespaces: ReadonlyArray<Namespace>
   ) }
-```
-
-Since v0.6.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "Module"
 ```
 
 Since v0.6.0

@@ -601,6 +601,7 @@ export const parseModule = Effect.gen(function*() {
   const namespaces = yield* parseNamespaces
   const name = source.sourceFile.getBaseName()
   return new Domain.Module(
+    source,
     name,
     doc,
     source.path,
@@ -622,8 +623,8 @@ export const parseFile =
   (file: Domain.File): Effect.Effect<Domain.Module, Array<string>, Configuration.Configuration | Path.Path> => {
     return Effect.gen(function*() {
       const path = yield* Path.Path
-      const filePath = file.path.split(path.sep)
       const sourceFile = project.getSourceFile(file.path)
+      const filePath = file.path.split(path.sep)
       if (sourceFile !== undefined && Array.isNonEmptyArray(filePath)) {
         return yield* Effect.provideService(parseModule, Source, { sourceFile, path: filePath })
       }

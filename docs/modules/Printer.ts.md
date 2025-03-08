@@ -39,18 +39,13 @@ export const a: string = "a"
 **Example** (Title 1)
 
 ```ts twoslash title="Title 1"
-import { Domain, Printer } from "@effect/docgen"
-import { Option } from "effect"
-
-const doc = new Domain.Doc(undefined, ["1.0.0"], [], [], [], [], [], {})
-const m = new Domain.Module("tests", doc, ["src", "tests.ts"], [], [], [], [], [], [], [])
-console.log(Printer.printModule(m))
+export const b: string = "b"
 ```
 
 **Example** (Title 2)
 
 ```js twoslash title="Title 2"
-export const a: string = "b"
+export const c: string = "c"
 ```
 
 **Throws**
@@ -66,8 +61,10 @@ export const a: string = "b"
 **Signature**
 
 ```ts
-declare const printModule: (module: Domain.Module) => string
+declare const printModule: (module: Domain.Module) => Effect.Effect<string, never, Configuration.Configuration>
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L323)
 
 Since v0.6.0
 
@@ -81,6 +78,8 @@ Since v0.6.0
 declare const prettify: (s: string) => Effect.Effect<string, never, never>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L375)
+
 Since v0.6.0
 
 ## printFrontMatter
@@ -90,5 +89,7 @@ Since v0.6.0
 ```ts
 declare const printFrontMatter: (module: Domain.Module, nav_order: number) => string
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L364)
 
 Since v0.6.0
