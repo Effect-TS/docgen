@@ -31,7 +31,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkClasses(_classes: ReadonlyArray<Domain.Class>)
+declare const checkClasses: (_classes: ReadonlyArray<Domain.Class>) => Effect.Effect<Array<never>, never, never>
 ```
 
 Since v0.6.0
@@ -41,7 +41,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkConstants(_constants: ReadonlyArray<Domain.Constant>)
+declare const checkConstants: (_constants: ReadonlyArray<Domain.Constant>) => Effect.Effect<Array<never>, never, never>
 ```
 
 Since v0.6.0
@@ -51,7 +51,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkExports(_exports: ReadonlyArray<Domain.Export>)
+declare const checkExports: (_exports: ReadonlyArray<Domain.Export>) => Effect.Effect<Array<never>, never, never>
 ```
 
 Since v0.6.0
@@ -61,7 +61,9 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkFunctions(functions: ReadonlyArray<Domain.Function>)
+declare const checkFunctions: (
+  functions: ReadonlyArray<Domain.Function>
+) => Effect.Effect<Array<string>, never, Parser.Source>
 ```
 
 Since v0.6.0
@@ -71,7 +73,9 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkInterfaces(_interfaces: ReadonlyArray<Domain.Interface>)
+declare const checkInterfaces: (
+  _interfaces: ReadonlyArray<Domain.Interface>
+) => Effect.Effect<Array<never>, never, never>
 ```
 
 Since v0.6.0
@@ -81,7 +85,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkModule(_module: Domain.Module)
+declare const checkModule: (_module: Domain.Module) => Effect.Effect<Array<never>, never, never>
 ```
 
 Since v0.6.0
@@ -91,7 +95,9 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkNamespaces(_namespaces: ReadonlyArray<Domain.Namespace>)
+declare const checkNamespaces: (
+  _namespaces: ReadonlyArray<Domain.Namespace>
+) => Effect.Effect<Array<never>, never, never>
 ```
 
 Since v0.6.0
@@ -101,7 +107,9 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkTypeAliases(_typeAliases: ReadonlyArray<Domain.TypeAlias>)
+declare const checkTypeAliases: (
+  _typeAliases: ReadonlyArray<Domain.TypeAlias>
+) => Effect.Effect<Array<never>, never, never>
 ```
 
 Since v0.6.0

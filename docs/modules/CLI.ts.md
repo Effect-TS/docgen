@@ -24,7 +24,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const cli: (
+declare const cli: (
   args: ReadonlyArray<string>
 ) => Effect.Effect<
   void,

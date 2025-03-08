@@ -65,7 +65,7 @@ export const a: string = "b"
 **Signature**
 
 ```ts
-export declare const printModule: (module: Domain.Module) => string
+declare const printModule: (module: Domain.Module) => string
 ```
 
 Since v0.6.0
@@ -77,7 +77,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function prettify(s: string)
+declare const prettify: (s: string) => Effect.Effect<string, never, never>
 ```
 
 Since v0.6.0

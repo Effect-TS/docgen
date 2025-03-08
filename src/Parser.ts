@@ -26,11 +26,6 @@ export class Source extends Context.Tag("Source")<Source, SourceShape>() {}
 const sortModulesByPath: <A extends Domain.Module>(self: Iterable<A>) => Array<A> = Array
   .sort(Domain.ByPath)
 
-/**
- * @internal
- */
-export const stripImportTypes = (s: string): string => s.replace(/import\("((?!").)*"\)./g, "")
-
 const getJSDocText: (jsdocs: ReadonlyArray<ast.JSDoc>) => string = Array.matchRight({
   onEmpty: () => "",
   onNonEmpty: (_, last) => last.getText()
@@ -142,34 +137,24 @@ export const parseInterfaces = Effect.flatMap(
   (source) => parseInterfaceDeclarations(source.sourceFile.getInterfaces())
 )
 
-const getFunctionDeclarationSignature = (
-  f: ast.FunctionDeclaration
-): string => {
-  const text = f.getText()
-  return pipe(
-    Option.fromNullable(f.compilerNode.body),
-    Option.match({
-      onNone: () => text.replace("export function ", "export declare function "),
-      onSome: (body) => {
-        const end = body.getStart() - f.getStart() - 1
-        return text
-          .substring(0, end)
-          .replace("export function ", "export declare function ")
-      }
-    })
+const parseType = (node: ast.Node) => {
+  const text = node.getType().getText(
+    node,
+    ast.ts.TypeFormatFlags.NoTruncation
+      | ast.ts.TypeFormatFlags.WriteArrayAsGenericType
+      | ast.ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope
+      | ast.ts.TypeFormatFlags.NoTypeReduction
+      | ast.ts.TypeFormatFlags.AllowUniqueESSymbolType
+      | ast.ts.TypeFormatFlags.WriteArrowStyleSignature
   )
+  return text
 }
 
-const getFunctionDeclarationJSDocs = (
-  fd: ast.FunctionDeclaration
-): Array<ast.JSDoc> =>
-  pipe(
-    fd.getOverloads(),
-    Array.matchLeft({
-      onEmpty: () => fd.getJsDocs(),
-      onNonEmpty: (firstOverload) => firstOverload.getJsDocs()
-    })
-  )
+const getFunctionDeclarationJSDocs = (fd: ast.FunctionDeclaration): Array<ast.JSDoc> =>
+  Array.matchLeft(fd.getOverloads(), {
+    onEmpty: () => fd.getJsDocs(),
+    onNonEmpty: (firstOverload) => firstOverload.getJsDocs()
+  })
 
 const parsePosition = (node: ast.Node): Effect.Effect<Domain.Position, never, Source> => {
   return Effect.gen(function*() {
@@ -188,24 +173,15 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
       return []
     }
     const name = fd.getName()
-    const signatures = pipe(
-      fd.getOverloads(),
-      Array.matchRight({
-        onEmpty: () => [getFunctionDeclarationSignature(fd)],
-        onNonEmpty: (init, last) =>
-          pipe(
-            init.map(getFunctionDeclarationSignature),
-            Array.append(getFunctionDeclarationSignature(last))
-          )
-      })
-    )
+    const type = parseType(fd)
+    const signature = `declare const ${name}: ${type}`
     const position = yield* parsePosition(fd)
     return [
       new Domain.Function(
         position,
         name ?? "",
         doc,
-        signatures
+        [signature]
       )
     ]
   })
@@ -219,11 +195,8 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
       return []
     }
     const name = vd.getName()
-    const signature = `export declare const ${name}: ${
-      stripImportTypes(
-        vd.getType().getText(vd)
-      )
-    }`
+    const type = parseType(vd)
+    const signature = `declare const ${name}: ${type}`
     const startPos = vd.getStart()
     const source = yield* Source
     const position = source.sourceFile.getLineAndColumnAtPos(startPos)
@@ -287,7 +260,10 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
       return []
     }
     const name = ta.getName()
-    const signature = ta.getText()
+    const len = ta.getTypeParameters().length
+    const type = parseType(ta)
+    const definition = ta.getTypeNode()?.getText()
+    const signature = `type ${len > 0 ? type : name} = ${definition}`
     return [
       new Domain.TypeAlias(
         name,
@@ -323,8 +299,8 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
       return []
     }
     const name = vd.getName()
-    const type = stripImportTypes(vd.getType().getText(vd))
-    const signature = `export declare const ${name}: ${type}`
+    const type = parseType(vd)
+    const signature = `declare const ${name}: ${type}`
     return [
       new Domain.Constant(
         name,
@@ -366,11 +342,11 @@ export const parseConstants = Effect.gen(function*() {
 const parseExportSpecifier = (es: ast.ExportSpecifier) =>
   Effect.gen(function*() {
     const name = es.compilerNode.name.text
-    const type = stripImportTypes(es.getType().getText(es))
+    const type = parseType(es)
     const ocommentRange = Array.head(es.getLeadingCommentRanges())
     const text = ocommentRange.pipe(Option.map((range) => range.getText()), Option.getOrElse(() => ""))
     const doc = parseDoc(text)
-    const signature = `export declare const ${name}: ${type}`
+    const signature = `declare const ${name}: ${type}`
     return new Domain.Export(
       name,
       doc,
@@ -523,7 +499,7 @@ const parseProperty = (pd: ast.PropertyDeclaration) =>
       return []
     }
     const name = pd.getName()
-    const type = stripImportTypes(pd.getType().getText(pd))
+    const type = parseType(pd)
     const readonly = pipe(
       Option.fromNullable(pd.getFirstModifierByKind(ast.ts.SyntaxKind.ReadonlyKeyword)),
       Option.match({
@@ -578,9 +554,9 @@ const getClassDeclarationSignature = (c: ast.ClassDeclaration) => {
       pipe(
         c.getConstructors(),
         Array.matchLeft({
-          onEmpty: () => `export declare class ${name}${typeParameters}`,
+          onEmpty: () => `declare class ${name}${typeParameters}`,
           onNonEmpty: (head) =>
-            `export declare class ${name}${typeParameters} { ${
+            `declare class ${name}${typeParameters} { ${
               getConstructorDeclarationSignature(
                 head
               )

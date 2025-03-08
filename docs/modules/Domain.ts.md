@@ -53,7 +53,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Class { constructor(
+declare class Class { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string,
@@ -80,7 +80,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Constant { constructor(
+declare class Constant { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string
@@ -104,7 +104,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Doc { constructor(
+declare class Doc { constructor(
     readonly description: string | undefined,
     readonly since: ReadonlyArray<string>,
     readonly deprecated: ReadonlyArray<string>,
@@ -131,7 +131,7 @@ modifyDescription(description: string | undefined): Doc
 **Signature**
 
 ```ts
-export declare class DocgenError
+declare class DocgenError
 ```
 
 Since v0.6.0
@@ -151,7 +151,7 @@ export {
 **Signature**
 
 ```ts
-export declare class Export { constructor(
+declare class Export { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string,
@@ -178,7 +178,7 @@ Represents a file which can be optionally overwriteable.
 **Signature**
 
 ```ts
-export declare class File { constructor(
+declare class File { constructor(
     readonly path: string,
     readonly content: string,
     readonly isOverwriteable: boolean = false
@@ -192,7 +192,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Function { constructor(
+declare class Function { constructor(
     readonly position: Position,
     readonly name: string,
     readonly doc: Doc,
@@ -217,7 +217,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Interface { constructor(
+declare class Interface { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string
@@ -241,7 +241,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Method { constructor(
+declare class Method { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>
@@ -255,7 +255,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Module { constructor(
+declare class Module { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly path: Array.NonEmptyReadonlyArray<string>,
@@ -286,7 +286,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Namespace { constructor(
+declare class Namespace { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly interfaces: ReadonlyArray<Interface>,
@@ -325,7 +325,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Property { constructor(
+declare class Property { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string
@@ -339,7 +339,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class TypeAlias { constructor(
+declare class TypeAlias { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string
@@ -367,7 +367,7 @@ Represents a handle to the currently executing process.
 **Signature**
 
 ```ts
-export declare class Process
+declare class Process
 ```
 
 Since v0.6.0
@@ -382,7 +382,7 @@ The file path is converted to lowercase before comparison.
 **Signature**
 
 ```ts
-export declare const ByPath: Order.Order<Module>
+declare const ByPath: Order.Order<Module>
 ```
 
 Since v0.6.0
@@ -394,7 +394,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const DocgenErrorTypeId: typeof DocgenErrorTypeId
+declare const DocgenErrorTypeId: unique symbol
 ```
 
 Since v0.6.0
@@ -404,7 +404,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export type DocgenErrorTypeId = typeof DocgenErrorTypeId
+type DocgenErrorTypeId = typeof DocgenErrorTypeId
 ```
 
 Since v0.6.0

@@ -74,7 +74,86 @@ const expectMarkdown = async <E>(
 }
 
 describe("Parser", () => {
+  describe("parseModule", () => {
+    it("should not require an example for modules when `enforceExamples` is set to true", async () => {
+      await expectMarkdown(
+        Parser.parseModule,
+        `/**
+* This is the assert module.
+*
+* @since 1.0.0
+*/
+import * as assert from 'assert'
+
+/**
+ * This is the foo export.
+ *
+ * @example
+ * import { foo } from 'test'
+ *
+ * console.log(foo)
+ *
+ * @category category
+ * @since 1.0.0
+ */
+export const foo = 'foo'`,
+        `## test-0.ts overview
+
+This is the assert module.
+
+Since v1.0.0
+
+<!-- toc -->
+
+# category
+
+## foo
+
+This is the foo export.
+
+**Example**
+
+\`\`\`ts
+import { foo } from 'test'
+
+console.log(foo)
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+declare const foo: "foo"
+\`\`\`
+
+Since v1.0.0`
+      )
+    })
+  })
+
   describe("parseFunctions", () => {
+    it("generics", async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * This is a description containing two links to {@link foo} and {@link bar}.
+         *
+         * @since 1.2.0
+         */
+        export function myfunc<A>() {}`,
+        `## myfunc
+
+This is a description containing two links to \`foo\` and \`bar\`.
+
+**Signature**
+
+\`\`\`ts
+declare const myfunc: <A>() => void
+\`\`\`
+
+Since v1.2.0`
+      )
+    })
+
     it("description", async () => {
       await expectMarkdown(
         Parser.parseFunctions,
@@ -91,7 +170,7 @@ This is a description containing two links to \`foo\` and \`bar\`.
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.2.0`
@@ -120,7 +199,7 @@ description...
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.2.0`
@@ -151,7 +230,7 @@ description...
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.2.0`
@@ -181,7 +260,7 @@ const x = 1
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.0.0`
@@ -213,7 +292,7 @@ const x = 1
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.0.0`
@@ -255,7 +334,7 @@ const x = 2
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.0.0`
@@ -287,7 +366,7 @@ const x = 1
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.0.0`
@@ -319,7 +398,7 @@ const x = 1
 **Signature**
 
 \`\`\`ts
-export declare function myfunc()
+declare const myfunc: () => void
 \`\`\`
 
 Since v1.0.0`
@@ -414,7 +493,7 @@ Since v1.0.0`
 **Signature**
 
 \`\`\`ts
-export declare const toNullable: <A>(ma: A | null) => A | null
+declare const toNullable: <A>(ma: A | null) => A | null
 \`\`\`
 
 Since v1.0.0`
@@ -453,7 +532,7 @@ assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
 **Signature**
 
 \`\`\`ts
-export declare const f: (a: number, b: number) => { [key: string]: number; }
+declare const f: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
 
 Since v1.0.0`
@@ -472,7 +551,7 @@ Since v1.0.0`
 **Signature**
 
 \`\`\`ts
-export declare function f(a: number, b: number): { [key: string]: number }
+declare const f: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
 
 Since v1.0.0`
@@ -497,8 +576,7 @@ a description...
 **Signature**
 
 \`\`\`ts
-export declare function f(a: Int, b: Int): { [key: string]: number }
-export declare function f(a: number, b: number): { [key: string]: number }
+declare const f: { (a: Int, b: Int): { [key: string]: number; }; (a: number, b: number): { [key: string]: number; }; }
 \`\`\`
 
 Since v1.0.0`
@@ -523,7 +601,7 @@ a description...
 **Signature**
 
 \`\`\`ts
-export declare const s: string
+declare const s: string
 \`\`\`
 
 Since v1.0.0`
@@ -542,7 +620,7 @@ Since v1.0.0`
 **Signature**
 
 \`\`\`ts
-export declare const left: <E = never, A = never>(l: E) => string
+declare const left: <E = never, A = never>(l: E) => string
 \`\`\`
 
 Since v1.0.0`
@@ -563,7 +641,7 @@ Since v1.0.0`
 **Signature**
 
 \`\`\`ts
-export declare const empty: A
+declare const empty: A
 \`\`\`
 
 Since v1.0.0`
@@ -588,7 +666,7 @@ Since v1.0.0`
 **Signature**
 
 \`\`\`ts
-export declare const taskSeq: { a: number; }
+declare const taskSeq: { a: number; }
 \`\`\`
 
 Since v1.0.0`
@@ -612,7 +690,10 @@ Since v1.0.0`
     it("should return a type alias", async () => {
       await expectMarkdown(
         Parser.parseTypeAliases,
-        `/**
+        `
+        type None<A> = { readonly _tag: "None" }
+        type Some<A> = { readonly _tag: "Some"; readonly value: A }
+        /**
           * a description...
           * @since 1.0.0
           * @deprecated
@@ -625,7 +706,7 @@ a description...
 **Signature**
 
 \`\`\`ts
-export type Option<A> = None<A> | Some<A>
+type Option<A> = None<A> | Some<A>
 \`\`\`
 
 Since v1.0.0`
@@ -657,7 +738,7 @@ Since v1.0.0`
 **Signature**
 
 \`\`\`ts
-export declare const b: 1
+declare const b: 1
 \`\`\`
 
 Since v1.0.0`
@@ -689,7 +770,7 @@ description_of_a
 **Signature**
 
 \`\`\`ts
-export declare const a: 1
+declare const a: 1
 \`\`\`
 
 Since v1.0.0
@@ -700,7 +781,7 @@ description_of_b
 **Signature**
 
 \`\`\`ts
-export declare const b: 2
+declare const b: 2
 \`\`\`
 
 Since v2.0.0`
@@ -742,7 +823,7 @@ Since v2.0.0`
                 "since": ["1.0.0"]
               }
             ),
-            "export declare const b: 1",
+            "declare const b: 1",
             false
           )
         ])
@@ -1003,7 +1084,7 @@ Since v1.0.0
 **Signature**
 
 \`\`\`ts
-export type B = string
+type B = string
 \`\`\`
 
 Since v1.0.1`
@@ -1061,7 +1142,7 @@ Since v1.0.1
 **Signature**
 
 \`\`\`ts
-export type C = string
+type C = string
 \`\`\`
 
 Since v1.0.2`
@@ -1107,7 +1188,7 @@ Since v1.0.2`
 **Signature**
 
 \`\`\`ts
-export declare class MyClass<A>
+declare class MyClass<A>
 \`\`\`
 
 Since v1.0.0`
@@ -1129,7 +1210,7 @@ description
 **Signature**
 
 \`\`\`ts
-export declare class C { constructor() }
+declare class C { constructor() }
 \`\`\`
 
 Since v1.0.0`
@@ -1179,7 +1260,7 @@ description
 **Signature**
 
 \`\`\`ts
-export declare class C
+declare class C
 \`\`\`
 
 Since v1.0.0
@@ -1235,7 +1316,7 @@ a class description...
 **Signature**
 
 \`\`\`ts
-export declare class Test { constructor(readonly value: string) }
+declare class Test { constructor(readonly value: string) }
 \`\`\`
 
 Since v1.0.0
@@ -1314,7 +1395,7 @@ a class description...
 **Signature**
 
 \`\`\`ts
-export declare class Test<A> { constructor(readonly value: A) }
+declare class Test<A> { constructor(readonly value: A) }
 \`\`\`
 
 Since v1.0.0
@@ -1373,7 +1454,7 @@ a class description...
 **Signature**
 
 \`\`\`ts
-export declare class Test<A>
+declare class Test<A>
 \`\`\`
 
 Since v1.0.0`
@@ -1393,62 +1474,6 @@ Since v1.0.0`
           Effect.runSyncExit
         ),
         Exit.fail(["Unable to locate file: non-existent.ts"])
-      )
-    })
-  })
-
-  describe("parseModule", () => {
-    it("should not require an example for modules when `enforceExamples` is set to true", async () => {
-      await expectMarkdown(
-        Parser.parseModule,
-        `/**
-* This is the assert module.
-*
-* @since 1.0.0
-*/
-import * as assert from 'assert'
-
-/**
- * This is the foo export.
- *
- * @example
- * import { foo } from 'test'
- *
- * console.log(foo)
- *
- * @category category
- * @since 1.0.0
- */
-export const foo = 'foo'`,
-        `## test-52.ts overview
-
-This is the assert module.
-
-Since v1.0.0
-
-<!-- toc -->
-
-# category
-
-## foo
-
-This is the foo export.
-
-**Example**
-
-\`\`\`ts
-import { foo } from 'test'
-
-console.log(foo)
-\`\`\`
-
-**Signature**
-
-\`\`\`ts
-export declare const foo: "foo"
-\`\`\`
-
-Since v1.0.0`
       )
     })
   })
@@ -1493,21 +1518,6 @@ Since v1.0.0`
             category: ["instance"]
           }
         }
-      )
-    })
-
-    it("stripImportTypes", () => {
-      assert.deepStrictEqual(
-        Parser.stripImportTypes(
-          "{ <E, A, B>(refinement: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/function\").Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
-        ),
-        "{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): (ma: Either<E, A>) => Either<E, A>; }"
-      )
-      assert.deepStrictEqual(
-        Parser.stripImportTypes(
-          "{ <A, B>(refinementWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: import(\"/Users/giulio/Documents/Projects/github/fp-ts/src/FilterableWithIndex\").PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
-        ),
-        "{ <A, B>(refinementWithIndex: RefinementWithIndex<number, A, B>): (fa: A[]) => B[]; <A>(predicateWithIndex: PredicateWithIndex<number, A>): (fa: A[]) => A[]; }"
       )
     })
   })

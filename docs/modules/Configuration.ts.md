@@ -26,7 +26,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare class Configuration
+declare class Configuration
 ```
 
 Since v0.6.0
@@ -36,7 +36,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const ConfigurationSchema: Schema.Struct<{
+declare const ConfigurationSchema: Schema.Struct<{
   $schema: Schema.optional<typeof Schema.String>
   projectHomepage: Schema.optional<typeof Schema.String>
   srcDir: Schema.optional<typeof Schema.String>
