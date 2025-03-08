@@ -8,6 +8,20 @@ import * as Effect from "effect/Effect"
 import * as Order from "effect/Order"
 import * as String from "effect/String"
 import type * as Parser from "./Parser.js"
+
+/**
+ * @category model
+ * @since 0.6.0
+ */
+export class DocEntry {
+  constructor(
+    readonly name: string,
+    readonly doc: Doc,
+    readonly signature: string,
+    readonly position: Position
+  ) {}
+}
+
 /**
  * @category model
  * @since 0.6.0
@@ -62,59 +76,41 @@ export class Module {
  * @category model
  * @since 0.6.0
  */
-export class Class {
+export class Class extends DocEntry {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Class"
   constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string,
-    readonly methods: ReadonlyArray<Method>,
-    readonly staticMethods: ReadonlyArray<Method>,
-    readonly properties: ReadonlyArray<Property>
-  ) {}
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position,
+    readonly methods: ReadonlyArray<DocEntry>,
+    readonly staticMethods: ReadonlyArray<DocEntry>,
+    readonly properties: ReadonlyArray<DocEntry>
+  ) {
+    super(name, doc, signature, position)
+  }
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Method {
-  constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) {}
-}
-
-/**
- * @category model
- * @since 0.6.0
- */
-export class Property {
-  constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) {}
-}
-
-/**
- * @category model
- * @since 0.6.0
- */
-export class Interface {
+export class Interface extends DocEntry {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Interface"
   constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) {}
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position
+  ) {
+    super(name, doc, signature, position)
+  }
 }
 
 /**
@@ -130,49 +126,57 @@ export interface Position {
  * @category model
  * @since 0.6.0
  */
-export class Function {
+export class Function extends DocEntry {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Function"
   constructor(
-    readonly position: Position,
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) {}
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position
+  ) {
+    super(name, doc, signature, position)
+  }
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class TypeAlias {
+export class TypeAlias extends DocEntry {
   /**
    * @since 0.6.0
    */
   readonly _tag = "TypeAlias"
   constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) {}
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position
+  ) {
+    super(name, doc, signature, position)
+  }
 }
 
 /**
  * @category model
  * @since 0.6.0
  */
-export class Constant {
+export class Constant extends DocEntry {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Constant"
   constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) {}
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position
+  ) {
+    super(name, doc, signature, position)
+  }
 }
 
 /**
@@ -189,17 +193,20 @@ export class Constant {
  * @category model
  * @since 0.6.0
  */
-export class Export {
+export class Export extends DocEntry {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Export"
   constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string,
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position,
     readonly isNamespaceExport: boolean
-  ) {}
+  ) {
+    super(name, doc, signature, position)
+  }
 }
 
 /**
@@ -214,6 +221,7 @@ export class Namespace {
   constructor(
     readonly name: string,
     readonly doc: Doc,
+    readonly position: Position,
     readonly interfaces: ReadonlyArray<Interface>,
     readonly typeAliases: ReadonlyArray<TypeAlias>,
     readonly namespaces: ReadonlyArray<Namespace>

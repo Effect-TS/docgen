@@ -107,11 +107,13 @@ const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
     }
     const name = id.getName()
     const signature = id.getText()
+    const position = yield* parsePosition(id)
     return [
       new Domain.Interface(
         name,
         doc,
-        signature
+        signature,
+        position
       )
     ]
   })
@@ -173,10 +175,10 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
     const position = yield* parsePosition(fd)
     return [
       new Domain.Function(
-        position,
         name ?? "",
         doc,
-        signature
+        signature,
+        position
       )
     ]
   })
@@ -196,10 +198,10 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
     const position = source.sourceFile.getLineAndColumnAtPos(startPos)
     return [
       new Domain.Function(
-        position,
         name ?? "",
         doc,
-        signature
+        signature,
+        position
       )
     ]
   })
@@ -257,11 +259,13 @@ const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
     const type = parseType(ta)
     const definition = ta.getTypeNode()?.getText()
     const signature = `type ${len > 0 ? type : name} = ${definition}`
+    const position = yield* parsePosition(ta)
     return [
       new Domain.TypeAlias(
         name,
         doc,
-        signature
+        signature,
+        position
       )
     ]
   })
@@ -293,11 +297,13 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
     const name = vd.getName()
     const type = parseType(vd)
     const signature = `declare const ${name}: ${type}`
+    const position = yield* parsePosition(vd)
     return [
       new Domain.Constant(
         name,
         doc,
-        signature
+        signature,
+        position
       )
     ]
   })
@@ -339,10 +345,12 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
     const jsDocsText = ocommentRange.pipe(Option.map((range) => range.getText()), Option.getOrElse(() => ""))
     const doc = parseDoc(jsDocsText)
     const signature = `declare const ${name}: ${type}`
+    const position = yield* parsePosition(es)
     return new Domain.Export(
       name,
       doc,
       signature,
+      position,
       false
     )
   })
@@ -356,12 +364,14 @@ const parseExportStar = (ed: ast.ExportDeclaration) =>
     const ocommentRange = Array.head(ed.getLeadingCommentRanges())
     const jsDocsText = ocommentRange.pipe(Option.map((range) => range.getText()), Option.getOrElse(() => ""))
     const doc = parseDoc(jsDocsText)
+    const position = yield* parsePosition(ed)
     return new Domain.Export(
       namespace ?? name,
       doc.modifyDescription(
         `Re-exports all named exports from the ${name} module${namespace === undefined ? "" : ` as \`${namespace}\``}.`
       ),
       signature,
+      position,
       true
     )
   })
@@ -399,10 +409,12 @@ const parseModuleDeclaration = (
     const interfaces = yield* getInterfaces
     const typeAliases = yield* getTypeAliases
     const namespaces = yield* getNamespaces
+    const position = yield* parsePosition(ed)
     return [
       new Domain.Namespace(
         name,
         doc,
+        position,
         interfaces,
         typeAliases,
         namespaces
@@ -443,11 +455,13 @@ const parseMethod = (md: ast.MethodDeclaration) =>
     }
     const type = parseType(md)
     const signature = `declare const ${name}: ${type}`
+    const position = yield* parsePosition(md)
     return Option.some(
-      new Domain.Method(
+      new Domain.DocEntry(
         name,
         doc,
-        signature
+        signature,
+        position
       )
     )
   })
@@ -468,7 +482,15 @@ const parseProperty = (pd: ast.PropertyDeclaration) =>
       })
     )
     const signature = `${readonly}${name}: ${type}`
-    return [new Domain.Property(name, doc, signature)]
+    const position = yield* parsePosition(pd)
+    return [
+      new Domain.DocEntry(
+        name,
+        doc,
+        signature,
+        position
+      )
+    ]
   })
 
 const parseProperties = (c: ast.ClassDeclaration) => {
@@ -541,11 +563,13 @@ const parseClass = (c: ast.ClassDeclaration) =>
       Effect.map(Array.getSomes)
     )
     const properties = yield* parseProperties(c)
+    const position = yield* parsePosition(c)
     return [
       new Domain.Class(
         name,
         doc,
         signature,
+        position,
         methods,
         staticMethods,
         properties

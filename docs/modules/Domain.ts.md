@@ -19,6 +19,7 @@ Since v0.6.0
     - [\_tag (property)](#_tag-property-1)
   - [Doc (class)](#doc-class)
     - [modifyDescription (method)](#modifydescription-method)
+  - [DocEntry (class)](#docentry-class)
   - [DocgenError (class)](#docgenerror-class)
   - [Export (class)](#export-class)
     - [\_tag (property)](#_tag-property-2)
@@ -27,12 +28,10 @@ Since v0.6.0
     - [\_tag (property)](#_tag-property-3)
   - [Interface (class)](#interface-class)
     - [\_tag (property)](#_tag-property-4)
-  - [Method (class)](#method-class)
   - [Module (class)](#module-class)
   - [Namespace (class)](#namespace-class)
     - [\_tag (property)](#_tag-property-5)
   - [Position (interface)](#position-interface)
-  - [Property (class)](#property-class)
   - [TypeAlias (class)](#typealias-class)
     - [\_tag (property)](#_tag-property-6)
 - [service](#service)
@@ -53,14 +52,17 @@ Since v0.6.0
 
 ```ts
 declare class Class { constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string,
-    readonly methods: ReadonlyArray<Method>,
-    readonly staticMethods: ReadonlyArray<Method>,
-    readonly properties: ReadonlyArray<Property>
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position,
+    readonly methods: ReadonlyArray<DocEntry>,
+    readonly staticMethods: ReadonlyArray<DocEntry>,
+    readonly properties: ReadonlyArray<DocEntry>
   ) }
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L79)
 
 Since v0.6.0
 
@@ -72,6 +74,8 @@ Since v0.6.0
 readonly _tag: "Class"
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L83)
+
 Since v0.6.0
 
 ## Constant (class)
@@ -79,12 +83,12 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare class Constant { constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) }
+declare class Constant {
+  constructor(name: string, doc: Doc, signature: string, position: Position)
+}
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L167)
 
 Since v0.6.0
 
@@ -95,6 +99,8 @@ Since v0.6.0
 ```ts
 readonly _tag: "Constant"
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L171)
 
 Since v0.6.0
 
@@ -115,6 +121,8 @@ declare class Doc { constructor(
   ) }
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L29)
+
 Since v0.6.0
 
 ### modifyDescription (method)
@@ -125,6 +133,25 @@ Since v0.6.0
 declare const modifyDescription: (description: string | undefined) => Doc
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L41)
+
+## DocEntry (class)
+
+**Signature**
+
+```ts
+declare class DocEntry { constructor(
+    readonly name: string,
+    readonly doc: Doc,
+    readonly signature: string,
+    readonly position: Position
+  ) }
+```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L16)
+
+Since v0.6.0
+
 ## DocgenError (class)
 
 **Signature**
@@ -132,6 +159,8 @@ declare const modifyDescription: (description: string | undefined) => Doc
 ```ts
 declare class DocgenError
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L273)
 
 Since v0.6.0
 
@@ -151,12 +180,15 @@ export {
 
 ```ts
 declare class Export { constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string,
+    name: string,
+    doc: Doc,
+    signature: string,
+    position: Position,
     readonly isNamespaceExport: boolean
   ) }
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L196)
 
 Since v0.6.0
 
@@ -167,6 +199,8 @@ Since v0.6.0
 ```ts
 readonly _tag: "Export"
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L200)
 
 Since v0.6.0
 
@@ -184,6 +218,8 @@ declare class File { constructor(
   ) }
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L249)
+
 Since v0.6.0
 
 ## Function (class)
@@ -191,13 +227,12 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare class Function { constructor(
-    readonly position: Position,
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) }
+declare class Function {
+  constructor(name: string, doc: Doc, signature: string, position: Position)
+}
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L129)
 
 Since v0.6.0
 
@@ -209,6 +244,8 @@ Since v0.6.0
 readonly _tag: "Function"
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L133)
+
 Since v0.6.0
 
 ## Interface (class)
@@ -216,12 +253,12 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare class Interface { constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) }
+declare class Interface {
+  constructor(name: string, doc: Doc, signature: string, position: Position)
+}
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L101)
 
 Since v0.6.0
 
@@ -233,19 +270,7 @@ Since v0.6.0
 readonly _tag: "Interface"
 ```
 
-Since v0.6.0
-
-## Method (class)
-
-**Signature**
-
-```ts
-declare class Method { constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) }
-```
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L105)
 
 Since v0.6.0
 
@@ -269,6 +294,8 @@ declare class Module { constructor(
   ) }
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L59)
+
 Since v0.6.0
 
 ## Namespace (class)
@@ -279,11 +306,14 @@ Since v0.6.0
 declare class Namespace { constructor(
     readonly name: string,
     readonly doc: Doc,
+    readonly position: Position,
     readonly interfaces: ReadonlyArray<Interface>,
     readonly typeAliases: ReadonlyArray<TypeAlias>,
     readonly namespaces: ReadonlyArray<Namespace>
   ) }
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L216)
 
 Since v0.6.0
 
@@ -294,6 +324,8 @@ Since v0.6.0
 ```ts
 readonly _tag: "Namespace"
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L220)
 
 Since v0.6.0
 
@@ -308,19 +340,7 @@ export interface Position {
 }
 ```
 
-Since v0.6.0
-
-## Property (class)
-
-**Signature**
-
-```ts
-declare class Property { constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) }
-```
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L120)
 
 Since v0.6.0
 
@@ -329,12 +349,12 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare class TypeAlias { constructor(
-    readonly name: string,
-    readonly doc: Doc,
-    readonly signature: string
-  ) }
+declare class TypeAlias {
+  constructor(name: string, doc: Doc, signature: string, position: Position)
+}
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L148)
 
 Since v0.6.0
 
@@ -345,6 +365,8 @@ Since v0.6.0
 ```ts
 readonly _tag: "TypeAlias"
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L152)
 
 Since v0.6.0
 
@@ -359,6 +381,8 @@ Represents a handle to the currently executing process.
 ```ts
 declare class Process
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L284)
 
 Since v0.6.0
 
@@ -375,6 +399,8 @@ The file path is converted to lowercase before comparison.
 declare const ByPath: Order.Order<Module>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L238)
+
 Since v0.6.0
 
 # symbol
@@ -387,6 +413,8 @@ Since v0.6.0
 declare const DocgenErrorTypeId: unique symbol
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L261)
+
 Since v0.6.0
 
 ## DocgenErrorTypeId (type alias)
@@ -396,5 +424,7 @@ Since v0.6.0
 ```ts
 type DocgenErrorTypeId = typeof DocgenErrorTypeId
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L267)
 
 Since v0.6.0

@@ -33,4 +33,6 @@ declare const cli: (
 >
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/CLI.ts#L189)
+
 Since v0.6.0

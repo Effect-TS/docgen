@@ -35,6 +35,8 @@ Since v0.6.0
 declare const parseClasses: Effect.Effect<Array<Domain.Class>, never, Source>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L584)
+
 Since v0.6.0
 
 ## parseConstants
@@ -45,6 +47,8 @@ Since v0.6.0
 declare const parseConstants: Effect.Effect<Array<Domain.Constant>, never, Source>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L315)
+
 Since v0.6.0
 
 ## parseExports
@@ -54,6 +58,8 @@ Since v0.6.0
 ```ts
 declare const parseExports: Effect.Effect<Array<Domain.Export>, never, Source>
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L391)
 
 Since v0.6.0
 
@@ -71,7 +77,7 @@ declare const parseFiles: (
 >
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L667)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L691)
 
 Since v0.6.0
 
@@ -83,6 +89,8 @@ Since v0.6.0
 declare const parseFunctions: Effect.Effect<Array<Domain.Function>, never, Source>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L240)
+
 Since v0.6.0
 
 ## parseInterfaces
@@ -92,6 +100,8 @@ Since v0.6.0
 ```ts
 declare const parseInterfaces: Effect.Effect<Array<Domain.Interface>, never, Source>
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L133)
 
 Since v0.6.0
 
@@ -103,6 +113,8 @@ Since v0.6.0
 declare const parseModule: Effect.Effect<Domain.Module, never, Configuration.Configuration | Source>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L616)
+
 Since v0.6.0
 
 ## parseNamespaces
@@ -113,6 +125,8 @@ Since v0.6.0
 declare const parseNamespaces: Effect.Effect<Array<Domain.Namespace>, never, Configuration.Configuration | Source>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L437)
+
 Since v0.6.0
 
 ## parseTypeAliases
@@ -122,5 +136,7 @@ Since v0.6.0
 ```ts
 declare const parseTypeAliases: Effect.Effect<Array<Domain.TypeAlias>, never, Source>
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L285)
 
 Since v0.6.0

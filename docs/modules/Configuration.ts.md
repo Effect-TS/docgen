@@ -29,6 +29,8 @@ Since v0.6.0
 declare class Configuration
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L109)
+
 Since v0.6.0
 
 ## ConfigurationSchema
@@ -57,6 +59,8 @@ declare const ConfigurationSchema: Schema.Struct<{
 }>
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L33)
+
 Since v0.6.0
 
 ## ConfigurationShape (interface)
@@ -81,5 +85,7 @@ export interface ConfigurationShape {
   readonly examplesCompilerOptions: Record<string, unknown>
 }
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L88)
 
 Since v0.6.0

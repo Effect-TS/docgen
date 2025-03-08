@@ -152,15 +152,11 @@ const validateJsonFile = <A, I>(
     )
   })
 
-// TODO: this is invoked twice, why?
+// TODO: this is invoked twice
 const readDocgenConfig = (
   path: string
-): Effect.Effect<
-  Option.Option<Schema.Schema.Type<typeof ConfigurationSchema>>,
-  never,
-  FileSystem.FileSystem
-> =>
-  Effect.gen(function*() {
+): Effect.Effect<Option.Option<Schema.Schema.Type<typeof ConfigurationSchema>>, never, FileSystem.FileSystem> => {
+  return Effect.gen(function*() {
     const fs = yield* FileSystem.FileSystem
     const exists = yield* Effect.orDie(fs.exists(path))
     if (exists) {
@@ -170,6 +166,7 @@ const readDocgenConfig = (
       return Option.none()
     }
   })
+}
 
 const readTSConfig = (fileName: string): Effect.Effect<
   { readonly [x: string]: unknown },

@@ -122,10 +122,10 @@ const printOptionalSourceLink = (position?: Domain.Position) => {
 }
 
 const printModel = (name: string, doc: Domain.Doc, options: {
-  readonly indentation?: number
-  readonly postfix?: string | undefined
   readonly signature?: string | undefined
   readonly position?: Domain.Position | undefined
+  readonly indentation?: number | undefined
+  readonly postfix?: string | undefined
 }) => {
   return Effect.gen(function*() {
     const sourceLink = yield* printOptionalSourceLink(options.position)
@@ -140,35 +140,43 @@ const printModel = (name: string, doc: Domain.Doc, options: {
   })
 }
 
-const printStaticMethod = (model: Domain.Method) => {
+const printEntry = (model: Domain.DocEntry, options: {
+  readonly indentation?: number | undefined
+  readonly postfix?: string | undefined
+}) => {
   return printModel(model.name, model.doc, {
-    indentation: 1,
-    postfix: "(static method)",
-    signature: model.signature
+    signature: model.signature,
+    position: model.position,
+    indentation: options.indentation,
+    postfix: options.postfix
   })
 }
 
-const printMethod = (model: Domain.Method) => {
-  return printModel(model.name, model.doc, {
+const printStaticMethod = (model: Domain.DocEntry) => {
+  return printEntry(model, {
     indentation: 1,
-    postfix: "(method)",
-    signature: model.signature
+    postfix: "(static method)"
   })
 }
 
-const printProperty = (model: Domain.Property) => {
-  return printModel(model.name, model.doc, {
+const printMethod = (model: Domain.DocEntry) => {
+  return printEntry(model, {
     indentation: 1,
-    postfix: "(property)",
-    signature: model.signature
+    postfix: "(method)"
+  })
+}
+
+const printProperty = (model: Domain.DocEntry) => {
+  return printEntry(model, {
+    indentation: 1,
+    postfix: "(property)"
   })
 }
 
 const printClass = (model: Domain.Class) => {
   return Effect.gen(function*() {
-    const header = yield* printModel(model.name, model.doc, {
-      postfix: "(class)",
-      signature: model.signature
+    const header = yield* printEntry(model, {
+      postfix: "(class)"
     })
     const staticMethods = yield* Effect.forEach(model.staticMethods, (method) => printStaticMethod(method))
     const methods = yield* Effect.forEach(model.methods, (method) => printMethod(method))
@@ -181,38 +189,30 @@ const printClass = (model: Domain.Class) => {
 }
 
 const printConstant = (model: Domain.Constant) => {
-  return printModel(model.name, model.doc, {
-    signature: model.signature
-  })
+  return printEntry(model, {})
 }
 
 const printExport = (model: Domain.Export) => {
-  return printModel(model.name, model.doc, {
-    postfix: model.isNamespaceExport ? "(namespace export)" : undefined,
-    signature: model.signature
+  return printEntry(model, {
+    postfix: model.isNamespaceExport ? "(namespace export)" : undefined
   })
 }
 
 const printFunction = (model: Domain.Function) => {
-  return printModel(model.name, model.doc, {
-    signature: model.signature,
-    position: model.position
-  })
+  return printEntry(model, {})
 }
 
 const printInterface = (model: Domain.Interface, indentation: number) => {
-  return printModel(model.name, model.doc, {
+  return printEntry(model, {
     indentation,
-    postfix: "(interface)",
-    signature: model.signature
+    postfix: "(interface)"
   })
 }
 
 const printTypeAlias = (model: Domain.TypeAlias, indentation: number) => {
-  return printModel(model.name, model.doc, {
+  return printEntry(model, {
     indentation,
-    postfix: "(type alias)",
-    signature: model.signature
+    postfix: "(type alias)"
   })
 }
 
@@ -222,6 +222,7 @@ const printNamespace = (
 ): Effect.Effect<string, never, Configuration.Configuration | Parser.Source> => {
   return Effect.gen(function*() {
     const header = yield* printModel(model.name, model.doc, {
+      position: model.position,
       indentation,
       postfix: "(namespace)"
     })

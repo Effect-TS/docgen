@@ -33,6 +33,8 @@ Re-exports all named exports from the "./Configuration.js" module as `Configurat
 export * as Configuration from "./Configuration.js"
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/index.ts#L8)
+
 Since v0.6.0
 
 ## Core (namespace export)
@@ -44,6 +46,8 @@ Re-exports all named exports from the "./Core.js" module as `Core`.
 ```ts
 export * as Core from "./Core.js"
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/index.ts#L13)
 
 Since v0.6.0
 
@@ -57,6 +61,8 @@ Re-exports all named exports from the "./Domain.js" module as `Domain`.
 export * as Domain from "./Domain.js"
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/index.ts#L18)
+
 Since v0.6.0
 
 ## Parser (namespace export)
@@ -69,6 +75,8 @@ Re-exports all named exports from the "./Parser.js" module as `Parser`.
 export * as Parser from "./Parser.js"
 ```
 
+[Source](https://github.com/effect-ts/docgen/blob/main/src/index.ts#L28)
+
 Since v0.6.0
 
 ## Printer (namespace export)
@@ -80,5 +88,7 @@ Re-exports all named exports from the "./Printer.js" module as `Printer`.
 ```ts
 export * as Printer from "./Printer.js"
 ```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/index.ts#L23)
 
 Since v0.6.0
