@@ -21,12 +21,8 @@ export type Printable =
   | Domain.Namespace
   | Domain.Module
 
-/**
- * @category CLI
- * @since 0.6.0
- */
 const Markdown = {
-  bold: (s: string) => `**${s}**`,
+  bold: (content: string) => `**${content}**`,
   fence: (content: string) => `\`\`\`ts\n${content}\n\`\`\`\n\n`,
   strikethrough: (content: string) => `~~${content}~~`
 }
@@ -150,19 +146,9 @@ const printProperty = (model: Domain.Property): string => {
   })
 }
 
-/** @internal */
-export const printFrontMatter = (module: Domain.Module, order: number): string => {
-  return `---
-title: ${module.name}
-nav_order: ${order}
-parent: Modules
----`
-}
-
 const addLineBreak = (i: number): string => i === 0 ? "\n\n" : ""
 
-/** @internal */
-export const printClass = (model: Domain.Class): string => {
+const printClass = (model: Domain.Class): string => {
   const header = printModel(model.name, model.doc, {
     postfix: "(class)",
     signature: model.signature
@@ -173,30 +159,26 @@ export const printClass = (model: Domain.Class): string => {
     model.properties.map((property, i) => addLineBreak(i) + printProperty(property)).join("\n\n")
 }
 
-/** @internal */
-export const printConstant = (model: Domain.Constant): string => {
+const printConstant = (model: Domain.Constant): string => {
   return printModel(model.name, model.doc, {
     signature: model.signature
   })
 }
 
-/** @internal */
-export const printExport = (model: Domain.Export): string => {
+const printExport = (model: Domain.Export): string => {
   return printModel(model.name, model.doc, {
     postfix: model.isNamespaceExport ? "(namespace export)" : undefined,
     signature: model.signature
   })
 }
 
-/** @internal */
-export const printFunction = (model: Domain.Function): string => {
+const printFunction = (model: Domain.Function): string => {
   return printModel(model.name, model.doc, {
     signature: model.signature
   })
 }
 
-/** @internal */
-export const printInterface = (model: Domain.Interface, indentation: number): string => {
+const printInterface = (model: Domain.Interface, indentation: number): string => {
   return printModel(model.name, model.doc, {
     indentation,
     postfix: "(interface)",
@@ -204,8 +186,7 @@ export const printInterface = (model: Domain.Interface, indentation: number): st
   })
 }
 
-/** @internal */
-export const printTypeAlias = (model: Domain.TypeAlias, indentation: number): string => {
+const printTypeAlias = (model: Domain.TypeAlias, indentation: number): string => {
   return printModel(model.name, model.doc, {
     indentation,
     postfix: "(type alias)",
@@ -213,8 +194,7 @@ export const printTypeAlias = (model: Domain.TypeAlias, indentation: number): st
   })
 }
 
-/** @internal */
-export const printNamespace = (model: Domain.Namespace, indentation: number): string => {
+const printNamespace = (model: Domain.Namespace, indentation: number): string => {
   const header = printModel(model.name, model.doc, {
     indentation,
     postfix: "(namespace)"
@@ -354,6 +334,17 @@ const defaultPrettierOptions: Prettier.Options = {
   singleQuote: false,
   printWidth: 120,
   trailingComma: "none"
+}
+
+/**
+ * @since 0.6.0
+ */
+export const printFrontMatter = (module: Domain.Module, nav_order: number): string => {
+  return `---
+title: ${module.name}
+nav_order: ${nav_order}
+parent: Modules
+---`
 }
 
 /**

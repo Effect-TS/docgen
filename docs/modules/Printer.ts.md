@@ -16,6 +16,7 @@ Since v0.6.0
   - [printModule](#printmodule)
 - [utils](#utils)
   - [prettify](#prettify)
+  - [printFrontMatter](#printfrontmatter)
 
 ---
 
@@ -78,6 +79,16 @@ Since v0.6.0
 
 ```ts
 declare const prettify: (s: string) => Effect.Effect<string, never, never>
+```
+
+Since v0.6.0
+
+## printFrontMatter
+
+**Signature**
+
+```ts
+declare const printFrontMatter: (module: Domain.Module, nav_order: number) => string
 ```
 
 Since v0.6.0
