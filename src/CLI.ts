@@ -27,6 +27,14 @@ const projectHomepage = Options.text("homepage").pipe(
   Options.optional
 )
 
+const srcLink = Options.text("srcLink").pipe(
+  Options.withFallbackConfig(Config.string("srcLink")),
+  Options.withDescription(
+    "The link to the project source code"
+  ),
+  Options.optional
+)
+
 const srcDir = Options.directory("src", { exists: "yes" }).pipe(
   Options.withFallbackConfig(Config.string("src").pipe(Config.withDefault("src"))),
   Options.withDescription(
@@ -157,6 +165,7 @@ const examplesCompilerOptions = Options.file("examples-tsconfig-file", { exists:
 
 const options = {
   projectHomepage,
+  srcLink,
   srcDir,
   outDir,
   theme,

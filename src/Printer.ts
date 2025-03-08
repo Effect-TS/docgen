@@ -117,7 +117,7 @@ const printOptionalSourceLink = (position?: Domain.Position) => {
     const config = yield* Configuration.Configuration
     const source = yield* Parser.Source
     const name = source.sourceFile.getBaseName()
-    return `\n\n[Source](${config.projectHomepage}/blob/main/src/${name}#L${position.line})`
+    return `\n\n[Source](${config.srcLink}${name}#L${position.line})`
   })
 }
 

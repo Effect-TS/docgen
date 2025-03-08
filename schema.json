@@ -12,6 +12,10 @@
           "type": "string",
           "description": "Will link to the project homepage from the Auxiliary Links of the generated documentation."
         },
+        "srcLink": {
+          "type": "string",
+          "description": "Will link to the project source code."
+        },
         "srcDir": {
           "type": "string",
           "description": "The directory in which docgen will search for TypeScript files to parse.",

@@ -35,6 +35,9 @@ export const ConfigurationSchema = Schema.Struct({
   projectHomepage: Schema.optional(Schema.String).annotations({
     description: "Will link to the project homepage from the Auxiliary Links of the generated documentation."
   }),
+  srcLink: Schema.optional(Schema.String).annotations({
+    description: "Will link to the project source code."
+  }),
   srcDir: Schema.optional(Schema.String).annotations({
     description: "The directory in which docgen will search for TypeScript files to parse.",
     default: "src"
@@ -85,6 +88,7 @@ export const ConfigurationSchema = Schema.Struct({
 export interface ConfigurationShape {
   readonly projectName: string
   readonly projectHomepage: string
+  readonly srcLink: string
   readonly srcDir: string
   readonly outDir: string
   readonly theme: string
@@ -225,6 +229,7 @@ const PackageJsonSchema = Schema.Struct({
 /** @internal */
 export const load = (args: {
   readonly projectHomepage: Option.Option<string>
+  readonly srcLink: Option.Option<string>
   readonly srcDir: string
   readonly outDir: string
   readonly theme: string
@@ -248,6 +253,7 @@ export const load = (args: {
     const packageJson = yield* validateJsonFile(PackageJsonSchema, packageJsonPath)
     const projectName = packageJson.name
     const projectHomepage = Option.getOrElse(args.projectHomepage, () => packageJson.homepage)
+    const srcLink = Option.getOrElse(args.srcLink, () => `${projectHomepage}/blob/main/src/`)
 
     // Read the `docgen.json` configuration file to gain access to the TypeScript
     // configuration options
@@ -292,6 +298,7 @@ export const load = (args: {
       outDir,
       projectName,
       projectHomepage,
+      srcLink,
       exclude,
       examplesCompilerOptions,
       parseCompilerOptions

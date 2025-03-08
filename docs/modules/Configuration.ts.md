@@ -39,6 +39,7 @@ Since v0.6.0
 declare const ConfigurationSchema: Schema.Struct<{
   $schema: Schema.optional<typeof Schema.String>
   projectHomepage: Schema.optional<typeof Schema.String>
+  srcLink: Schema.optional<typeof Schema.String>
   srcDir: Schema.optional<typeof Schema.String>
   outDir: Schema.optional<typeof Schema.String>
   theme: Schema.optional<typeof Schema.String>
@@ -66,6 +67,7 @@ Since v0.6.0
 export interface ConfigurationShape {
   readonly projectName: string
   readonly projectHomepage: string
+  readonly srcLink: string
   readonly srcDir: string
   readonly outDir: string
   readonly theme: string

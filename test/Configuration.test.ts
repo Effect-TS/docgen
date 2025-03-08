@@ -15,11 +15,11 @@ import * as Option from "effect/Option"
 import * as assert from "node:assert/strict"
 import { describe, it } from "vitest"
 
-type DocgenJson = Record<string, unknown>
+type DocgenJson = typeof Configuration.ConfigurationSchema.Type
 
 class DocgenJsonTag extends Context.Tag("DocgenJsonTag")<DocgenJsonTag, DocgenJson>() {}
 
-const makeDocgenJson = (config: Record<string, unknown>) => Layer.succeed(DocgenJsonTag, config)
+const makeDocgenJson = (config: DocgenJson) => Layer.succeed(DocgenJsonTag, config)
 
 const TestFileSystem = Layer.effect(
   FileSystem.FileSystem,
@@ -79,6 +79,7 @@ describe("Configuration", () => {
       assert.deepStrictEqual(config, {
         projectName: "name",
         projectHomepage: "homepage",
+        srcLink: "homepage/blob/main/src/",
         srcDir: "src",
         outDir: "docs",
         theme: "mikearnaldi/just-the-docs",
@@ -114,6 +115,7 @@ describe("Configuration", () => {
       assert.deepStrictEqual(config, {
         projectName: "name",
         projectHomepage: "myproject",
+        srcLink: "mygithub",
         srcDir: "src",
         outDir: "docs",
         theme: "mikearnaldi/just-the-docs",
@@ -132,6 +134,7 @@ describe("Configuration", () => {
       Effect.provide(TestLive.pipe(Layer.provide(
         makeDocgenJson({
           projectHomepage: "myproject",
+          srcLink: "mygithub",
           parseCompilerOptions
         })
       ))),
@@ -142,7 +145,7 @@ describe("Configuration", () => {
   it("should raise a validation error if docgen.json is not valid", async () => {
     const cli = testCliFor(Effect.void)
     const result = await cli([]).pipe(
-      Effect.provide(TestLive.pipe(Layer.provide(makeDocgenJson({ projectHomepage: 1 })))),
+      Effect.provide(TestLive.pipe(Layer.provide(makeDocgenJson({ projectHomepage: 1 } as any)))),
       Effect.runPromiseExit
     )
     assert.deepStrictEqual(

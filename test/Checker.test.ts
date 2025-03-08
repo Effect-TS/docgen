@@ -18,6 +18,7 @@ const project = new ast.Project({
 const defaultConfig: Configuration.ConfigurationShape = {
   projectName: "docgen",
   projectHomepage: "https://github.com/effect-ts/docgen",
+  srcLink: "https://github.com/effect-ts/docgen/blob/main/src/",
   srcDir: "src",
   outDir: "docs",
   theme: "pmarsceill/just-the-docs",
