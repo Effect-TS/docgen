@@ -36,6 +36,7 @@
     "changeset-publish": "pnpm build && TEST_DIST= pnpm vitest && changeset publish"
   },
   "dependencies": {
+    "@babel/code-frame": "^7.26.2",
     "@effect/markdown-toc": "^0.1.0",
     "doctrine": "^3.0.0",
     "glob": "^11.0.1",
@@ -50,6 +51,7 @@
     "@effect/platform": "0.78.0",
     "@effect/platform-node": "0.74.0",
     "@eslint/compat": "^1.2.7",
+    "@types/babel__code-frame": "^7.0.6",
     "@types/doctrine": "0.0.9",
     "@types/glob": "^8.1.0",
     "@types/node": "^22.13.9",

@@ -4,7 +4,7 @@ nav_order: 5
 parent: Modules
 ---
 
-## Domain overview
+## Domain.ts overview
 
 Since v0.6.0
 
@@ -32,6 +32,7 @@ Since v0.6.0
     - [\_tag (property)](#_tag-property-5)
   - [Namespace (class)](#namespace-class)
     - [\_tag (property)](#_tag-property-6)
+  - [Position (interface)](#position-interface)
   - [Property (class)](#property-class)
   - [TypeAlias (class)](#typealias-class)
     - [\_tag (property)](#_tag-property-7)
@@ -154,7 +155,7 @@ export declare class Export { constructor(
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string,
-    readonly namespaceExport: boolean
+    readonly isNamespaceExport: boolean
   ) }
 ```
 
@@ -192,6 +193,7 @@ Since v0.6.0
 
 ```ts
 export declare class Function { constructor(
+    readonly position: Position,
     readonly name: string,
     readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>
@@ -301,6 +303,19 @@ Since v0.6.0
 
 ```ts
 readonly _tag: "Namespace"
+```
+
+Since v0.6.0
+
+## Position (interface)
+
+**Signature**
+
+```ts
+export interface Position {
+  readonly line: number
+  readonly column: number
+}
 ```
 
 Since v0.6.0

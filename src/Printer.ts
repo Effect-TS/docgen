@@ -31,11 +31,24 @@ const Markdown = {
   strikethrough: (content: string) => `~~${content}~~`
 }
 
+/**
+ * Replaces the link from a JSDoc link tag with a simple text.
+ *
+ * Given "This is a description containing two links to {@link foo} and {@link bar baz}."
+ * returns "This is a description containing two links to `foo` and `baz`."
+ */
+function replaceJSDocLinks(text: string): string {
+  return text.replace(/\{@link\s+([^\s}]+)(?:\s+([^}]+))?\}/g, (_, link, label) => {
+    // Use the label if provided; otherwise, use the link target
+    return `\`${(label || link).trim()}\``
+  })
+}
+
 const printOptionalDescription = (description: string | undefined): string => {
   if (description === undefined) {
     return ""
   }
-  return `\n\n${description}`
+  return `\n\n${replaceJSDocLinks(description)}`
 }
 
 const printArray = (title: string, ss?: ReadonlyArray<string>): string => {
@@ -92,26 +105,11 @@ const printTitle = (s: string, deprecated: ReadonlyArray<string>, postfix?: stri
   return postfix === undefined ? title : title + ` ${postfix}`
 }
 
-/**
- * Extracts the link from a JSDoc link tag.
- *
- * Given
- *
- * "{@link bar} description"
- *
- * returns
- *
- * "`bar` description"
- */
-function parseJSDocLink(text: string): string {
-  return text.replace(/\{@link\s+([^}]+)\}/, "`$1`")
-}
-
 const printSeesArray = (sees?: ReadonlyArray<string>): string => {
   if (sees === undefined || sees.length === 0) {
     return ""
   }
-  return `\n\n${Markdown.bold("See")}\n\n${sees.map((see) => `- ${parseJSDocLink(see)}`).join("\n")}`
+  return `\n\n${Markdown.bold("See")}\n\n${sees.map((see) => `- ${replaceJSDocLinks(see)}`).join("\n")}`
 }
 
 const printModel = (name: string, doc: Domain.Doc, options: {
@@ -154,9 +152,8 @@ const printProperty = (model: Domain.Property): string => {
 
 /** @internal */
 export const printFrontMatter = (module: Domain.Module, order: number): string => {
-  const filename = Array.lastNonEmpty(module.path)
   return `---
-title: ${filename}
+title: ${module.name}
 nav_order: ${order}
 parent: Modules
 ---`
@@ -186,7 +183,7 @@ export const printConstant = (model: Domain.Constant): string => {
 /** @internal */
 export const printExport = (model: Domain.Export): string => {
   return printModel(model.name, model.doc, {
-    postfix: model.namespaceExport ? "(namespace export)" : undefined,
+    postfix: model.isNamespaceExport ? "(namespace export)" : undefined,
     signatures: [model.signature]
   })
 }
@@ -359,9 +356,12 @@ const defaultPrettierOptions: Prettier.Options = {
   trailingComma: "none"
 }
 
-/** @internal */
-export const prettify = (s: string): Effect.Effect<string> =>
-  Effect.tryPromise({
+/**
+ * @since 0.6.0
+ */
+export function prettify(s: string) {
+  return Effect.tryPromise({
     try: () => Prettier.format(s, defaultPrettierOptions),
     catch: identity
   }).pipe(Effect.orDie)
+}

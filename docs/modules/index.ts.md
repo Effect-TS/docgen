@@ -4,7 +4,7 @@ nav_order: 6
 parent: Modules
 ---
 
-## index overview
+## index.ts overview
 
 Since v0.6.0
 

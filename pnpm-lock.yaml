@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@babel/code-frame':
+        specifier: ^7.26.2
+        version: 7.26.2
       '@effect/markdown-toc':
         specifier: ^0.1.0
         version: 0.1.0
@@ -45,6 +48,9 @@ importers:
       '@eslint/compat':
         specifier: ^1.2.7
         version: 1.2.7(eslint@9.21.0)
+      '@types/babel__code-frame':
+        specifier: ^7.0.6
+        version: 7.0.6
       '@types/doctrine':
         specifier: 0.0.9
         version: 0.0.9
@@ -782,6 +788,9 @@ packages:
 
   '@ts-morph/common@0.26.1':
     resolution: {integrity: sha512-Sn28TGl/4cFpcM+jwsH1wLncYq3FtN/BIpem+HOygfBWPT5pAeS5dB4VFVzV8FbnOKHpDLZmvAl4AjPEev5idA==}
+
+  '@types/babel__code-frame@7.0.6':
+    resolution: {integrity: sha512-Anitqkl3+KrzcW2k77lRlg/GfLZLWXBuNgbEcIOU6M92yw42vsd3xV/Z/yAHEj8m+KUjL6bWOVOFqX8PFPJ4LA==}
 
   '@types/dedent@0.7.0':
     resolution: {integrity: sha512-EGlKlgMhnLt/cM4DbUSafFdrkeJoC9Mvnj0PUCU7tFmTjMjNRT957kXCx0wYm3JuEq4o4ZsS5vG+NlkM2DMd2A==}
@@ -3769,6 +3778,8 @@ snapshots:
       fast-glob: 3.3.3
       minimatch: 9.0.5
       path-browserify: 1.0.1
+
+  '@types/babel__code-frame@7.0.6': {}
 
   '@types/dedent@0.7.0': {}
 

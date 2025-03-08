@@ -53,7 +53,7 @@ export const parseComment = (text: string): Comment => {
 
   const description = pipe(
     Option.fromNullable(annotation.description),
-    Option.map(String.trim),
+    Option.map((s) => s.trim()),
     Option.filter(String.isNonEmpty),
     Option.getOrUndefined
   )
@@ -89,7 +89,7 @@ const isVariableStatement = (
 /**
  * @internal
  */
-export const getDoc = (text: string) => {
+export const parseDoc = (text: string) => {
   const comment = parseComment(text)
   return new Domain.Doc(
     comment.description,
@@ -110,7 +110,7 @@ const shouldIgnore = (doc: Domain.Doc): boolean => {
 const parseInterfaceDeclaration = (id: ast.InterfaceDeclaration) =>
   Effect.gen(function*() {
     const text = getJSDocText(id.getJsDocs())
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     if (shouldIgnore(doc)) {
       return []
     }
@@ -171,10 +171,19 @@ const getFunctionDeclarationJSDocs = (
     })
   )
 
+const parsePosition = (node: ast.Node): Effect.Effect<Domain.Position, never, Source> => {
+  return Effect.gen(function*() {
+    const source = yield* Source
+    const startPos = node.getStart()
+    const position = source.sourceFile.getLineAndColumnAtPos(startPos)
+    return position
+  })
+}
+
 const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
   Effect.gen(function*() {
     const text = getJSDocText(getFunctionDeclarationJSDocs(fd))
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     if (shouldIgnore(doc)) {
       return []
     }
@@ -190,9 +199,11 @@ const parseFunctionDeclaration = (fd: ast.FunctionDeclaration) =>
           )
       })
     )
+    const position = yield* parsePosition(fd)
     return [
       new Domain.Function(
-        name ?? "anonymous function",
+        position,
+        name ?? "",
         doc,
         signatures
       )
@@ -203,7 +214,7 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
   Effect.gen(function*() {
     const vs: any = vd.getParent().getParent()
     const text = getJSDocText(vs.getJsDocs())
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     if (shouldIgnore(doc)) {
       return []
     }
@@ -213,9 +224,13 @@ const parseFunctionVariableDeclaration = (vd: ast.VariableDeclaration) =>
         vd.getType().getText(vd)
       )
     }`
+    const startPos = vd.getStart()
+    const source = yield* Source
+    const position = source.sourceFile.getLineAndColumnAtPos(startPos)
     return [
       new Domain.Function(
-        name,
+        position,
+        name ?? "",
         doc,
         [signature]
       )
@@ -267,7 +282,7 @@ export const parseFunctions = Effect.gen(function*() {
 const parseTypeAliasDeclaration = (ta: ast.TypeAliasDeclaration) =>
   Effect.gen(function*() {
     const text = getJSDocText(ta.getJsDocs())
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     if (shouldIgnore(doc)) {
       return []
     }
@@ -303,7 +318,7 @@ const parseConstantVariableDeclaration = (vd: ast.VariableDeclaration) =>
   Effect.gen(function*() {
     const vs: any = vd.getParent().getParent()
     const text = getJSDocText(vs.getJsDocs())
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     if (shouldIgnore(doc)) {
       return []
     }
@@ -354,7 +369,7 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
     const type = stripImportTypes(es.getType().getText(es))
     const ocommentRange = Array.head(es.getLeadingCommentRanges())
     const text = ocommentRange.pipe(Option.map((range) => range.getText()), Option.getOrElse(() => ""))
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     const signature = `export declare const ${name}: ${type}`
     return new Domain.Export(
       name,
@@ -372,7 +387,7 @@ const parseExportStar = (ed: ast.ExportDeclaration) =>
     const signature = `export *${namespace === undefined ? "" : ` as ${namespace}`} from ${name}`
     const ocommentRange = Array.head(ed.getLeadingCommentRanges())
     const text = ocommentRange.pipe(Option.map((range) => range.getText()), Option.getOrElse(() => ""))
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     return new Domain.Export(
       namespace ?? name,
       doc.modifyDescription(
@@ -405,7 +420,7 @@ const parseModuleDeclaration = (
   ed: ast.ModuleDeclaration
 ): Effect.Effect<Array<Domain.Namespace>, never, Source | Configuration.Configuration> => {
   const text = getJSDocText(ed.getJsDocs())
-  const doc = getDoc(text)
+  const doc = parseDoc(text)
   if (shouldIgnore(doc)) {
     return Effect.succeed([])
   }
@@ -476,7 +491,7 @@ const parseMethod = (md: ast.MethodDeclaration) =>
       })
     )
     const text = getJSDocText(jsdocs)
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     if (shouldIgnore(doc)) {
       return Option.none()
     }
@@ -503,32 +518,24 @@ const parseMethod = (md: ast.MethodDeclaration) =>
 const parseProperty = (pd: ast.PropertyDeclaration) =>
   Effect.gen(function*() {
     const text = getJSDocText(pd.getJsDocs())
-    const doc = getDoc(text)
+    const doc = parseDoc(text)
     if (shouldIgnore(doc)) {
       return []
     }
     const name = pd.getName()
     const type = stripImportTypes(pd.getType().getText(pd))
     const readonly = pipe(
-      Option.fromNullable(
-        pd.getFirstModifierByKind(ast.ts.SyntaxKind.ReadonlyKeyword)
-      ),
+      Option.fromNullable(pd.getFirstModifierByKind(ast.ts.SyntaxKind.ReadonlyKeyword)),
       Option.match({
         onNone: () => "",
         onSome: () => "readonly "
       })
     )
     const signature = `${readonly}${name}: ${type}`
-    return [
-      new Domain.Property(
-        name,
-        doc,
-        signature
-      )
-    ]
+    return [new Domain.Property(name, doc, signature)]
   })
 
-const parseProperties = (name: string, c: ast.ClassDeclaration) => {
+const parseProperties = (c: ast.ClassDeclaration) => {
   const properties = Array.filter(
     c.getProperties(),
     (pd) =>
@@ -560,11 +567,12 @@ export const getConstructorDeclarationSignature = (
 
 const getClassDoc = (c: ast.ClassDeclaration) => {
   const text = getJSDocText(c.getJsDocs())
-  return getDoc(text)
+  return parseDoc(text)
 }
 
-const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
-  pipe(
+const getClassDeclarationSignature = (c: ast.ClassDeclaration) => {
+  const name = c.getName() ?? ""
+  return pipe(
     Effect.succeed(getTypeParameters(c.getTypeParameters())),
     Effect.map((typeParameters) =>
       pipe(
@@ -581,6 +589,7 @@ const getClassDeclarationSignature = (name: string, c: ast.ClassDeclaration) =>
       )
     )
   )
+}
 
 const parseClass = (c: ast.ClassDeclaration) =>
   Effect.gen(function*() {
@@ -588,8 +597,8 @@ const parseClass = (c: ast.ClassDeclaration) =>
     if (shouldIgnore(doc)) {
       return []
     }
-    const name = c.getName() ?? "anonymous class"
-    const signature = yield* getClassDeclarationSignature(name, c)
+    const name = c.getName() ?? ""
+    const signature = yield* getClassDeclarationSignature(c)
     const methods = yield* pipe(
       c.getInstanceMethods(),
       Effect.forEach(parseMethod),
@@ -600,7 +609,7 @@ const parseClass = (c: ast.ClassDeclaration) =>
       Effect.forEach(parseMethod),
       Effect.map(Array.getSomes)
     )
-    const properties = yield* parseProperties(name, c)
+    const properties = yield* parseProperties(c)
     return [
       new Domain.Class(
         name,
@@ -639,10 +648,10 @@ export const parseModuleDocumentation = Effect.gen(function*() {
     if (Option.isSome(ocommentRange)) {
       const commentRange = ocommentRange.value
       const text = commentRange.getText()
-      return getDoc(text)
+      return parseDoc(text)
     }
   }
-  return getDoc("")
+  return parseDoc("")
 })
 
 /**
@@ -659,8 +668,7 @@ export const parseModule = Effect.gen(function*() {
   const constants = yield* parseConstants
   const exports = yield* parseExports
   const namespaces = yield* parseNamespaces
-  const path = yield* Path.Path
-  const name = path.parse(Array.lastNonEmpty(source.path)).name
+  const name = source.sourceFile.getBaseName()
   return new Domain.Module(
     name,
     doc,
@@ -678,23 +686,19 @@ export const parseModule = Effect.gen(function*() {
 /**
  * @internal
  */
-export const parseFile = (project: ast.Project) =>
-(file: Domain.File): Effect.Effect<
-  Domain.Module,
-  Array<string>,
-  Configuration.Configuration | Path.Path
-> =>
-  Effect.flatMap(Path.Path, (_) => {
-    const path = file.path.split(_.sep) as any as Array.NonEmptyReadonlyArray<string>
-    const sourceFile = project.getSourceFile(file.path)
-    if (sourceFile !== undefined) {
-      return pipe(
-        parseModule,
-        Effect.provideService(Source, { path, sourceFile })
-      )
-    }
-    return Effect.fail([`Unable to locate file: ${file.path}`])
-  })
+export const parseFile =
+  (project: ast.Project) =>
+  (file: Domain.File): Effect.Effect<Domain.Module, Array<string>, Configuration.Configuration | Path.Path> => {
+    return Effect.gen(function*() {
+      const path = yield* Path.Path
+      const filePath = file.path.split(path.sep)
+      const sourceFile = project.getSourceFile(file.path)
+      if (sourceFile !== undefined && Array.isNonEmptyArray(filePath)) {
+        return yield* Effect.provideService(parseModule, Source, { sourceFile, path: filePath })
+      }
+      return yield* Effect.fail([`Unable to locate file: ${file.path}`])
+    })
+  }
 
 const createProject = (files: ReadonlyArray<Domain.File>) =>
   Effect.gen(function*() {

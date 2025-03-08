@@ -31,13 +31,15 @@ const defaultConfig: Configuration.ConfigurationShape = {
   examplesCompilerOptions: {}
 }
 
-const makeSource = (source: string | ast.SourceFile) =>
-  Parser.Source.of({
-    path: ["test"],
+const makeSource = (source: string | ast.SourceFile) => {
+  const filename = `test-${testCounter++}`
+  return Parser.Source.of({
+    path: [filename],
     sourceFile: Predicate.isString(source)
-      ? project.createSourceFile(`test-${testCounter++}.ts`, source)
+      ? project.createSourceFile(`${filename}.ts`, source)
       : source
   })
+}
 
 const print = (printables: ReadonlyArray<Printer.Printable>) => {
   const raw = printables.map((printable) => Printer.print(printable).trim()).join("\n")
@@ -77,13 +79,14 @@ describe("Parser", () => {
       await expectMarkdown(
         Parser.parseFunctions,
         `/**
-         * description...
+         * This is a description containing two links to {@link foo} and {@link bar}.
+         *
          * @since 1.2.0
          */
         export function myfunc() {}`,
         `## myfunc
 
-description...
+This is a description containing two links to \`foo\` and \`bar\`.
 
 **Signature**
 
@@ -131,6 +134,7 @@ Since v1.2.0`
          * description...
          * @see \`foo\` Description 1
          * @see {@link bar} Description 2
+         * @see {@link baz quux} Description 2
          * @since 1.2.0
          */
         export function myfunc() {}`,
@@ -142,6 +146,7 @@ description...
 
 - \`foo\` Description 1
 - \`bar\` Description 2
+- \`quux\` Description 2
 
 **Signature**
 
@@ -1415,7 +1420,7 @@ import * as assert from 'assert'
  * @since 1.0.0
  */
 export const foo = 'foo'`,
-        `## test overview
+        `## test-52.ts overview
 
 This is the assert module.
 

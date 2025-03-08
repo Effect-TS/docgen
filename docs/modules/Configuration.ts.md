@@ -4,7 +4,7 @@ nav_order: 3
 parent: Modules
 ---
 
-## Configuration overview
+## Configuration.ts overview
 
 Since v0.6.0
 

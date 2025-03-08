@@ -4,7 +4,7 @@ nav_order: 7
 parent: Modules
 ---
 
-## Parser overview
+## Parser.ts overview
 
 Since v0.6.0
 
@@ -94,7 +94,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare const parseModule: Effect.Effect<Domain.Module, never, Configuration.Configuration | Path.Path | Source>
+export declare const parseModule: Effect.Effect<Domain.Module, never, Configuration.Configuration | Source>
 ```
 
 Since v0.6.0

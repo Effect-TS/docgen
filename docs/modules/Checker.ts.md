@@ -4,7 +4,7 @@ nav_order: 1
 parent: Modules
 ---
 
-## Checker overview
+## Checker.ts overview
 
 Since v0.6.0
 
@@ -31,7 +31,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkClasses(_classes: ReadonlyArray<Domain.Class>): ReadonlyArray<string>
+export declare function checkClasses(_classes: ReadonlyArray<Domain.Class>)
 ```
 
 Since v0.6.0
@@ -41,7 +41,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkConstants(_constants: ReadonlyArray<Domain.Constant>): ReadonlyArray<string>
+export declare function checkConstants(_constants: ReadonlyArray<Domain.Constant>)
 ```
 
 Since v0.6.0
@@ -51,7 +51,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkExports(_exports: ReadonlyArray<Domain.Export>): ReadonlyArray<string>
+export declare function checkExports(_exports: ReadonlyArray<Domain.Export>)
 ```
 
 Since v0.6.0
@@ -61,7 +61,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkFunctions(_functions: ReadonlyArray<Domain.Function>): ReadonlyArray<string>
+export declare function checkFunctions(functions: ReadonlyArray<Domain.Function>)
 ```
 
 Since v0.6.0
@@ -71,7 +71,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkInterfaces(_interfaces: ReadonlyArray<Domain.Interface>): ReadonlyArray<string>
+export declare function checkInterfaces(_interfaces: ReadonlyArray<Domain.Interface>)
 ```
 
 Since v0.6.0
@@ -81,7 +81,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkModule(_module: Domain.Module): ReadonlyArray<string>
+export declare function checkModule(_module: Domain.Module)
 ```
 
 Since v0.6.0
@@ -91,7 +91,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkNamespaces(_namespaces: ReadonlyArray<Domain.Namespace>): ReadonlyArray<string>
+export declare function checkNamespaces(_namespaces: ReadonlyArray<Domain.Namespace>)
 ```
 
 Since v0.6.0
@@ -101,7 +101,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-export declare function checkTypeAliases(_typeAliases: ReadonlyArray<Domain.TypeAlias>): ReadonlyArray<string>
+export declare function checkTypeAliases(_typeAliases: ReadonlyArray<Domain.TypeAlias>)
 ```
 
 Since v0.6.0

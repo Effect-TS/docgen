@@ -124,12 +124,22 @@ export class Interface {
  * @category model
  * @since 0.6.0
  */
+export interface Position {
+  readonly line: number
+  readonly column: number
+}
+
+/**
+ * @category model
+ * @since 0.6.0
+ */
 export class Function {
   /**
    * @since 0.6.0
    */
   readonly _tag = "Function"
   constructor(
+    readonly position: Position,
     readonly name: string,
     readonly doc: Doc,
     readonly signatures: ReadonlyArray<string>
@@ -191,7 +201,7 @@ export class Export {
     readonly name: string,
     readonly doc: Doc,
     readonly signature: string,
-    readonly namespaceExport: boolean
+    readonly isNamespaceExport: boolean
   ) {}
 }
 

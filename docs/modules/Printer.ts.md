@@ -4,7 +4,7 @@ nav_order: 8
 parent: Modules
 ---
 
-## Printer overview
+## Printer.ts overview
 
 Since v0.6.0
 
@@ -14,6 +14,8 @@ Since v0.6.0
 
 - [printers](#printers)
   - [printModule](#printmodule)
+- [utils](#utils)
+  - [prettify](#prettify)
 
 ---
 
@@ -64,6 +66,18 @@ export const a: string = "b"
 
 ```ts
 export declare const printModule: (module: Domain.Module) => string
+```
+
+Since v0.6.0
+
+# utils
+
+## prettify
+
+**Signature**
+
+```ts
+export declare function prettify(s: string)
 ```
 
 Since v0.6.0

@@ -4,7 +4,7 @@ nav_order: 2
 parent: Modules
 ---
 
-## CLI overview
+## CLI.ts overview
 
 Since v0.6.0
 

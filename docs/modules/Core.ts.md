@@ -4,7 +4,7 @@ nav_order: 4
 parent: Modules
 ---
 
-## Core overview
+## Core.ts overview
 
 Since v0.6.0
 

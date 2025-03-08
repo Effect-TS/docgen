@@ -506,16 +506,17 @@ const getMarkdownConfigYML = Effect.gen(function*() {
   }
 })
 
-const getModuleMarkdownOutputPath = (module: Domain.Module) =>
-  Effect.map(
-    Effect.all([Configuration.Configuration, Path.Path]),
-    ([config, path]) =>
-      path.normalize(path.join(
-        config.outDir,
-        "modules",
-        `${module.path.slice(1).join(path.sep)}.md`
-      ))
-  )
+const getModuleMarkdownOutputPath = (module: Domain.Module) => {
+  return Effect.gen(function*() {
+    const config = yield* Configuration.Configuration
+    const path = yield* Path.Path
+    return path.normalize(path.join(
+      config.outDir,
+      "modules",
+      `${module.path.slice(1).join(path.sep)}.md`
+    ))
+  })
+}
 
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.forEach(modules, (module, i) =>
