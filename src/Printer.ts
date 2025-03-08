@@ -65,11 +65,11 @@ const printFence = (code: string): string => {
   return "```ts\n" + code + "\n```"
 }
 
-const printSignaturesArray = (signatures?: ReadonlyArray<string>): string => {
-  if (signatures === undefined || signatures.length === 0) {
+const printOptionalSignature = (signature?: string): string => {
+  if (signature === undefined) {
     return ""
   }
-  return `\n\n${Markdown.bold("Signature")}\n\n${printFence(signatures.join("\n"))}`
+  return `\n\n${Markdown.bold("Signature")}\n\n${printFence(signature)}`
 }
 
 const printThrowsArray = (throws?: ReadonlyArray<string>): string => printArray("Throws", throws)
@@ -115,14 +115,14 @@ const printSeesArray = (sees?: ReadonlyArray<string>): string => {
 const printModel = (name: string, doc: Domain.Doc, options: {
   readonly indentation?: number
   readonly postfix?: string | undefined
-  readonly signatures?: ReadonlyArray<string> | undefined
+  readonly signature?: string | undefined
 }): string => {
   return printHeaderByIndentation(options.indentation ?? 0) + printTitle(name, doc.deprecated, options.postfix) +
     printOptionalDescription(doc.description) +
     printThrowsArray(doc.throws) +
-    printSeesArray(doc.sees) +
     printExamplesArray(doc.examples) +
-    printSignaturesArray(options.signatures) +
+    printSeesArray(doc.sees) +
+    printOptionalSignature(options.signature) +
     printOptionalSince(doc.since)
 }
 
@@ -130,7 +130,7 @@ const printStaticMethod = (model: Domain.Method): string => {
   return printModel(model.name, model.doc, {
     indentation: 1,
     postfix: "(static method)",
-    signatures: model.signatures
+    signature: model.signature
   })
 }
 
@@ -138,7 +138,7 @@ const printMethod = (model: Domain.Method): string => {
   return printModel(model.name, model.doc, {
     indentation: 1,
     postfix: "(method)",
-    signatures: model.signatures
+    signature: model.signature
   })
 }
 
@@ -146,7 +146,7 @@ const printProperty = (model: Domain.Property): string => {
   return printModel(model.name, model.doc, {
     indentation: 1,
     postfix: "(property)",
-    signatures: [model.signature]
+    signature: model.signature
   })
 }
 
@@ -165,7 +165,7 @@ const addLineBreak = (i: number): string => i === 0 ? "\n\n" : ""
 export const printClass = (model: Domain.Class): string => {
   const header = printModel(model.name, model.doc, {
     postfix: "(class)",
-    signatures: [model.signature]
+    signature: model.signature
   })
   return header +
     model.staticMethods.map((method, i) => addLineBreak(i) + printStaticMethod(method)).join("\n\n") +
@@ -176,7 +176,7 @@ export const printClass = (model: Domain.Class): string => {
 /** @internal */
 export const printConstant = (model: Domain.Constant): string => {
   return printModel(model.name, model.doc, {
-    signatures: [model.signature]
+    signature: model.signature
   })
 }
 
@@ -184,14 +184,14 @@ export const printConstant = (model: Domain.Constant): string => {
 export const printExport = (model: Domain.Export): string => {
   return printModel(model.name, model.doc, {
     postfix: model.isNamespaceExport ? "(namespace export)" : undefined,
-    signatures: [model.signature]
+    signature: model.signature
   })
 }
 
 /** @internal */
 export const printFunction = (model: Domain.Function): string => {
   return printModel(model.name, model.doc, {
-    signatures: model.signatures
+    signature: model.signature
   })
 }
 
@@ -200,7 +200,7 @@ export const printInterface = (model: Domain.Interface, indentation: number): st
   return printModel(model.name, model.doc, {
     indentation,
     postfix: "(interface)",
-    signatures: [model.signature]
+    signature: model.signature
   })
 }
 
@@ -209,7 +209,7 @@ export const printTypeAlias = (model: Domain.TypeAlias, indentation: number): st
   return printModel(model.name, model.doc, {
     indentation,
     postfix: "(type alias)",
-    signatures: [model.signature]
+    signature: model.signature
   })
 }
 

@@ -123,7 +123,7 @@ Since v0.6.0
 **Signature**
 
 ```ts
-modifyDescription(description: string | undefined): Doc
+declare const modifyDescription: (description: string | undefined) => Doc
 ```
 
 ## DocgenError (class)
@@ -196,7 +196,7 @@ declare class Function { constructor(
     readonly position: Position,
     readonly name: string,
     readonly doc: Doc,
-    readonly signatures: ReadonlyArray<string>
+    readonly signature: string
   ) }
 ```
 
@@ -244,7 +244,7 @@ Since v0.6.0
 declare class Method { constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly signatures: ReadonlyArray<string>
+    readonly signature: string
   ) }
 ```
 

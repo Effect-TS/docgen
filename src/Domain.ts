@@ -88,7 +88,7 @@ export class Method {
   constructor(
     readonly name: string,
     readonly doc: Doc,
-    readonly signatures: ReadonlyArray<string>
+    readonly signature: string
   ) {}
 }
 
@@ -142,7 +142,7 @@ export class Function {
     readonly position: Position,
     readonly name: string,
     readonly doc: Doc,
-    readonly signatures: ReadonlyArray<string>
+    readonly signature: string
   ) {}
 }
 

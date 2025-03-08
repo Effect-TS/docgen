@@ -1328,7 +1328,7 @@ a static method description...
 **Signature**
 
 \`\`\`ts
-static f(): void
+declare const f: () => void
 \`\`\`
 
 Since v1.1.0
@@ -1340,7 +1340,7 @@ a method description...
 **Signature**
 
 \`\`\`ts
-g(a: number, b: number): { [key: string]: number }
+declare const g: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
 
 Since v1.1.0
@@ -1407,8 +1407,7 @@ a static method description...
 **Signature**
 
 \`\`\`ts
-static f(x: number): number
-static f(x: string): string
+declare const f: { (x: number): number; (x: string): string; }
 \`\`\`
 
 Since v1.1.0
@@ -1420,8 +1419,7 @@ a method description...
 **Signature**
 
 \`\`\`ts
-map(f: (a: number) => number): Test
-map(f: (a: string) => string): Test
+declare const map: { (f: (a: number) => number): Test; (f: (a: string) => string): Test; }
 \`\`\`
 
 Since v1.1.0`
