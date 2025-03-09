@@ -21,7 +21,7 @@ const defaultConfig: Configuration.ConfigurationShape = {
   srcLink: "https://github.com/effect-ts/docgen/blob/main/src/",
   srcDir: "src",
   outDir: "docs",
-  theme: "pmarsceill/just-the-docs",
+  theme: "mikearnaldi/just-the-docs",
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,

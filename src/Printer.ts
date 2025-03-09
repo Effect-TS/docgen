@@ -41,11 +41,36 @@ function replaceJSDocLinks(text: string): string {
   })
 }
 
-const printOptionalDescription = (description: string | undefined): string => {
-  if (description === undefined) {
-    return ""
-  }
-  return `\n\n${replaceJSDocLinks(description)}`
+/**
+ * Removes all extra metadata from fenced code blocks in a Markdown string.
+ * For each code fence, only the first token (the language identifier) is preserved.
+ *
+ * Examples:
+ *   Input:  "```ts skip-type-checking a=1\nexport const a: string = 1\n```"
+ *   Output: "```ts\nexport const a: string = 1\n```"
+ */
+function removeFenceMetadata(markdown: string): string {
+  return markdown.replace(/^(`{3,})([^\n]*)/gm, (_match, fence, info) => {
+    // Trim the info string and split by whitespace into tokens.
+    // The first token (if present) is typically the language identifier.
+    const tokens = info.trim().split(/\s+/)
+    // Rebuild the fence line with just the language (if it exists)
+    return fence + (tokens[0] || "")
+  })
+}
+
+const printOptionalDescription = (description: string | undefined) => {
+  return Effect.gen(function*() {
+    if (description === undefined) {
+      return ""
+    }
+    const config = yield* Configuration.Configuration
+    const descriptionWithoutLinks = replaceJSDocLinks(description)
+    const out = config.theme === Configuration.DEFAULT_THEME
+      ? removeFenceMetadata(descriptionWithoutLinks)
+      : descriptionWithoutLinks
+    return `\n\n${out}`
+  })
 }
 
 const printArray = (title: string, ss?: ReadonlyArray<string>): string => {
@@ -129,8 +154,9 @@ const printModel = (name: string, doc: Domain.Doc, options: {
 }) => {
   return Effect.gen(function*() {
     const sourceLink = yield* printOptionalSourceLink(options.position)
+    const description = yield* printOptionalDescription(doc.description)
     return printHeaderByIndentation(options.indentation ?? 0) + printTitle(name, doc.deprecated, options.postfix) +
-      printOptionalDescription(doc.description) +
+      description +
       printThrowsArray(doc.throws) +
       printExamplesArray(doc.examples) +
       printSeesArray(doc.sees) +
@@ -288,36 +314,6 @@ const sortByName: <A extends { name: string }>(self: Iterable<A>) => Array<A> = 
 )
 
 /**
- * Description...
- *
- * ```ts
- * export const a: string = "a"
- * ```
- *
- * ```text
- * ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌────────┐
- * │ input │───►│ func1 │───►│ func2 │───►│  ...  │───►│ funcN │───►│ result │
- * └───────┘    └───────┘    └───────┘    └───────┘    └───────┘    └────────┘
- * ```
- *
- * **Example** (Title 1)
- *
- * ```ts twoslash title="Title 1"
- * export const b: string = "b"
- * ```
- *
- * **Example** (Title 2)
- *
- * ~~~js twoslash title="Title 2"
- * export const c: string = "c"
- * ~~~
- *
- * @throws `Error1` - Description 1
- * @throws `Error2` - Description 2
- *
- * @see `foo` description1
- * @see {@link printFunction} description2
- *
  * @category printers
  * @since 0.6.0
  */

@@ -18,6 +18,11 @@ import * as tsconfck from "tsconfck"
 import * as Domain from "./Domain.js"
 import { DocgenError } from "./Domain.js"
 
+/**
+ * @since 0.6.0
+ */
+export const DEFAULT_THEME = "mikearnaldi/just-the-docs"
+
 const PACKAGE_JSON_FILE_NAME = "package.json"
 const CONFIG_FILE_NAME = "docgen.json"
 
@@ -48,7 +53,7 @@ export const ConfigurationSchema = Schema.Struct({
   }),
   theme: Schema.optional(Schema.String).annotations({
     description: "The theme that docgen will specify should be used for GitHub Docs in the generated _config.yml file.",
-    default: "mikearnaldi/just-the-docs"
+    default: DEFAULT_THEME
   }),
   enableSearch: Schema.optional(Schema.Boolean).annotations({
     description: "Whether or not search should be enabled for GitHub Docs in the generated _config.yml file.",

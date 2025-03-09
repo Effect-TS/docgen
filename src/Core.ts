@@ -155,6 +155,13 @@ const extractPrefixedNestedNamespaces = (
 }
 
 /**
+ * The metadata key for skipping type-checking.
+ *
+ * @since 0.6.0
+ */
+export const SKIP_TYPE_CHECKING_FENCE_METADATA = "skip-type-checking"
+
+/**
  * Extracts all fenced code blocks from markdown content.
  * Handles both ``` and ~~~ fences, including any metadata like language, title, and other attributes.
  */
@@ -166,7 +173,7 @@ const extractFencedCode = (content: string): Array<string> => {
     .filter((match) => {
       const meta = match[1].toLocaleLowerCase()
       const isTypeScript = meta.startsWith("ts") || meta.startsWith("typescript")
-      const isSkipTypeChecking = meta.includes("skip-type-checking")
+      const isSkipTypeChecking = meta.includes(SKIP_TYPE_CHECKING_FENCE_METADATA)
       return isTypeScript && !isSkipTypeChecking
     })
     .map((match) => match[2].trim())

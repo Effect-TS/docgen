@@ -52,7 +52,7 @@ const outDir = Options.directory("out").pipe(
 const theme = Options.directory("theme").pipe(
   Options.withFallbackConfig(
     Config.string("theme").pipe(
-      Config.withDefault("mikearnaldi/just-the-docs")
+      Config.withDefault(Configuration.DEFAULT_THEME)
     )
   ),
   Options.withDescription(

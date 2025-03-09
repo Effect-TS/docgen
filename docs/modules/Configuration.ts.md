@@ -16,6 +16,8 @@ Since v0.6.0
   - [Configuration (class)](#configuration-class)
   - [ConfigurationSchema](#configurationschema)
   - [ConfigurationShape (interface)](#configurationshape-interface)
+- [utils](#utils)
+  - [DEFAULT_THEME](#default_theme)
 
 ---
 
@@ -29,7 +31,7 @@ Since v0.6.0
 declare class Configuration
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L109)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L114)
 
 Since v0.6.0
 
@@ -59,7 +61,7 @@ declare const ConfigurationSchema: Schema.Struct<{
 }>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L33)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L38)
 
 Since v0.6.0
 
@@ -86,6 +88,20 @@ export interface ConfigurationShape {
 }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L88)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L93)
+
+Since v0.6.0
+
+# utils
+
+## DEFAULT_THEME
+
+**Signature**
+
+```ts
+declare const DEFAULT_THEME: "mikearnaldi/just-the-docs"
+```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L24)
 
 Since v0.6.0

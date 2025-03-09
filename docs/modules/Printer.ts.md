@@ -24,47 +24,13 @@ Since v0.6.0
 
 ## printModule
 
-Description...
-
-```ts
-export const a: string = "a"
-```
-
-```text
-┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌───────┐    ┌────────┐
-│ input │───►│ func1 │───►│ func2 │───►│  ...  │───►│ funcN │───►│ result │
-└───────┘    └───────┘    └───────┘    └───────┘    └───────┘    └────────┘
-```
-
-**Example** (Title 1)
-
-```ts twoslash title="Title 1"
-export const b: string = "b"
-```
-
-**Example** (Title 2)
-
-```js twoslash title="Title 2"
-export const c: string = "c"
-```
-
-**Throws**
-
-`Error1` - Description 1
-`Error2` - Description 2
-
-**See**
-
-- `foo` description1
-- `printFunction` description2
-
 **Signature**
 
 ```ts
 declare const printModule: (module: Domain.Module) => Effect.Effect<string, never, Configuration.Configuration>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L324)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L320)
 
 Since v0.6.0
 
@@ -78,7 +44,7 @@ Since v0.6.0
 declare const prettify: (s: string) => Effect.Effect<string, never, never>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L376)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L372)
 
 Since v0.6.0
 
@@ -90,6 +56,6 @@ Since v0.6.0
 declare const printFrontMatter: (module: Domain.Module, nav_order: number) => string
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L365)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L361)
 
 Since v0.6.0

@@ -21,7 +21,7 @@ const defaultConfig: Configuration.ConfigurationShape = {
   srcLink: "https://github.com/effect-ts/docgen/blob/main/src/",
   srcDir: "src",
   outDir: "docs",
-  theme: "pmarsceill/just-the-docs",
+  theme: "mikearnaldi/just-the-docs",
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,
@@ -153,6 +153,34 @@ Since v1.0.0`
   })
 
   describe("parseFunctions", () => {
+    it(`should remove all metadata from typedcript code blocks when the theme is ${Configuration.DEFAULT_THEME}`, async () => {
+      await expectMarkdown(
+        Parser.parseFunctions,
+        `/**
+         * \`\`\`ts skip-type-checking a=1 showLineNumbers=true
+         * const a: string = 1
+         * \`\`\`
+         *
+         * @since 1.0.0
+         */
+         export function myfunc<A>() {}`,
+        `## myfunc
+
+\`\`\`ts
+const a: string = 1
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+declare const myfunc: <A>() => void
+\`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L8)
+
+Since v1.0.0`
+      )
+    })
     it("generics", async () => {
       await expectMarkdown(
         Parser.parseFunctions,
