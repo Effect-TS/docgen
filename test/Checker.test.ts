@@ -46,7 +46,7 @@ const expectFailure = <A>(
   config: Partial<Configuration.ConfigurationShape>,
   sourceText: string,
   parser: Effect.Effect<A, never, Parser.Source | Configuration.Configuration | Path.Path>,
-  checker: (a: A) => Effect.Effect<Array<string>, never, Parser.Source>,
+  checker: (a: A) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>,
   failure: ReadonlyArray<string>
 ) => {
   const actual = parser.pipe(
