@@ -19,6 +19,7 @@ Since v0.6.0
   - [checkFunctions](#checkfunctions)
   - [checkInterfaces](#checkinterfaces)
   - [checkModule](#checkmodule)
+  - [checkModules](#checkmodules)
   - [checkNamespaces](#checknamespaces)
   - [checkTypeAliases](#checktypealiases)
 
@@ -31,10 +32,12 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare const checkClasses: (_classes: ReadonlyArray<Domain.Class>) => Effect.Effect<Array<never>, never, never>
+declare const checkClasses: (
+  models: ReadonlyArray<Domain.Class>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L32)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L112)
 
 Since v0.6.0
 
@@ -43,10 +46,12 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare const checkConstants: (_constants: ReadonlyArray<Domain.Constant>) => Effect.Effect<Array<never>, never, never>
+declare const checkConstants: (
+  models: ReadonlyArray<Domain.Constant>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L39)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L125)
 
 Since v0.6.0
 
@@ -55,10 +60,12 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare const checkExports: (_exports: ReadonlyArray<Domain.Export>) => Effect.Effect<Array<never>, never, never>
+declare const checkExports: (
+  models: ReadonlyArray<Domain.Export>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L67)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L177)
 
 Since v0.6.0
 
@@ -68,11 +75,11 @@ Since v0.6.0
 
 ```ts
 declare const checkFunctions: (
-  functions: ReadonlyArray<Domain.Function>
-) => Effect.Effect<Array<string>, never, Parser.Source>
+  models: ReadonlyArray<Domain.Function>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L25)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L87)
 
 Since v0.6.0
 
@@ -82,11 +89,11 @@ Since v0.6.0
 
 ```ts
 declare const checkInterfaces: (
-  _interfaces: ReadonlyArray<Domain.Interface>
-) => Effect.Effect<Array<never>, never, never>
+  models: ReadonlyArray<Domain.Interface>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L46)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L138)
 
 Since v0.6.0
 
@@ -95,10 +102,24 @@ Since v0.6.0
 **Signature**
 
 ```ts
-declare const checkModule: (_module: Domain.Module) => Effect.Effect<Array<never>, never, never>
+declare const checkModule: (module: Domain.Module) => Effect.Effect<Array<string>, never, Configuration.Configuration>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L74)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L184)
+
+Since v0.6.0
+
+## checkModules
+
+**Signature**
+
+```ts
+declare const checkModules: (
+  modules: ReadonlyArray<Domain.Module>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration>
+```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L208)
 
 Since v0.6.0
 
@@ -108,11 +129,11 @@ Since v0.6.0
 
 ```ts
 declare const checkNamespaces: (
-  _namespaces: ReadonlyArray<Domain.Namespace>
-) => Effect.Effect<Array<never>, never, never>
+  models: ReadonlyArray<Domain.Namespace>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L60)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L164)
 
 Since v0.6.0
 
@@ -122,10 +143,10 @@ Since v0.6.0
 
 ```ts
 declare const checkTypeAliases: (
-  _typeAliases: ReadonlyArray<Domain.TypeAlias>
-) => Effect.Effect<Array<never>, never, never>
+  models: ReadonlyArray<Domain.TypeAlias>
+) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L53)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L151)
 
 Since v0.6.0

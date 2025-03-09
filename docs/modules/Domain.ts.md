@@ -74,9 +74,7 @@ Since v0.6.0
 readonly _tag: "Class"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L83)
-
-Since v0.6.0
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L80)
 
 ## Constant (class)
 
@@ -88,7 +86,7 @@ declare class Constant {
 }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L167)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L155)
 
 Since v0.6.0
 
@@ -100,9 +98,7 @@ Since v0.6.0
 readonly _tag: "Constant"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L171)
-
-Since v0.6.0
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L156)
 
 ## Doc (class)
 
@@ -160,7 +156,7 @@ Since v0.6.0
 declare class DocgenError
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L273)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L252)
 
 Since v0.6.0
 
@@ -188,7 +184,7 @@ declare class Export { constructor(
   ) }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L196)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L181)
 
 Since v0.6.0
 
@@ -200,9 +196,7 @@ Since v0.6.0
 readonly _tag: "Export"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L200)
-
-Since v0.6.0
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L182)
 
 ## File (class)
 
@@ -218,7 +212,7 @@ declare class File { constructor(
   ) }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L249)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L228)
 
 Since v0.6.0
 
@@ -232,7 +226,7 @@ declare class Function {
 }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L129)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L123)
 
 Since v0.6.0
 
@@ -244,9 +238,7 @@ Since v0.6.0
 readonly _tag: "Function"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L133)
-
-Since v0.6.0
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L124)
 
 ## Interface (class)
 
@@ -258,7 +250,7 @@ declare class Interface {
 }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L101)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L98)
 
 Since v0.6.0
 
@@ -270,9 +262,7 @@ Since v0.6.0
 readonly _tag: "Interface"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L105)
-
-Since v0.6.0
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L99)
 
 ## Module (class)
 
@@ -313,7 +303,7 @@ declare class Namespace { constructor(
   ) }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L216)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L198)
 
 Since v0.6.0
 
@@ -325,9 +315,7 @@ Since v0.6.0
 readonly _tag: "Namespace"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L220)
-
-Since v0.6.0
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L199)
 
 ## Position (interface)
 
@@ -340,7 +328,7 @@ export interface Position {
 }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L120)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L114)
 
 Since v0.6.0
 
@@ -354,7 +342,7 @@ declare class TypeAlias {
 }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L148)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L139)
 
 Since v0.6.0
 
@@ -366,9 +354,7 @@ Since v0.6.0
 readonly _tag: "TypeAlias"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L152)
-
-Since v0.6.0
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L140)
 
 # service
 
@@ -382,7 +368,7 @@ Represents a handle to the currently executing process.
 declare class Process
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L284)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L262)
 
 Since v0.6.0
 
@@ -399,7 +385,7 @@ The file path is converted to lowercase before comparison.
 declare const ByPath: Order.Order<Module>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L238)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L217)
 
 Since v0.6.0
 
@@ -413,7 +399,7 @@ Since v0.6.0
 declare const DocgenErrorTypeId: unique symbol
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L261)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L240)
 
 Since v0.6.0
 
@@ -425,6 +411,6 @@ Since v0.6.0
 type DocgenErrorTypeId = typeof DocgenErrorTypeId
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L267)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Domain.ts#L246)
 
 Since v0.6.0

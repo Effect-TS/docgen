@@ -15,11 +15,11 @@ import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
+import * as Checker from "./Checker.js"
 import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
 import * as Parser from "./Parser.js"
 import * as Printer from "./Printer.js"
-
 /**
  * Find all files matching the specified `glob` pattern, optionally excluding
  * files matching the provided `exclude` patterns.
@@ -561,6 +561,15 @@ export const program = Effect.gen(function*() {
   const sourceFiles = yield* readSourceFiles
   yield* Effect.logInfo("Parsing modules...")
   const modules = yield* parseModules(sourceFiles)
+  yield* Effect.logInfo("Checking modules...")
+  const errors = yield* Checker.checkModules(modules)
+  if (errors.length > 0) {
+    yield* Effect.fail(
+      new Domain.DocgenError({
+        message: `The following errors occurred while checking the modules:\n\n${errors.join("\n\n")}`
+      })
+    )
+  }
   yield* typeCheckAndRunExamples(modules)
   yield* Effect.logInfo("Creating markdown files...")
   const outputFiles = yield* getMarkdown(modules)

@@ -583,10 +583,7 @@ const parseClass = (c: ast.ClassDeclaration) =>
  */
 export const parseClasses = Effect.gen(function*() {
   const source = yield* Source
-  const exportedClasses = Array.filter(
-    source.sourceFile.getClasses(),
-    (cd) => cd.isExported()
-  )
+  const exportedClasses = source.sourceFile.getClasses().filter((cd) => cd.isExported())
   return yield* Effect.forEach(exportedClasses, parseClass).pipe(Effect.map(Array.flatten))
 })
 

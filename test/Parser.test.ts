@@ -1252,7 +1252,7 @@ Since v1.0.2`
   })
 
   describe("parseClasses", () => {
-    it("should ignore internal classes", async () => {
+    it("should ignore `@internal` classes", async () => {
       await expectMarkdown(
         Parser.parseClasses,
         `/** @internal */export class MyClass {}`,
@@ -1260,12 +1260,22 @@ Since v1.0.2`
       )
     })
 
-    it("should ignore `@ignore`d classes", async () => {
+    it("should ignore `@ignore` classes", async () => {
       await expectMarkdown(
         Parser.parseClasses,
         `
         /** @ignore */
         export class MyClass {}
+        `,
+        ""
+      )
+    })
+
+    it("should ignore not exported classes", async () => {
+      await expectMarkdown(
+        Parser.parseClasses,
+        `
+        class MyClass {}
         `,
         ""
       )

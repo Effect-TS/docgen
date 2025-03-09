@@ -77,9 +77,6 @@ export class Module {
  * @since 0.6.0
  */
 export class Class extends DocEntry {
-  /**
-   * @since 0.6.0
-   */
   readonly _tag = "Class"
   constructor(
     name: string,
@@ -99,9 +96,6 @@ export class Class extends DocEntry {
  * @since 0.6.0
  */
 export class Interface extends DocEntry {
-  /**
-   * @since 0.6.0
-   */
   readonly _tag = "Interface"
   constructor(
     name: string,
@@ -127,9 +121,6 @@ export interface Position {
  * @since 0.6.0
  */
 export class Function extends DocEntry {
-  /**
-   * @since 0.6.0
-   */
   readonly _tag = "Function"
   constructor(
     name: string,
@@ -146,9 +137,6 @@ export class Function extends DocEntry {
  * @since 0.6.0
  */
 export class TypeAlias extends DocEntry {
-  /**
-   * @since 0.6.0
-   */
   readonly _tag = "TypeAlias"
   constructor(
     name: string,
@@ -165,9 +153,6 @@ export class TypeAlias extends DocEntry {
  * @since 0.6.0
  */
 export class Constant extends DocEntry {
-  /**
-   * @since 0.6.0
-   */
   readonly _tag = "Constant"
   constructor(
     name: string,
@@ -194,9 +179,6 @@ export class Constant extends DocEntry {
  * @since 0.6.0
  */
 export class Export extends DocEntry {
-  /**
-   * @since 0.6.0
-   */
   readonly _tag = "Export"
   constructor(
     name: string,
@@ -214,9 +196,6 @@ export class Export extends DocEntry {
  * @since 0.6.0
  */
 export class Namespace {
-  /**
-   * @since 0.6.0
-   */
   readonly _tag = "Namespace"
   constructor(
     readonly name: string,
@@ -272,8 +251,7 @@ export type DocgenErrorTypeId = typeof DocgenErrorTypeId
  */
 export class DocgenError extends Data.TaggedError("DocgenError")<{
   readonly message: string
-}> {
-}
+}> {}
 
 /**
  * Represents a handle to the currently executing process.

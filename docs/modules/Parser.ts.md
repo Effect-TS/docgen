@@ -77,7 +77,7 @@ declare const parseFiles: (
 >
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L691)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L688)
 
 Since v0.6.0
 
@@ -113,7 +113,7 @@ Since v0.6.0
 declare const parseModule: Effect.Effect<Domain.Module, never, Configuration.Configuration | Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L616)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L613)
 
 Since v0.6.0
 
