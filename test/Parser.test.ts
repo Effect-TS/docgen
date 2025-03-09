@@ -32,13 +32,24 @@ const defaultConfig: Configuration.ConfigurationShape = {
   examplesCompilerOptions: {}
 }
 
+const makeSourcefile = (source: string | ast.SourceFile) => {
+  if (Predicate.isString(source)) {
+    const filename = `test.ts`
+    const existing = project.getSourceFile(filename)
+    if (existing) {
+      project.removeSourceFile(existing)
+    }
+    return project.createSourceFile(filename, source)
+  }
+  return source
+}
+
 const makeSource = (source: string | ast.SourceFile) => {
-  const filename = `test-${testCounter++}`
+  const sourceFile = makeSourcefile(source)
+  const filename = sourceFile.getBaseName()
   return Parser.Source.of({
     path: [filename],
-    sourceFile: Predicate.isString(source)
-      ? project.createSourceFile(`${filename}.ts`, source)
-      : source
+    sourceFile
   })
 }
 
@@ -106,7 +117,7 @@ import * as assert from 'assert'
  * @since 1.0.0
  */
 export const foo = 'foo'`,
-        `## test-0.ts overview
+        `## test.ts overview
 
 This is the assert module.
 
@@ -134,7 +145,7 @@ console.log(foo)
 declare const foo: "foo"
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-0.ts#L19)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L19)
 
 Since v1.0.0`
       )
@@ -161,7 +172,7 @@ This is a description containing two links to \`foo\` and \`bar\`.
 declare const myfunc: <A>() => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-1.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.2.0`
       )
@@ -186,7 +197,7 @@ This is a description containing two links to \`foo\` and \`bar\`.
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-2.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.2.0`
       )
@@ -217,7 +228,7 @@ description...
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-3.ts#L7)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L7)
 
 Since v1.2.0`
       )
@@ -250,7 +261,7 @@ description...
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-4.ts#L8)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L8)
 
 Since v1.2.0`
       )
@@ -282,7 +293,7 @@ const x = 1
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-5.ts#L7)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L7)
 
 Since v1.0.0`
       )
@@ -316,7 +327,7 @@ const x = 1
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-6.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.0`
       )
@@ -360,7 +371,7 @@ const x = 2
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-7.ts#L13)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L13)
 
 Since v1.0.0`
       )
@@ -394,7 +405,7 @@ const x = 1
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-8.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.0`
       )
@@ -428,7 +439,7 @@ const x = 1
 declare const myfunc: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-9.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.0`
       )
@@ -525,7 +536,7 @@ Since v1.0.0`
 declare const toNullable: <A>(ma: A | null) => A | null
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-17.ts#L4)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L4)
 
 Since v1.0.0`
       )
@@ -566,7 +577,7 @@ assert.deepStrictEqual(f(3, 4), { a: 3, b: 4 })
 declare const f: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-18.ts#L10)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L10)
 
 Since v1.0.0`
       )
@@ -587,7 +598,7 @@ Since v1.0.0`
 declare const f: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-19.ts#L4)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L4)
 
 Since v1.0.0`
       )
@@ -614,7 +625,7 @@ a description...
 declare const f: { (a: Int, b: Int): { [key: string]: number; }; (a: number, b: number): { [key: string]: number; }; }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-20.ts#L8)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L8)
 
 Since v1.0.0`
       )
@@ -641,7 +652,7 @@ a description...
 declare const s: string
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-21.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.0.0`
       )
@@ -662,7 +673,7 @@ Since v1.0.0`
 declare const left: <E = never, A = never>(l: E) => string
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-22.ts#L4)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L4)
 
 Since v1.0.0`
       )
@@ -685,7 +696,7 @@ Since v1.0.0`
 declare const empty: A
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-23.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.0.0`
       )
@@ -712,7 +723,7 @@ Since v1.0.0`
 declare const taskSeq: { a: number; }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-24.ts#L7)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L7)
 
 Since v1.0.0`
       )
@@ -754,7 +765,7 @@ a description...
 type Option<A> = None<A> | Some<A>
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-26.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.0`
       )
@@ -788,7 +799,7 @@ Since v1.0.0`
 declare const b: 1
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-28.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.0.0`
       )
@@ -822,7 +833,7 @@ description_of_a
 declare const a: 1
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-29.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.0
 ## b
@@ -835,7 +846,7 @@ description_of_b
 declare const b: 2
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-29.ts#L14)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L14)
 
 Since v2.0.0`
       )
@@ -1018,7 +1029,7 @@ a description...
 export interface A {}
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-35.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.0.0`
       )
@@ -1053,7 +1064,7 @@ Since v1.0.0`
       `,
         `## A (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-38.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0`
       )
@@ -1073,7 +1084,7 @@ Since v1.0.0`
         `,
           `## A (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-39.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0`
         )
@@ -1097,7 +1108,7 @@ export namespace A {
         `,
           `## A (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-40.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0
 
@@ -1111,7 +1122,7 @@ export interface B {
   }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-40.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.1`
         )
@@ -1132,7 +1143,7 @@ Since v1.0.1`
         `,
           `## A (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-41.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0`
         )
@@ -1154,7 +1165,7 @@ Since v1.0.0`
         `,
           `## A (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-42.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0
 
@@ -1166,7 +1177,7 @@ Since v1.0.0
 type B = string
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-42.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.1`
         )
@@ -1187,7 +1198,7 @@ Since v1.0.1`
         `,
           `## A (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-43.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0`
         )
@@ -1214,13 +1225,13 @@ Since v1.0.0`
         `,
           `## A (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-44.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0
 
 ### B (namespace)
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-44.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.1
 
@@ -1232,7 +1243,7 @@ Since v1.0.1
 type C = string
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-44.ts#L13)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L13)
 
 Since v1.0.2`
         )
@@ -1280,7 +1291,7 @@ Since v1.0.2`
 declare class MyClass<A>
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-47.ts#L4)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L4)
 
 Since v1.0.0`
       )
@@ -1304,7 +1315,7 @@ description
 declare class C { constructor() }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-48.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0`
       )
@@ -1356,7 +1367,7 @@ description
 declare class C
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-50.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0
 
@@ -1368,7 +1379,7 @@ Since v1.0.0
 a: string
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-50.ts#L9)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
 
 Since v1.0.0`
       )
@@ -1416,7 +1427,7 @@ a class description...
 declare class Test { constructor(readonly value: string) }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-51.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.0.0
 
@@ -1430,7 +1441,7 @@ a static method description...
 declare const f: () => void
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-51.ts#L19)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L19)
 
 Since v1.1.0
 
@@ -1444,7 +1455,7 @@ a method description...
 declare const g: (a: number, b: number) => { [key: string]: number; }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-51.ts#L26)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L26)
 
 Since v1.1.0
 
@@ -1458,7 +1469,7 @@ a property...
 readonly a: string
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-51.ts#L12)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L12)
 
 Since v1.1.0`
       )
@@ -1503,7 +1514,7 @@ a class description...
 declare class Test<A> { constructor(readonly value: A) }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-52.ts#L6)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.0.0
 
@@ -1517,7 +1528,7 @@ a static method description...
 declare const f: { (x: number): number; (x: string): string; }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-52.ts#L14)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L14)
 
 Since v1.1.0
 
@@ -1531,7 +1542,7 @@ a method description...
 declare const map: { (f: (a: number) => number): Test; (f: (a: string) => string): Test; }
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-52.ts#L23)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L23)
 
 Since v1.1.0`
       )
@@ -1566,7 +1577,7 @@ a class description...
 declare class Test<A>
 \`\`\`
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test-53.ts#L5)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L5)
 
 Since v1.0.0`
       )
