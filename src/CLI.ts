@@ -16,6 +16,7 @@ import * as ParseResult from "effect/ParseResult"
 import * as Schema from "effect/Schema"
 import * as Configuration from "./Configuration.js"
 import * as Core from "./Core.js"
+import * as Domain from "./Domain.js"
 import * as InternalVersion from "./internal/version.js"
 
 const projectHomepage = Options.text("homepage").pipe(
@@ -187,7 +188,17 @@ export const docgenCommand = Command.make("docgen", options)
  * @since 0.6.0
  */
 export const cli = docgenCommand.pipe(
-  Command.withHandler(() => Effect.scoped(Core.program)),
+  Command.withHandler(() =>
+    Effect.scoped(Core.program).pipe(Effect.catchTag("DocgenError", (err) =>
+      Effect.gen(function*() {
+        const config = yield* Configuration.Configuration
+        return yield* Effect.fail(
+          new Domain.DocgenError({
+            message: `[${config.projectName}] ${err.message}`
+          })
+        )
+      })))
+  ),
   Command.provideEffect(Configuration.Configuration, (args) => Configuration.load(args)),
   Command.run({
     name: "docgen",

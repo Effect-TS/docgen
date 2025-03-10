@@ -14,8 +14,7 @@ import { cli } from "./CLI.js"
 import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
 
-/** @internal */
-export const MainLive = Configuration.configProviderLayer.pipe(
+const MainLive = Configuration.configProviderLayer.pipe(
   Layer.provideMerge(Layer.mergeAll(
     Logger.minimumLogLevel(LogLevel.Info),
     Domain.Process.Default,

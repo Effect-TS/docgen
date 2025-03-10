@@ -28,11 +28,11 @@ declare const cli: (
   args: ReadonlyArray<string>
 ) => Effect.Effect<
   void,
-  ValidationError.ValidationError | DocgenError | PlatformError,
-  Process | CommandExecutor | CliApp.Environment
+  ValidationError.ValidationError | Domain.DocgenError | PlatformError,
+  Domain.Process | CommandExecutor | CliApp.Environment
 >
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/CLI.ts#L189)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/CLI.ts#L190)
 
 Since v0.6.0
