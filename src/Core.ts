@@ -186,7 +186,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
     const path = yield* Path.Path
-    return Array.flatMap(modules, (module) => {
+    const files = Array.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
       const getFiles =
@@ -216,7 +216,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         extractPrefixedNestedNamespaces(namespace, ""))
 
       const moduleExamples = getFiles("module")(module)
-      const methodsExamples = Array.flatMap(module.classes, (c) =>
+      const classExamples = Array.flatMap(module.classes, (c) =>
         Array.flatten([
           Array.flatMap(
             c.methods,
@@ -260,6 +260,10 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         module.functions,
         getFiles("function")
       )
+      const exportsExamples = Array.flatMap(
+        module.exports,
+        getFiles("export")
+      )
       const namespacesExamples = Array.flatMap(
         allPrefixedNamespaces,
         ([ns, doc]) => getFiles(filterJoin(["namespace", ns]))(doc)
@@ -267,14 +271,17 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
 
       return Array.flatten([
         moduleExamples,
-        methodsExamples,
+        classExamples,
         interfacesExamples,
         typeAliasesExamples,
         constantsExamples,
         functionsExamples,
-        namespacesExamples
+        namespacesExamples,
+        exportsExamples
       ])
     })
+
+    return files
   })
 
 /**
