@@ -65,7 +65,7 @@ declare const checkExports: (
 ) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L177)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L185)
 
 Since v0.6.0
 
@@ -105,7 +105,7 @@ Since v0.6.0
 declare const checkModule: (module: Domain.Module) => Effect.Effect<Array<string>, never, Configuration.Configuration>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L184)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L192)
 
 Since v0.6.0
 
@@ -119,7 +119,7 @@ declare const checkModules: (
 ) => Effect.Effect<Array<string>, never, Configuration.Configuration>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L208)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L216)
 
 Since v0.6.0
 
@@ -133,7 +133,7 @@ declare const checkNamespaces: (
 ) => Effect.Effect<Array<string>, never, Configuration.Configuration | Parser.Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L164)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Checker.ts#L172)
 
 Since v0.6.0
 

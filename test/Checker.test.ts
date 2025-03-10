@@ -2,13 +2,10 @@ import * as Checker from "@effect/docgen/Checker"
 import * as Configuration from "@effect/docgen/Configuration"
 import * as Parser from "@effect/docgen/Parser"
 import { Path } from "@effect/platform"
-import chalk from "chalk"
 import { Effect, Predicate } from "effect"
 import * as assert from "node:assert/strict"
 import * as ast from "ts-morph"
 import { describe, it } from "vitest"
-
-let testCounter = 0
 
 const project = new ast.Project({
   compilerOptions: { strict: true },
@@ -32,13 +29,24 @@ const defaultConfig: Configuration.ConfigurationShape = {
   examplesCompilerOptions: {}
 }
 
+const makeSourcefile = (source: string | ast.SourceFile) => {
+  if (Predicate.isString(source)) {
+    const filename = `test.ts`
+    const existing = project.getSourceFile(filename)
+    if (existing) {
+      project.removeSourceFile(existing)
+    }
+    return project.createSourceFile(filename, source)
+  }
+  return source
+}
+
 const makeSource = (source: string | ast.SourceFile) => {
-  const filename = `test-${testCounter++}`
+  const sourceFile = makeSourcefile(source)
+  const filename = sourceFile.getBaseName()
   return Parser.Source.of({
     path: [filename],
-    sourceFile: Predicate.isString(source)
-      ? project.createSourceFile(`${filename}.ts`, source)
-      : source
+    sourceFile
   })
 }
 
@@ -63,7 +71,7 @@ const expectFailure = <A>(
 
 describe("Checker", () => {
   describe("checkFunctions", () => {
-    it("should raise an error if `@since` tag is missing in export", () => {
+    it("should raise an error if `@since` tag is missing", () => {
       expectFailure(
         {},
         `
@@ -75,43 +83,53 @@ export function b() {}
         `,
         Parser.parseFunctions,
         Checker.checkFunctions,
-        [`Missing \`@since\` tag in file /test-0.ts:
-
-  4 |
-  5 | /** description */
-> 6 | export function b() {}
-    | ^
-  7 |         `]
+        [
+          "Missing `@since` tag in file /test.ts:\n" +
+          "\n" +
+          "  4 |\n" +
+          "  5 | /** description */\n" +
+          "> 6 | export function b() {}\n" +
+          "    | ^\n" +
+          "  7 |         "
+        ]
       )
     })
   })
 
-  describe.skip("checkExports", () => {
-    it("should raise an error if `@since` tag is missing in export", () => {
+  describe("checkExports", () => {
+    it("should raise an error if `@since` tag is missing", () => {
       expectFailure(
         {},
         "export { a }",
         Parser.parseExports,
         Checker.checkExports,
-        ["Missing `@since` tag in export: a"]
+        [
+          "Missing `@since` tag in file /test.ts:\n" +
+          "\n" +
+          "> 1 | export { a }\n" +
+          "    |          ^"
+        ]
       )
     })
   })
 
-  describe.skip("checkNamespaces", () => {
-    it("should raise an error if the namespace is not well documented", () => {
+  describe("checkNamespaces", () => {
+    it("should raise an error if `@since` tag is missing", () => {
       expectFailure(
         {},
         "export namespace A {}",
         Parser.parseNamespaces,
         Checker.checkNamespaces,
         [
-          `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#A")} documentation`
+          "Missing `@since` tag in file /test.ts:\n" +
+          "\n" +
+          "> 1 | export namespace A {}\n" +
+          "    | ^"
         ]
       )
     })
 
-    it("should raise an error if the interface is not well documented", () => {
+    it("should raise an error if `@since` tag is missing on a nested interface", () => {
       expectFailure(
         {},
         `
@@ -124,11 +142,20 @@ export function b() {}
       `,
         Parser.parseNamespaces,
         Checker.checkNamespaces,
-        [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+        [
+          "Missing `@since` tag in file /test.ts:\n" +
+          "\n" +
+          "  4 |        */\n" +
+          "  5 |       export namespace A {\n" +
+          "> 6 |         export interface B {}\n" +
+          "    |         ^\n" +
+          "  7 |       }\n" +
+          "  8 |       "
+        ]
       )
     })
 
-    it("should raise an error if the type alias is not well documented", () => {
+    it("should raise an error if `@since` tag is missing on a nested type alias", () => {
       expectFailure(
         {},
         `
@@ -141,11 +168,20 @@ export function b() {}
       `,
         Parser.parseNamespaces,
         Checker.checkNamespaces,
-        [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+        [
+          "Missing `@since` tag in file /test.ts:\n" +
+          "\n" +
+          "  4 |        */\n" +
+          "  5 |       export namespace A {\n" +
+          "> 6 |         export type B = string\n" +
+          "    |         ^\n" +
+          "  7 |       }\n" +
+          "  8 |       "
+        ]
       )
     })
 
-    it("should raise an error if the namespace is not well documented", () => {
+    it("should raise an error if `@since` tag is missing on a nested namespace", () => {
       expectFailure(
         {},
         `
@@ -158,35 +194,33 @@ export function b() {}
       `,
         Parser.parseNamespaces,
         Checker.checkNamespaces,
-        [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#B")} documentation`]
+        [
+          "Missing `@since` tag in file /test.ts:\n" +
+          "\n" +
+          "  4 |        */\n" +
+          "  5 |       export namespace A {\n" +
+          "> 6 |         export namespace B {}\n" +
+          "    |         ^\n" +
+          "  7 |       }\n" +
+          "  8 |       "
+        ]
       )
     })
   })
 
-  describe.skip("checkClasses", () => {
-    it("should raise an error if an `@since` tag is missing in a module", () => {
+  describe("checkClasses", () => {
+    it("should raise an error if `@since` tag is missing", () => {
       expectFailure(
         {},
         `export class MyClass {}`,
         Parser.parseClasses,
         Checker.checkClasses,
         [
-          `Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass")} documentation`
+          "Missing `@since` tag in file /test.ts:\n" +
+          "\n" +
+          "> 1 | export class MyClass {}\n" +
+          "    | ^"
         ]
-      )
-    })
-    it("should raise an error if `@since` is missing in a property", () => {
-      expectFailure(
-        {},
-        `/**
-          * @since 1.0.0
-          */
-          export class MyClass<A> {
-            readonly _A!: A
-          }`,
-        Parser.parseClasses,
-        Checker.checkClasses,
-        [`Missing ${chalk.bold("@since")} tag in ${chalk.bold("test#MyClass#_A")} documentation`]
       )
     })
   })

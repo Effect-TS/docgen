@@ -152,9 +152,17 @@ export function checkTypeAliases(models: ReadonlyArray<Domain.TypeAlias>) {
   return Effect.forEach(models, checkTypeAlias).pipe(Effect.map(Array.flatten))
 }
 
-function checkNamespace(model: Domain.Namespace) {
-  return checkEntry(model, {
-    enforceVersion: true
+function checkNamespace(
+  model: Domain.Namespace
+): Effect.Effect<Array<string>, never, Parser.Source | Configuration.Configuration> {
+  return Effect.gen(function*() {
+    const docErrors = yield* checkEntry(model, {
+      enforceVersion: true
+    })
+    const interfacesErrors = yield* checkInterfaces(model.interfaces)
+    const typeAliasesErrors = yield* checkTypeAliases(model.typeAliases)
+    const namespacesErrors = yield* checkNamespaces(model.namespaces)
+    return Array.flatten([docErrors, interfacesErrors, typeAliasesErrors, namespacesErrors])
   })
 }
 
