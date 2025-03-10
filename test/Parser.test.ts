@@ -809,6 +809,60 @@ Since v1.0.0`
       )
     })
 
+    it("should return an `Export`", async () => {
+      await expectMarkdown(
+        Parser.parseExports,
+        `
+        const a = 1;
+        const b = 2;
+        export {
+          /**
+           * description_of_a
+           * \`\`\`ts
+           * const a: string = 1
+           * \`\`\`
+           *
+           * @since 1.0.0
+           */
+          a,
+          /**
+           * description_of_b
+           * @since 2.0.0
+           */
+          b
+        }`,
+        `## a
+
+description_of_a
+\`\`\`ts
+const a: string = 1
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+declare const a: 1
+\`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L13)
+
+Since v1.0.0
+## b
+
+description_of_b
+
+**Signature**
+
+\`\`\`ts
+declare const b: 2
+\`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L18)
+
+Since v2.0.0`
+      )
+    })
+
     it("should handle renamimg", async () => {
       await expectMarkdown(
         Parser.parseExports,
@@ -830,53 +884,6 @@ declare const b: 1
 [Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L6)
 
 Since v1.0.0`
-      )
-    })
-
-    it("should return an `Export`", async () => {
-      await expectMarkdown(
-        Parser.parseExports,
-        `
-        const a = 1;
-        const b = 2;
-        export {
-          /**
-           * description_of_a
-           * @since 1.0.0
-           */
-          a,
-          /**
-           * description_of_b
-           * @since 2.0.0
-           */
-          b
-        }`,
-        `## a
-
-description_of_a
-
-**Signature**
-
-\`\`\`ts
-declare const a: 1
-\`\`\`
-
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L9)
-
-Since v1.0.0
-## b
-
-description_of_b
-
-**Signature**
-
-\`\`\`ts
-declare const b: 2
-\`\`\`
-
-[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L14)
-
-Since v2.0.0`
       )
     })
 
