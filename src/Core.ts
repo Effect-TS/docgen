@@ -167,18 +167,32 @@ export const SKIP_TYPE_CHECKING_FENCE_METADATA = "skip-type-checking"
  *
  * @internal
  */
-export const extractFencedCode = (content: string): Array<string> => {
-  const fenceRegex = /(?:```|~~~)(.*?)\n([\s\S]*?)(?:```|~~~|$)/g
+export const extractFencedCode = (content: string): [examples: Array<string>, warnings: Array<string>] => {
+  // The regex now captures the closing fence (group 3) if present.
+  // If there's no closing fence, group 3 will be undefined.
+  const fenceRegex = /(?:```|~~~)(.*?)\n([\s\S]*?)(?:(```|~~~)|$)/g
   const matches = Array.fromIterable(content.matchAll(fenceRegex))
 
-  return matches
-    .filter((match) => {
-      const meta = match[1].toLocaleLowerCase()
-      const isTypeScript = meta.startsWith("ts") || meta.startsWith("typescript")
-      const isSkipTypeChecking = meta.includes(SKIP_TYPE_CHECKING_FENCE_METADATA)
-      return isTypeScript && !isSkipTypeChecking
-    })
-    .map((match) => match[2].trim())
+  const warnings: Array<string> = []
+
+  // Log a warning if a code fence is not properly closed.
+  for (const match of matches) {
+    if (match[3] === undefined) {
+      warnings.push(`Code block does not have a matching closing fence:\n${content}`)
+    }
+  }
+
+  return [
+    matches
+      .filter((match) => {
+        const meta = match[1].toLocaleLowerCase()
+        const isTypeScript = meta.startsWith("ts") || meta.startsWith("typescript")
+        const isSkipTypeChecking = meta.includes(SKIP_TYPE_CHECKING_FENCE_METADATA)
+        return isTypeScript && !isSkipTypeChecking
+      })
+      .map((match) => match[2].trim()),
+    warnings
+  ]
 }
 
 /**
@@ -188,16 +202,26 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
     const path = yield* Path.Path
+    let warnings: Array<string> = []
     const files = Array.flatMap(modules, (module) => {
       const prefix = module.path.join("-")
 
       const getFiles =
         (exampleId: string) =>
         (namedDoc: { readonly name: string; readonly doc: Domain.Doc }): ReadonlyArray<Domain.File> => {
-          const descriptionExamples = namedDoc.doc.description ? extractFencedCode(namedDoc.doc.description) : []
-          const examples = descriptionExamples.concat(
-            namedDoc.doc.examples.flatMap((example) => extractFencedCode(example))
-          )
+          let descriptionExamples: Array<string> = []
+          if (namedDoc.doc.description !== undefined) {
+            const [es, ws] = extractFencedCode(namedDoc.doc.description)
+            warnings = warnings.concat(ws)
+            descriptionExamples = es
+          }
+          let exampleTagExamples: Array<string> = []
+          for (const example of namedDoc.doc.examples) {
+            const [es, ws] = extractFencedCode(example)
+            warnings = warnings.concat(ws)
+            exampleTagExamples = exampleTagExamples.concat(es)
+          }
+          const examples = descriptionExamples.concat(exampleTagExamples)
           return Array.map(
             examples,
             (example, i) => {
@@ -282,6 +306,10 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
         exportsExamples
       ])
     })
+
+    if (warnings.length > 0) {
+      yield* Effect.logWarning(warnings.join("\n"))
+    }
 
     return files
   })
