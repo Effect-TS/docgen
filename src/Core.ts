@@ -164,9 +164,11 @@ export const SKIP_TYPE_CHECKING_FENCE_METADATA = "skip-type-checking"
 /**
  * Extracts all fenced code blocks from markdown content.
  * Handles both ``` and ~~~ fences, including any metadata like language, title, and other attributes.
+ *
+ * @internal
  */
-const extractFencedCode = (content: string): Array<string> => {
-  const fenceRegex = /(?:```|~~~)(.*?)\n([\s\S]*?)(?:```|~~~)/g
+export const extractFencedCode = (content: string): Array<string> => {
+  const fenceRegex = /(?:```|~~~)(.*?)\n([\s\S]*?)(?:```|~~~|$)/g
   const matches = Array.fromIterable(content.matchAll(fenceRegex))
 
   return matches
