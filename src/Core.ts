@@ -661,7 +661,10 @@ const getJsonFiles = Effect.fnUntraced(function*(
         examples: printable.doc.examples.map((example) => example),
         since: pipe(printable.doc.since, Array.head, Option.getOrNull),
         category: pipe(printable.doc.category, Array.head, Option.getOrNull),
-        signature: "signature" in printable ? printable.signature : null
+        signature: "signature" in printable ? printable.signature : null,
+        sourceUrl: config.srcLink + module.source.sourceFile.getBaseName() +
+          "#L" +
+          printable.position.line
       }
     })
   )
