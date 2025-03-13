@@ -55,7 +55,7 @@ Since v0.6.0
 
 ```ts
 declare const printForAI: (
-  _projectName: string,
+  projectName: string,
   module: Domain.Module,
   printable: Printable
 ) => Effect.Effect<string, never, Configuration.Configuration>

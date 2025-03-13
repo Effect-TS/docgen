@@ -380,12 +380,18 @@ export function prettify(s: string) {
  * @since 0.6.0
  */
 export const printForAI = Effect.fnUntraced(function*(
-  _projectName: string,
+  projectName: string,
   module: Domain.Module,
   printable: Printable
 ) {
-  return yield* printModel(printable.name, printable.doc, {
+  const moduleName = module.name.replace(/\.ts$/, "")
+  const content = yield* printModel(`${moduleName}.${printable.name}`, printable.doc, {
     signature: "signature" in printable ? printable.signature : undefined,
     position: printable.position
   }).pipe(Effect.provideService(Parser.Source, module.source))
+
+  return `Package: \`${projectName}\`<br />
+Module: \`${moduleName}\`<br />
+
+${content}`
 })
