@@ -619,5 +619,5 @@ export const program = Effect.gen(function*() {
   const outputFiles = yield* getMarkdown(modules)
   yield* Effect.logInfo("Writing markdown files...")
   yield* writeMarkdown(outputFiles)
-  yield* Effect.logInfo(chalk.bold.green("Docs generation succeeded!"))
+  yield* Effect.logInfo(chalk.bold.green("✓ Docs generation succeeded!"))
 })
