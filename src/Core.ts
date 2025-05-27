@@ -611,6 +611,7 @@ const getModulePrintables = (module: Domain.Module) =>
     module.functions,
     module.interfaces,
     module.typeAliases,
+    module.exports,
     module.namespaces.flatMap((ns) =>
       [ns.interfaces, ns.typeAliases].flat().map((doc) => doc.modifyName(`${ns.name}.${doc.name}`))
     )
