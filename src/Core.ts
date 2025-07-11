@@ -244,6 +244,7 @@ const getExampleFiles = (modules: ReadonlyArray<Domain.Module>) =>
       const moduleExamples = getFiles("module")(module)
       const classExamples = Array.flatMap(module.classes, (c) =>
         Array.flatten([
+          getFiles("class")(c),
           Array.flatMap(
             c.methods,
             getFiles(`${c.name}-method`)
