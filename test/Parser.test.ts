@@ -150,6 +150,64 @@ declare const foo: "foo"
 Since v1.0.0`
       )
     })
+
+    it("should ignore non-JSDoc comments above JSDoc comments", async () => {
+      await expectMarkdown(
+        Parser.parseModule,
+        `/**
+* This is the assert module.
+*
+* @since 1.0.0
+*/
+import * as assert from 'assert'
+
+// This comment should be ignored
+
+/**
+ * This is the foo export.
+ *
+ * @example
+ * import { foo } from 'test'
+ *
+ * console.log(foo)
+ *
+ * @category category
+ * @since 1.0.0
+ */
+export const foo = 'foo'`,
+        `## test.ts overview
+
+This is the assert module.
+
+Since v1.0.0
+
+<!-- toc -->
+
+# category
+
+## foo
+
+This is the foo export.
+
+**Example**
+
+\`\`\`ts
+import { foo } from 'test'
+
+console.log(foo)
+\`\`\`
+
+**Signature**
+
+\`\`\`ts
+declare const foo: "foo"
+\`\`\`
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/test.ts#L21)
+
+Since v1.0.0`
+      )
+    })
   })
 
   describe("parseFunctions", () => {

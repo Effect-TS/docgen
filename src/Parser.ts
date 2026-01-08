@@ -31,6 +31,13 @@ const getJSDocText: (jsdocs: ReadonlyArray<ast.JSDoc>) => string = Array.matchRi
   onNonEmpty: (_, last) => last.getText()
 })
 
+const getDocComment = (ranges: ReadonlyArray<ast.CommentRange>): Option.Option<ast.CommentRange> =>
+  pipe(
+    ranges,
+    Array.filter((range) => range.getText().startsWith("/**")),
+    Array.last
+  )
+
 class Comment {
   constructor(
     readonly description: string | undefined,
@@ -341,9 +348,8 @@ const parseExportSpecifier = (es: ast.ExportSpecifier) =>
   Effect.gen(function*() {
     const name = es.compilerNode.name.text
     const type = parseType(es)
-    const ocommentRange = Array.head(es.getLeadingCommentRanges())
-    const jsDocsText = ocommentRange.pipe(Option.map((range) => range.getText()), Option.getOrElse(() => ""))
-    const doc = parseDoc(jsDocsText)
+    const oDocComment = getDocComment(es.getLeadingCommentRanges())
+    const doc = Option.isSome(oDocComment) ? parseDoc(oDocComment.value.getText()) : parseDoc("")
     const signature = `declare const ${name}: ${type}`
     const position = yield* parsePosition(es)
     return new Domain.Export(
@@ -361,9 +367,8 @@ const parseExportStar = (ed: ast.ExportDeclaration) =>
     const name = es.getText()
     const namespace = ed.getNamespaceExport()?.getName()
     const signature = `export *${namespace === undefined ? "" : ` as ${namespace}`} from ${name}`
-    const ocommentRange = Array.head(ed.getLeadingCommentRanges())
-    const jsDocsText = ocommentRange.pipe(Option.map((range) => range.getText()), Option.getOrElse(() => ""))
-    const doc = parseDoc(jsDocsText)
+    const oDocComment = getDocComment(ed.getLeadingCommentRanges())
+    const doc = Option.isSome(oDocComment) ? parseDoc(oDocComment.value.getText()) : parseDoc("")
     const position = yield* parsePosition(ed)
     return new Domain.Export(
       namespace ?? name,
@@ -595,12 +600,9 @@ export const parseModuleDocumentation = Effect.gen(function*() {
   const statements = source.sourceFile.getStatements()
   const ofirstStatement = Array.head(statements)
   if (Option.isSome(ofirstStatement)) {
-    const firstStatement = ofirstStatement.value
-    const ocommentRange = Array.head(firstStatement.getLeadingCommentRanges())
-    if (Option.isSome(ocommentRange)) {
-      const commentRange = ocommentRange.value
-      const jsDocsText = commentRange.getText()
-      return parseDoc(jsDocsText)
+    const oDocComment = getDocComment(ofirstStatement.value.getLeadingCommentRanges())
+    if (Option.isSome(oDocComment)) {
+      return parseDoc(oDocComment.value.getText())
     }
   }
   return parseDoc("")
