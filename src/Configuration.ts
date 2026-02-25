@@ -72,6 +72,16 @@ export const ConfigurationSchema = Schema.Struct({
     description: "Whether or not @since tags for each module export should be required.",
     default: true
   }),
+  tscExecutable: Schema.optional(Schema.String).annotations({
+    description:
+      "The path to the TypeScript compiler executable that docgen should use when invoking the compiler programmatically.",
+    default: "tsc"
+  }),
+  runExamples: Schema.optional(Schema.Boolean).annotations({
+    description:
+      "Whether or not docgen should attempt to run example code snippets and include the output in the generated documentation.",
+    default: false
+  }),
   exclude: Schema.optional(Schema.Array(Schema.String)).annotations({
     description: "An array of glob strings specifying files that should be excluded from the documentation.",
     default: []
@@ -101,6 +111,7 @@ export interface ConfigurationShape {
   readonly enforceDescriptions: boolean
   readonly enforceExamples: boolean
   readonly enforceVersion: boolean
+  readonly tscExecutable: string
   readonly runExamples: boolean
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Record<string, unknown>
@@ -294,6 +305,16 @@ export const load = (args: {
       Option.getOrElse(() => args.outDir)
     )
 
+    const runExamples = config.pipe(
+      Option.flatMapNullable((config) => config.runExamples),
+      Option.getOrElse(() => args.runExamples)
+    )
+
+    const tscExecutable = config.pipe(
+      Option.flatMapNullable((config) => config.tscExecutable),
+      Option.getOrElse(() => "tsc")
+    )
+
     return Configuration.of({
       ...args,
       srcDir,
@@ -303,7 +324,9 @@ export const load = (args: {
       srcLink,
       exclude,
       examplesCompilerOptions,
-      parseCompilerOptions
+      parseCompilerOptions,
+      runExamples,
+      tscExecutable
     })
   })
 

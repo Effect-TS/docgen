@@ -51,6 +51,16 @@
           "description": "Whether or not @since tags for each module export should be required.",
           "default": true
         },
+        "tscExecutable": {
+          "type": "string",
+          "description": "The path to the TypeScript compiler executable that docgen should use when invoking the compiler programmatically.",
+          "default": "tsc"
+        },
+        "runExamples": {
+          "type": "boolean",
+          "description": "Whether or not docgen should attempt to run example code snippets and include the output in the generated documentation.",
+          "default": false
+        },
         "exclude": {
           "type": "array",
           "items": {

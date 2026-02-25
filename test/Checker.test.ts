@@ -24,6 +24,7 @@ const defaultConfig: Configuration.ConfigurationShape = {
   enforceExamples: false,
   enforceVersion: true,
   runExamples: false,
+  tscExecutable: "tsc",
   exclude: [],
   parseCompilerOptions: {},
   examplesCompilerOptions: {}

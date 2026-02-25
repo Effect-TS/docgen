@@ -88,6 +88,7 @@ describe("Configuration", () => {
         enforceExamples: false,
         enforceVersion: true,
         runExamples: false,
+        tscExecutable: "tsc",
         exclude: [],
         parseCompilerOptions: Configuration.defaultCompilerOptions,
         examplesCompilerOptions: Configuration.defaultCompilerOptions
@@ -124,6 +125,7 @@ describe("Configuration", () => {
         enforceExamples: false,
         enforceVersion: true,
         runExamples: false,
+        tscExecutable: "tsc",
         exclude: [],
         parseCompilerOptions,
         examplesCompilerOptions: Configuration.defaultCompilerOptions

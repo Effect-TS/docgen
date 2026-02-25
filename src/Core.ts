@@ -359,8 +359,8 @@ const runTscOnExamples = Effect.gen(function*() {
   const tsconfig = path.normalize(path.join(cwd, config.outDir, "examples", "tsconfig.json"))
   const options = ["--noEmit", "--project", tsconfig]
   const command = platform === "win32"
-    ? Command.runInShell(Command.make("tsc.cmd", ...options), true)
-    : Command.make("tsc", ...options)
+    ? Command.runInShell(Command.make(`${config.tscExecutable}.cmd`, ...options), true)
+    : Command.make(config.tscExecutable, ...options)
 
   yield* Effect.logDebug("Running tsc on examples...")
 
