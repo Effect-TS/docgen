@@ -38,20 +38,13 @@ Since v0.6.0
 
 ## prettify
 
-```ts
-const a: number = 1
-```
-
-````ts
-const b: number = 2
-
 **Signature**
 
 ```ts
 declare const prettify: (s: string) => Effect.Effect<string, never, never>
-````
+```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L379)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L372)
 
 Since v0.6.0
 

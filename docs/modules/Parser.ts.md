@@ -35,7 +35,7 @@ Since v0.6.0
 declare const parseClasses: Effect.Effect<Array<Domain.Class>, never, Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L584)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L589)
 
 Since v0.6.0
 
@@ -47,7 +47,7 @@ Since v0.6.0
 declare const parseConstants: Effect.Effect<Array<Domain.Constant>, never, Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L315)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L322)
 
 Since v0.6.0
 
@@ -59,7 +59,7 @@ Since v0.6.0
 declare const parseExports: Effect.Effect<Array<Domain.Export>, never, Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L391)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L396)
 
 Since v0.6.0
 
@@ -77,7 +77,7 @@ declare const parseFiles: (
 >
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L688)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L690)
 
 Since v0.6.0
 
@@ -89,7 +89,7 @@ Since v0.6.0
 declare const parseFunctions: Effect.Effect<Array<Domain.Function>, never, Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L240)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L247)
 
 Since v0.6.0
 
@@ -101,7 +101,7 @@ Since v0.6.0
 declare const parseInterfaces: Effect.Effect<Array<Domain.Interface>, never, Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L133)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L140)
 
 Since v0.6.0
 
@@ -113,7 +113,7 @@ Since v0.6.0
 declare const parseModule: Effect.Effect<Domain.Module, never, Configuration.Configuration | Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L613)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L615)
 
 Since v0.6.0
 
@@ -125,7 +125,7 @@ Since v0.6.0
 declare const parseNamespaces: Effect.Effect<Array<Domain.Namespace>, never, Configuration.Configuration | Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L437)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L442)
 
 Since v0.6.0
 
@@ -137,6 +137,6 @@ Since v0.6.0
 declare const parseTypeAliases: Effect.Effect<Array<Domain.TypeAlias>, never, Source>
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L285)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Parser.ts#L292)
 
 Since v0.6.0

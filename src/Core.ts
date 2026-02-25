@@ -8,10 +8,11 @@ import * as CommandExecutor from "@effect/platform/CommandExecutor"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
 import chalk from "chalk"
-import { pipe } from "effect"
 import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
+import * as Fiber from "effect/Fiber"
+import { pipe } from "effect/Function"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
@@ -606,19 +607,28 @@ export const program = Effect.gen(function*() {
   const sourceFiles = yield* readSourceFiles
   yield* Effect.logInfo("Parsing modules...")
   const modules = yield* parseModules(sourceFiles)
-  yield* Effect.logInfo("Checking modules...")
-  const errors = yield* Checker.checkModules(modules)
-  if (errors.length > 0) {
-    yield* Effect.fail(
-      new Domain.DocgenError({
-        message: `The following errors occurred while checking the modules:\n\n${errors.join("\n\n")}`
-      })
-    )
-  }
-  yield* typeCheckAndRunExamples(modules)
-  yield* Effect.logInfo("Creating markdown files...")
-  const outputFiles = yield* getMarkdown(modules)
-  yield* Effect.logInfo("Writing markdown files...")
-  yield* writeMarkdown(outputFiles)
+
+  const checkFiber = yield* Effect.gen(function*() {
+    yield* Effect.logInfo("Checking modules...")
+    const errors = yield* Checker.checkModules(modules)
+    if (errors.length > 0) {
+      yield* Effect.fail(
+        new Domain.DocgenError({
+          message: `The following errors occurred while checking the modules:\n\n${errors.join("\n\n")}`
+        })
+      )
+    }
+    yield* typeCheckAndRunExamples(modules)
+  }).pipe(Effect.fork)
+
+  const markdownFiber = yield* Effect.gen(function*() {
+    yield* Effect.logInfo("Creating markdown files...")
+    const outputFiles = yield* getMarkdown(modules)
+    yield* Effect.logInfo("Writing markdown files...")
+    yield* writeMarkdown(outputFiles)
+  }).pipe(Effect.fork)
+
+  yield* Fiber.joinAll([checkFiber, markdownFiber])
+
   yield* Effect.logInfo(chalk.bold.green("✓ Docs generation succeeded!"))
 })
