@@ -22,6 +22,8 @@ const defaultConfig: Configuration.ConfigurationShape = {
   srcDir: "src",
   outDir: "docs",
   theme: "mikearnaldi/just-the-docs",
+  enableAI: true,
+  enableJson: true,
   enableSearch: true,
   enforceDescriptions: false,
   enforceExamples: false,

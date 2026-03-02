@@ -29,6 +29,6 @@ The metadata key for skipping type-checking.
 declare const SKIP_TYPE_CHECKING_FENCE_METADATA: "skip-type-checking"
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Core.ts#L163)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Core.ts#L165)
 
 Since v0.6.0

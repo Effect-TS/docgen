@@ -375,3 +375,17 @@ export function prettify(s: string) {
     catch: identity
   }).pipe(Effect.orDie)
 }
+
+/**
+ * @since 0.6.0
+ */
+export const printForAI = Effect.fnUntraced(function*(
+  _projectName: string,
+  module: Domain.Module,
+  printable: Printable
+) {
+  return yield* printModel(printable.name, printable.doc, {
+    signature: "signature" in printable ? printable.signature : undefined,
+    position: printable.position
+  }).pipe(Effect.provideService(Parser.Source, module.source))
+})

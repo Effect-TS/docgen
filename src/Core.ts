@@ -13,6 +13,7 @@ import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
+import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import * as String from "effect/String"
 import * as Glob from "glob"
@@ -21,6 +22,7 @@ import * as Configuration from "./Configuration.js"
 import * as Domain from "./Domain.js"
 import * as Parser from "./Parser.js"
 import * as Printer from "./Printer.js"
+
 /**
  * Find all files matching the specified `glob` pattern, optionally excluding
  * files matching the provided `exclude` patterns.
@@ -461,7 +463,9 @@ const getMarkdown = (modules: ReadonlyArray<Domain.Module>) =>
     const index = yield* getMarkdownIndex
     const yml = yield* getMarkdownConfigYML
     const moduleFiles = yield* getModuleMarkdownFiles(modules)
-    return [homepage, index, yml, ...moduleFiles]
+    const aiFiles = yield* maybeGetAIMarkdownFiles(modules)
+    const jsonFiles = yield* maybeGetJsonFiles(modules)
+    return [homepage, index, yml, ...moduleFiles, ...aiFiles, ...jsonFiles]
   })
 
 const getMarkdownHomepage = Effect.gen(function*() {
@@ -564,6 +568,19 @@ const getModuleMarkdownOutputPath = (module: Domain.Module) => {
   })
 }
 
+const getAIMarkdownOutputPath = Effect.fnUntraced(function*(
+  module: Domain.Module,
+  printable: Printer.Printable
+) {
+  const config = yield* Configuration.Configuration
+  const path = yield* Path.Path
+  return path.join(
+    config.outDir,
+    "ai",
+    `${module.path.slice(1).join("-").replace(/\.ts$/, "")}-${printable.name}.md`
+  )
+})
+
 const getModuleMarkdownFiles = (modules: ReadonlyArray<Domain.Module>) =>
   Effect.forEach(modules, (module, i) =>
     Effect.gen(function*() {
@@ -587,10 +604,91 @@ ${toc}
       return new Domain.File(outputPath, prettified, true)
     }))
 
+const getModulePrintables = (module: Domain.Module) =>
+  [
+    module.classes,
+    module.constants,
+    module.functions,
+    module.interfaces,
+    module.typeAliases,
+    module.namespaces.flatMap((ns) =>
+      [ns.interfaces, ns.typeAliases].flat().map((doc) => doc.modifyName(`${ns.name}.${doc.name}`))
+    )
+  ].flat()
+
+const getAIMarkdownFiles = Effect.fnUntraced(function*(projectName: string, modules: ReadonlyArray<Domain.Module>) {
+  const aiModules = pipe(
+    modules,
+    Array.flatMap((module) =>
+      pipe(
+        getModulePrintables(module),
+        Array.map((printable) => ({ module, printable }))
+      )
+    ),
+    Array.filter(({ printable }) => printable.doc.description !== undefined)
+  )
+
+  const files = Array.empty<Domain.File>()
+  for (const { module, printable } of aiModules) {
+    const outputPath = yield* getAIMarkdownOutputPath(module, printable)
+    const content = yield* Printer.printForAI(projectName, module, printable)
+    files.push(new Domain.File(outputPath, content, true))
+  }
+  return files
+})
+
+const getJsonFiles = Effect.fnUntraced(function*(
+  projectName: string,
+  modules: ReadonlyArray<Domain.Module>
+) {
+  const config = yield* Configuration.Configuration
+  const path = yield* Path.Path
+  const printables = pipe(
+    modules,
+    Array.bindTo("module"),
+    Array.bind("printable", ({ module }) => getModulePrintables(module)),
+    Array.map(({ module, printable }) => {
+      return {
+        _tag: printable._tag,
+        module: {
+          name: module.name,
+          path: module.path.join("/")
+        },
+        project: projectName,
+        name: printable.name,
+        description: printable.doc.description,
+        deprecated: pipe(printable.doc.deprecated, Array.head, Option.isSome),
+        examples: printable.doc.examples.map((example) => example),
+        since: pipe(printable.doc.since, Array.head, Option.getOrNull),
+        category: pipe(printable.doc.category, Array.head, Option.getOrNull),
+        signature: "signature" in printable ? printable.signature : null
+      }
+    })
+  )
+
+  return [
+    new Domain.File(
+      path.join(config.outDir, `${projectName.replace("/", "-")}.json`),
+      JSON.stringify(printables, null, 2),
+      true
+    )
+  ]
+})
+
+const maybeGetAIMarkdownFiles = Effect.fnUntraced(function*(modules: ReadonlyArray<Domain.Module>) {
+  const config = yield* Configuration.Configuration
+  return config.enableAI ? yield* getAIMarkdownFiles(config.projectName, modules) : []
+})
+
+const maybeGetJsonFiles = Effect.fnUntraced(function*(modules: ReadonlyArray<Domain.Module>) {
+  const config = yield* Configuration.Configuration
+  return config.enableJson ? yield* getJsonFiles(config.projectName, modules) : []
+})
+
 const writeMarkdown = (files: ReadonlyArray<Domain.File>) =>
   Effect.gen(function*() {
     const config = yield* Configuration.Configuration
-    const path = yield* pipe(Path.Path, Effect.provide(NodePath.layerPosix))
+    const path = yield* Effect.provide(Path.Path, NodePath.layerPosix)
     const fileSystem = yield* FileSystem.FileSystem
     const pattern = path.normalize(path.join(config.outDir, "**/*.ts.md"))
     yield* Effect.logDebug(`Deleting ${chalk.black(pattern)}...`)

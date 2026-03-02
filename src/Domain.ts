@@ -20,6 +20,25 @@ export class DocEntry {
     readonly signature: string,
     readonly position: Position
   ) {}
+
+  modifyName(name: string): this {
+    const obj = { ...this, name }
+    Object.setPrototypeOf(obj, Object.getPrototypeOf(this))
+    return obj
+  }
+}
+
+/**
+ * @category model
+ * @since 0.6.0
+ */
+export declare namespace DocEntry {
+  /**
+   * @category model
+   * @since 0.6.0
+   * @deprecated
+   */
+  export type Name<A extends DocEntry> = A["name"]
 }
 
 /**

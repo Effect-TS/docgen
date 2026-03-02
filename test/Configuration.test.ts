@@ -91,7 +91,9 @@ describe("Configuration", () => {
         tscExecutable: "tsc",
         exclude: [],
         parseCompilerOptions: Configuration.defaultCompilerOptions,
-        examplesCompilerOptions: Configuration.defaultCompilerOptions
+        examplesCompilerOptions: Configuration.defaultCompilerOptions,
+        enableAI: true,
+        enableJson: true
       })
     })
     const cli = testCliFor(program)
@@ -128,7 +130,9 @@ describe("Configuration", () => {
         tscExecutable: "tsc",
         exclude: [],
         parseCompilerOptions,
-        examplesCompilerOptions: Configuration.defaultCompilerOptions
+        examplesCompilerOptions: Configuration.defaultCompilerOptions,
+        enableAI: true,
+        enableJson: true
       })
     })
     const cli = testCliFor(program)

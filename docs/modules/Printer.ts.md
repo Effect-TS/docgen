@@ -16,6 +16,7 @@ Since v0.6.0
   - [printModule](#printmodule)
 - [utils](#utils)
   - [prettify](#prettify)
+  - [printForAI](#printforai)
   - [printFrontMatter](#printfrontmatter)
 
 ---
@@ -45,6 +46,22 @@ declare const prettify: (s: string) => Effect.Effect<string, never, never>
 ```
 
 [Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L372)
+
+Since v0.6.0
+
+## printForAI
+
+**Signature**
+
+```ts
+declare const printForAI: (
+  _projectName: string,
+  module: Domain.Module,
+  printable: Printable
+) => Effect.Effect<string, never, Configuration.Configuration>
+```
+
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Printer.ts#L382)
 
 Since v0.6.0
 

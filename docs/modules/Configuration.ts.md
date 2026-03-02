@@ -31,7 +31,7 @@ Since v0.6.0
 declare class Configuration
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L125)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L135)
 
 Since v0.6.0
 
@@ -60,6 +60,8 @@ declare const ConfigurationSchema: Schema.Struct<{
   examplesCompilerOptions: Schema.optional<
     Schema.Union<[typeof Schema.String, Schema.Record$<typeof Schema.String, typeof Schema.Unknown>]>
   >
+  enableAI: Schema.optional<typeof Schema.Boolean>
+  enableJson: Schema.optional<typeof Schema.Boolean>
 }>
 ```
 
@@ -88,10 +90,12 @@ export interface ConfigurationShape {
   readonly exclude: ReadonlyArray<string>
   readonly parseCompilerOptions: Record<string, unknown>
   readonly examplesCompilerOptions: Record<string, unknown>
+  readonly enableAI: boolean
+  readonly enableJson: boolean
 }
 ```
 
-[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L103)
+[Source](https://github.com/effect-ts/docgen/blob/main/src/Configuration.ts#L111)
 
 Since v0.6.0
 
