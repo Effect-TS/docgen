@@ -1,6 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/$defs/ConfigurationSchema",
   "$defs": {
     "ConfigurationSchema": {
       "type": "object",
@@ -12,6 +11,10 @@
         "projectHomepage": {
           "type": "string",
           "description": "Will link to the project homepage from the Auxiliary Links of the generated documentation."
+        },
+        "srcLink": {
+          "type": "string",
+          "description": "Will link to the project source code."
         },
         "srcDir": {
           "type": "string",
@@ -48,6 +51,16 @@
           "description": "Whether or not @since tags for each module export should be required.",
           "default": true
         },
+        "tscExecutable": {
+          "type": "string",
+          "description": "The path to the TypeScript compiler executable that docgen should use when invoking the compiler programmatically.",
+          "default": "tsc"
+        },
+        "runExamples": {
+          "type": "boolean",
+          "description": "Whether or not docgen should attempt to run example code snippets and include the output in the generated documentation.",
+          "default": false
+        },
         "exclude": {
           "type": "array",
           "items": {
@@ -65,11 +78,9 @@
               "type": "object",
               "required": [],
               "properties": {},
-              "patternProperties": {
-                "": {
-                  "$id": "/schemas/unknown",
-                  "title": "unknown"
-                }
+              "additionalProperties": {
+                "$id": "/schemas/unknown",
+                "title": "unknown"
               }
             }
           ],
@@ -85,19 +96,28 @@
               "type": "object",
               "required": [],
               "properties": {},
-              "patternProperties": {
-                "": {
-                  "$id": "/schemas/unknown",
-                  "title": "unknown"
-                }
+              "additionalProperties": {
+                "$id": "/schemas/unknown",
+                "title": "unknown"
               }
             }
           ],
           "description": "tsconfig for the examples options (or path to a tsconfig)",
           "default": {}
+        },
+        "enableAI": {
+          "type": "boolean",
+          "description": "Whether or not to enable AI for the examples",
+          "default": true
+        },
+        "enableJson": {
+          "type": "boolean",
+          "description": "Whether or not to output JSON files",
+          "default": true
         }
       },
       "additionalProperties": false
     }
-  }
+  },
+  "$ref": "#/$defs/ConfigurationSchema"
 }
